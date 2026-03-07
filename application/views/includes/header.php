@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?php echo $pageTitle; ?></title>
+    <title><?php echo $pageTitle; ?> | OJAS</title>
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    
     <!-- Bootstrap 3.3.4 -->
     <link href="<?php echo base_url(); ?>assets/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <!-- FontAwesome 4.3.0 -->
@@ -13,79 +14,436 @@
     <link href="<?php echo base_url(); ?>assets/bower_components/Ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css" />
     <!-- Theme style -->
     <link href="<?php echo base_url(); ?>assets/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
-    <!-- AdminLTE Skins. Choose a skin from the css/skins 
-         folder instead of downloading all of them to reduce the load. -->
+    <!-- AdminLTE Skins -->
     <link href="<?php echo base_url(); ?>assets/dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Custom CSS for OJAS - WIDER SIDEBAR -->
     <style>
-    	.error{
-    		color:red;
-    		font-weight: normal;
-    	}
+        :root {
+            --primary-color: #2c5f2d;
+            --primary-dark: #1e4b1f;
+            --primary-light: #e8f0e8;
+            --accent-color: #ffc857;
+            --sidebar-width: 280px;  /* Increased from default 230px */
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: normal;
+        }
+        
+        /* Custom Skin - OJAS Green */
+        .skin-ojas .main-header .logo {
+            background-color: var(--primary-color);
+            color: #fff;
+            border-bottom: 0 solid transparent;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: var(--sidebar-width);  /* Match sidebar width */
+        }
+        
+        .skin-ojas .main-header .logo:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .skin-ojas .main-header .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3e7c40 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-left: var(--sidebar-width);  /* Match sidebar width */
+        }
+        
+        /* WIDER SIDEBAR - Main modification */
+        .skin-ojas .main-sidebar {
+            background: linear-gradient(180deg, #2c3e50 0%, #1a2634 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            width: var(--sidebar-width);
+        }
+        
+        /* Content wrapper adjustment */
+        .skin-ojas .content-wrapper,
+        .skin-ojas .right-side,
+        .skin-ojas .main-footer {
+            margin-left: var(--sidebar-width);
+        }
+        
+        /* Sidebar toggle for mobile */
+        @media (max-width: 767px) {
+            .skin-ojas .main-sidebar {
+                transform: translateX(-var(--sidebar-width));
+            }
+            .skin-ojas .content-wrapper,
+            .skin-ojas .right-side,
+            .skin-ojas .main-footer {
+                margin-left: 0;
+            }
+        }
+        
+        /* User panel in sidebar */
+        .skin-ojas .user-panel {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .skin-ojas .user-panel .image img {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .skin-ojas .user-panel .info {
+            left: 75px;
+            padding: 7px 0;
+        }
+        
+        .skin-ojas .user-panel .info p {
+            color: #fff;
+            margin: 0 0 5px;
+            font-weight: 500;
+            font-size: 1.1em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+        
+        .skin-ojas .user-panel .info a {
+            color: var(--accent-color);
+            font-size: 0.9em;
+        }
+        
+        .skin-ojas .sidebar-menu > li.header {
+            color: #95a5a6;
+            background: transparent;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            padding: 15px 25px 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .skin-ojas .sidebar-menu > li > a {
+            color: #ecf0f1;
+            font-weight: 500;
+            padding: 15px 25px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.05em;
+        }
+        
+        .skin-ojas .sidebar-menu > li > a:hover {
+            background: rgba(255,255,255,0.05);
+            border-left-color: var(--primary-color);
+            padding-left: 30px;
+        }
+        
+        .skin-ojas .sidebar-menu > li.active > a {
+            background: rgba(44,95,45,0.2);
+            border-left-color: var(--primary-color);
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .skin-ojas .sidebar-menu > li > a > i {
+            color: var(--primary-color);
+            width: 30px;
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1.3em;
+        }
+        
+        .skin-ojas .sidebar-menu .treeview-menu {
+            background: rgba(0,0,0,0.2);
+            padding: 5px 0;
+        }
+        
+        .skin-ojas .sidebar-menu .treeview-menu > li > a {
+            color: #bdc3c7;
+            padding: 12px 15px 12px 55px;
+            transition: all 0.3s ease;
+            font-size: 0.98em;
+        }
+        
+        .skin-ojas .sidebar-menu .treeview-menu > li > a:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            padding-left: 60px;
+        }
+        
+        .skin-ojas .sidebar-menu .treeview-menu > li > a > i {
+            color: var(--primary-color);
+            width: 22px;
+            font-size: 1em;
+        }
+        
+        /* User menu in header */
+        .user-menu .dropdown-menu {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            border: none;
+            overflow: hidden;
+            width: 300px;
+        }
+        
+        .user-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3e7c40 100%);
+            padding: 25px !important;
+        }
+        
+        .user-header > img {
+            border: 3px solid #fff;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            width: 100px !important;
+            height: 100px !important;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .user-header > p {
+            color: #fff;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        
+        .user-header > p > small {
+            color: rgba(255,255,255,0.8);
+            display: block;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        
+        .user-footer {
+            background: #f8f9fa;
+            padding: 15px 25px;
+        }
+        
+        .user-footer .btn {
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .user-footer .btn-warning {
+            background: var(--accent-color);
+            border: none;
+            color: #333;
+        }
+        
+        .user-footer .btn-warning:hover {
+            background: #ffb83b;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255,200,87,0.3);
+        }
+        
+        .user-footer .btn-default {
+            background: #e9ecef;
+            border: none;
+            color: #495057;
+        }
+        
+        .user-footer .btn-default:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+        
+        /* Header user image */
+        .navbar-custom-menu .user-menu .user-image {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            margin-right: 5px;
+        }
+        
+        /* Tasks menu */
+        .tasks-menu .dropdown-menu {
+            width: 280px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            border: none;
+        }
+        
+        .tasks-menu .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3e7c40 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px 20px;
+            font-size: 1em;
+            border: none;
+        }
+        
+        .logo-lg {
+            font-size: 1.5em;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 230px;
+        }
+        
+        .logo-lg b {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+        
+        .logo-mini {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        /* Custom scrollbar for sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Badge styles */
+        .label-ojas {
+            background: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        
+        /* Animation for sidebar items */
+        .sidebar-menu > li {
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .sidebar-menu > li:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar-menu > li:nth-child(2) { animation-delay: 0.2s; }
+        .sidebar-menu > li:nth-child(3) { animation-delay: 0.3s; }
+        .sidebar-menu > li:nth-child(4) { animation-delay: 0.4s; }
+        .sidebar-menu > li:nth-child(5) { animation-delay: 0.5s; }
+        .sidebar-menu > li:nth-child(6) { animation-delay: 0.6s; }
+        .sidebar-menu > li:nth-child(7) { animation-delay: 0.7s; }
     </style>
+    
     <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript">
         var baseURL = "<?php echo base_url(); ?>";
     </script>
     
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!-- HTML5 Shim and Respond.js -->
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+    
+    <!-- Google Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap">
+    <style>
+        body {
+            font-family: 'Poppins', 'Source Sans Pro', sans-serif;
+        }
+    </style>
   </head>
-  <body class="hold-transition skin-blue sidebar-mini">
+  
+  <body class="hold-transition skin-ojas sidebar-mini">
     <div class="wrapper">
       
+      <!-- Header -->
       <header class="main-header">
         <!-- Logo -->
-        <a href="<?php echo base_url(); ?>" class="logo">
-          <!-- mini logo for sidebar mini 50x50 pixels -->
-          <span class="logo-mini"><b>CI</b>AS</span>
+        <a href="<?php echo base_url(); ?>dashboard" class="logo">
+          <!-- mini logo for sidebar mini -->
+          <span class="logo-mini"><i class="fa fa-leaf"></i></span>
           <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg"><b>CodeInsect</b>AS</span>
+          <span class="logo-lg"><b>OJAS</b> | IQQO</span>
         </a>
-        <!-- Header Navbar: style can be found in header.less -->
+        
+        <!-- Header Navbar -->
         <nav class="navbar navbar-static-top" role="navigation">
           <!-- Sidebar toggle button-->
           <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
             <span class="sr-only">Toggle navigation</span>
+            <i class="fa fa-bars"></i>
           </a>
+          
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
+              
+              <!-- Last Login Info -->
               <li class="dropdown tasks-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                  <i class="fa fa-history"></i>
+                  <i class="fa fa-clock-o"></i>
+                  <span class="label label-ojas">Last</span>
                 </a>
                 <ul class="dropdown-menu">
-                  <li class="header"> Last Login : <i class="fa fa-clock-o"></i> <?= empty($last_login) ? "First Time Login" : $last_login; ?></li>
+                  <li class="header"> 
+                    <i class="fa fa-history"></i> 
+                    <?= empty($last_login) ? "First Time Login" : $last_login; ?>
+                  </li>
                 </ul>
               </li>
-              <!-- User Account: style can be found in dropdown.less -->
+              
+              <!-- User Account - WITH PROFILE PICTURE -->
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  <img src="<?php echo base_url(); ?>assets/dist/img/avatar.png" class="user-image" alt="User Image"/>
+                  <?php 
+                  // Get profile image path
+                  $profileImage = !empty($profile_image) ? base_url('uploads/profile_images/'.$profile_image) : base_url('assets/dist/img/avatar-default.png');
+                  ?>
+                  <img src="<?php echo $profileImage; ?>" class="user-image" alt="User Image">
                   <span class="hidden-xs"><?php echo $name; ?></span>
                 </a>
                 <ul class="dropdown-menu">
-                  <!-- User image -->
+                  <!-- User image - LARGE PROFILE PICTURE -->
                   <li class="user-header">
-                    
-                    <img src="<?php echo base_url(); ?>assets/dist/img/avatar.png" class="img-circle" alt="User Image" />
+                    <img src="<?php echo $profileImage; ?>" class="img-circle" alt="User Image">
                     <p>
                       <?php echo $name; ?>
                       <small><?php echo $role_text; ?></small>
+                      <?php if(!empty($institution)): ?>
+                      <small style="margin-top: 5px;"><i class="fa fa-building"></i> <?php echo $institution; ?></small>
+                      <?php endif; ?>
                     </p>
-                    
                   </li>
+                  
                   <!-- Menu Footer-->
                   <li class="user-footer">
                     <div class="pull-left">
-                      <a href="<?php echo base_url(); ?>profile" class="btn btn-warning btn-flat"><i class="fa fa-user-circle"></i> Profile</a>
+                      <a href="<?php echo base_url(); ?>profile" class="btn btn-warning btn-flat">
+                        <i class="fa fa-user-circle"></i> Profile
+                      </a>
                     </div>
                     <div class="pull-right">
-                      <a href="<?php echo base_url(); ?>logout" class="btn btn-default btn-flat"><i class="fa fa-sign-out"></i> Sign out</a>
+                      <a href="<?php echo base_url(); ?>logout" class="btn btn-default btn-flat">
+                        <i class="fa fa-sign-out"></i> Sign out
+                      </a>
                     </div>
                   </li>
                 </ul>
@@ -94,100 +452,171 @@
           </div>
         </nav>
       </header>
-      <!-- Left side column. contains the logo and sidebar -->
+      
+      <!-- Left side column - WIDER SIDEBAR with PROFILE PICTURE -->
       <aside class="main-sidebar">
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
-          <!-- sidebar menu: : style can be found in sidebar.less -->
+          
+          <!-- Sidebar user panel - WITH PROFILE PICTURE -->
+          <div class="user-panel">
+            <div class="pull-left image">
+              <img src="<?php echo $profileImage; ?>" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+              <p><?php echo $name; ?></p>
+              <a href="#">
+                <i class="fa fa-circle text-success" style="color: #2ecc71;"></i> Online
+              </a>
+            </div>
+          </div>
+          
+          <!-- Sidebar Menu -->
           <ul class="sidebar-menu" data-widget="tree">
             <li class="header">MAIN NAVIGATION</li>
-            <li>
+            
+            <!-- Dashboard -->
+            <li class="<?php echo (uri_string() == 'dashboard') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>dashboard">
-                <i class="fa fa-dashboard"></i> <span>Dashboard</span></i>
+                <i class="fa fa-dashboard"></i> 
+                <span>Dashboard</span>
+                <span class="pull-right-container">
+                  <small class="label pull-right bg-green">Home</small>
+                </span>
               </a>
             </li>
-            <li class="treeview">
+            
+            <!-- User Management (Admin only) -->
+            <?php if($is_admin == 1): ?>
+            <li class="treeview <?php echo (uri_string() == 'userListing' || uri_string() == 'addNew' || uri_string() == 'roles/roleListing') ? 'active' : ''; ?>">
               <a href="#">
-                <i class="fa fa-share"></i> <span>Multilevel</span>
+                <i class="fa fa-users"></i> 
+                <span>User Management</span>
                 <span class="pull-right-container">
                   <i class="fa fa-angle-left pull-right"></i>
                 </span>
               </a>
               <ul class="treeview-menu">
-                <li><a href="#"><i class="fa fa-circle-o"></i> Level One</a></li>
-                <li class="treeview">
-                  <a href="#"><i class="fa fa-circle-o"></i> Level One
-                    <span class="pull-right-container">
-                      <i class="fa fa-angle-left pull-right"></i>
-                    </span>
+                <li class="<?php echo (uri_string() == 'userListing') ? 'active' : ''; ?>">
+                  <a href="<?php echo base_url(); ?>userListing">
+                    <i class="fa fa-list"></i> All Users
                   </a>
-                  <ul class="treeview-menu">
-                    <li><a href="#"><i class="fa fa-circle-o"></i> Level Two</a></li>
-                    <li class="treeview">
-                      <a href="#"><i class="fa fa-circle-o"></i> Level Two
-                        <span class="pull-right-container">
-                          <i class="fa fa-angle-left pull-right"></i>
-                        </span>
-                      </a>
-                      <ul class="treeview-menu">
-                        <li><a href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
-                        <li><a href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
-                      </ul>
-                    </li>
-                  </ul>
                 </li>
-                <li><a href="#"><i class="fa fa-circle-o"></i> Level One</a></li>
+                <li class="<?php echo (uri_string() == 'addNew') ? 'active' : ''; ?>">
+                  <a href="<?php echo base_url(); ?>addNew">
+                    <i class="fa fa-plus-circle"></i> Add New User
+                  </a>
+                </li>
+                <li class="<?php echo (uri_string() == 'roles/roleListing') ? 'active' : ''; ?>">
+                  <a href="<?php echo base_url(); ?>roles/roleListing">
+                    <i class="fa fa-user-circle-o"></i> Roles
+                  </a>
+                </li>
               </ul>
             </li>
-            <?php
-            if($is_admin == 1)
-            {
-            ?>
+            <?php endif; ?>
+            
+            <!-- Journal Management Section -->
+            <li class="header">JOURNAL MANAGEMENT</li>
+            
+            <!-- Manuscripts -->
+            <li class="treeview">
+              <a href="#">
+                <i class="fa fa-file-text"></i> 
+                <span>Manuscripts</span>
+                <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+              </a>
+              <ul class="treeview-menu">
+                <li><a href="<?php echo base_url(); ?>author/manuscripts"><i class="fa fa-upload"></i> My Submissions</a></li>
+                <li><a href="<?php echo base_url(); ?>author/submit"><i class="fa fa-pencil"></i> New Submission</a></li>
+                <?php if($role_text == 'Editor-in-Chief' || $role_text == 'Associate Editor'): ?>
+                <li><a href="<?php echo base_url(); ?>editor/pending"><i class="fa fa-clock-o"></i> Pending Reviews</a></li>
+                <li><a href="<?php echo base_url(); ?>editor/assignments"><i class="fa fa-tasks"></i> Assignments</a></li>
+                <?php endif; ?>
+              </ul>
+            </li>
+            
+            <!-- Reviews (for Reviewers) -->
+            <?php if($role_text == 'Reviewer'): ?>
             <li>
-              <a href="<?php echo base_url(); ?>userListing">
-                <i class="fa fa-users"></i>
-                <span>Users</span>
+              <a href="<?php echo base_url(); ?>reviewer/assignments">
+                <i class="fa fa-check-square-o"></i> 
+                <span>My Reviews</span>
+                <span class="pull-right-container">
+                  <small class="label pull-right bg-yellow">Pending</small>
+                </span>
               </a>
             </li>
+            <?php endif; ?>
+            
+            <!-- Issues -->
             <li>
-              <a href="<?php echo base_url(); ?>roles/roleListing">
-                <i class="fa fa-user-circle-o " aria-hidden="true"></i>
-                <span>Roles</span>
+              <a href="<?php echo base_url(); ?>journal/archive">
+                <i class="fa fa-book"></i> 
+                <span>Journal Issues</span>
+                <span class="pull-right-container">
+                  <small class="label pull-right bg-primary">Archive</small>
+                </span>
               </a>
             </li>
-            <?php
-            }
-            ?>
-            <?php
-            if($is_admin == 1 ||
-                (array_key_exists('Booking', $access_info) 
-                && ($access_info['Booking']['list'] == 1 || $access_info['Booking']['total_access'] == 1)))
-            {
-              ?>
-            <li>
+            
+            <!-- Booking (if access) -->
+            <?php if($is_admin == 1 || (array_key_exists('Booking', $access_info) && ($access_info['Booking']['list'] == 1 || $access_info['Booking']['total_access'] == 1))): ?>
+            <li class="<?php echo (uri_string() == 'booking') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>booking">
-                <i class="fa fa-anchor"></i>
+                <i class="fa fa-anchor"></i> 
                 <span>Booking</span>
               </a>
             </li>
-              <?php
-            }
-            ?>
-            <?php
-            if($is_admin == 1 ||
-                (array_key_exists('Task', $access_info) 
-                && ($access_info['Task']['list'] == 1 || $access_info['Task']['total_access'] == 1)))
-            {
-              ?>
-            <li>
+            <?php endif; ?>
+            
+            <!-- Tasks (if access) -->
+            <?php if($is_admin == 1 || (array_key_exists('Task', $access_info) && ($access_info['Task']['list'] == 1 || $access_info['Task']['total_access'] == 1))): ?>
+            <li class="<?php echo (uri_string() == 'task') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>task">
-                <i class="fa fa-tasks"></i>
+                <i class="fa fa-tasks"></i> 
                 <span>Tasks</span>
               </a>
             </li>
-            <?php
-            }
-            ?>
+            <?php endif; ?>
+            
+            <!-- Reports Section -->
+            <li class="header">REPORTS</li>
+            
+            <li class="treeview">
+              <a href="#">
+                <i class="fa fa-bar-chart"></i> 
+                <span>Analytics</span>
+                <span class="pull-right-container">
+                  <i class="fa fa-angle-left pull-right"></i>
+                </span>
+              </a>
+              <ul class="treeview-menu">
+                <li><a href="#"><i class="fa fa-file-pdf-o"></i> Annual Report</a></li>
+                <li><a href="#"><i class="fa fa-file-excel-o"></i> Export Data</a></li>
+                <li><a href="#"><i class="fa fa-line-chart"></i> Statistics</a></li>
+              </ul>
+            </li>
+            
+            <!-- System Section -->
+            <li class="header">SYSTEM</li>
+            
+            <li class="<?php echo (uri_string() == 'profile') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>profile">
+                <i class="fa fa-cog"></i> 
+                <span>Settings</span>
+              </a>
+            </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>logout">
+                <i class="fa fa-sign-out"></i> 
+                <span>Logout</span>
+              </a>
+            </li>
+            
           </ul>
         </section>
         <!-- /.sidebar -->
