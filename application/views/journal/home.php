@@ -50,7 +50,7 @@
             <div class="col-lg-5">
                 <div style="background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 30px 60px rgba(0,0,0,0.3);">
                     <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
-                        <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="IQQO Logo" style="max-width: 80px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                        <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="IQQO Logo" style="max-width: 80px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
                         <div>
                             <h3 style="color: white; margin: 0; font-weight: 700;">OJAS</h3>
                             <p style="margin: 5px 0 0; opacity: 0.8;">Oromia Journal of Agricultural Sciences</p>
@@ -432,32 +432,32 @@
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
         <div class="col-md-2 col-sm-4 col-6 mb-4">
             <div style="background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); filter: grayscale(1); opacity: 0.6; transition: all 0.3s ease;">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
+                <img src="<?php echo base_url('assets/images/logo.jpg'); ?>" alt="Partner" style="max-width: 100%; max-height: 50px;">
             </div>
         </div>
     </div>
