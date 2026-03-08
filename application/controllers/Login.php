@@ -174,6 +174,87 @@ class Login extends CI_Controller
     }
 
     /**
+     * Show public author registration page.
+     */
+    public function register()
+    {
+        $isLoggedIn = $this->session->userdata('isLoggedIn');
+
+        if(!isset($isLoggedIn) || $isLoggedIn != TRUE)
+        {
+            $this->load->view('users/register_author');
+        }
+        else
+        {
+            $this->redirectToDashboard();
+        }
+    }
+
+    /**
+     * Handle public author self-registration.
+     */
+    public function registerAuthor()
+    {
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('name', 'Full Name', 'trim|required|max_length[128]');
+        $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|max_length[128]');
+        $this->form_validation->set_rules('mobile', 'Phone Number', 'trim|max_length[20]');
+        $this->form_validation->set_rules('institution', 'Institution', 'trim|max_length[255]');
+        $this->form_validation->set_rules('department', 'Department', 'trim|max_length[255]');
+        $this->form_validation->set_rules('country', 'Country', 'trim|max_length[100]');
+        $this->form_validation->set_rules('city', 'City', 'trim|max_length[100]');
+        $this->form_validation->set_rules('orcid_id', 'ORCID ID', 'trim|max_length[50]');
+        $this->form_validation->set_rules('password', 'Password', 'required|min_length[8]|max_length[32]');
+        $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'required|matches[password]');
+
+        if($this->form_validation->run() == FALSE)
+        {
+            $this->register();
+            return;
+        }
+
+        $email = strtolower($this->security->xss_clean($this->input->post('email')));
+
+        if($this->login_model->checkEmailExist($email))
+        {
+            $this->session->set_flashdata('error', 'Email already exists. Please use a different email or login.');
+            redirect('register');
+            return;
+        }
+
+        $userInfo = array(
+            'name' => trim($this->security->xss_clean($this->input->post('name'))),
+            'email' => $email,
+            'mobile' => trim($this->security->xss_clean($this->input->post('mobile'))),
+            'institution' => trim($this->security->xss_clean($this->input->post('institution'))),
+            'department' => trim($this->security->xss_clean($this->input->post('department'))),
+            'country' => trim($this->security->xss_clean($this->input->post('country'))),
+            'city' => trim($this->security->xss_clean($this->input->post('city'))),
+            'orcid_id' => trim($this->security->xss_clean($this->input->post('orcid_id'))),
+            'password' => getHashedPassword($this->input->post('password')),
+            'roleId' => self::ROLE_AUTHOR,
+            'isAdmin' => 2,
+            'isDeleted' => 0,
+            'createdBy' => 0,
+            'createdDtm' => date('Y-m-d H:i:s')
+        );
+
+        $insertId = $this->user_model->addNewUser($userInfo);
+
+        if($insertId > 0)
+        {
+            $this->session->set_flashdata('success', 'Registration successful! You can now login as an author.');
+            redirect('login');
+        }
+        else
+        {
+            $this->session->set_flashdata('error', 'Registration failed. Please try again.');
+            redirect('register');
+        }
+    }
+
+    /**
      * This function used to load forgot password view
      */
     public function forgotPassword()
