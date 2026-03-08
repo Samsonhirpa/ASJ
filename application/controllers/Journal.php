@@ -3,11 +3,26 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Journal extends CI_Controller  // Don't extend BaseController for public pages
 {
+    private $supported_languages = array('en', 'om', 'am');
+
     public function __construct() {
         parent::__construct();
         $this->load->model('journal_model');
         $this->load->model('issue_model');
         $this->load->helper('journal');
+
+        $requestedLanguage = strtolower((string) $this->input->get('lang', true));
+        if (in_array($requestedLanguage, $this->supported_languages, true)) {
+            $this->session->set_userdata('site_lang', $requestedLanguage);
+        }
+
+        $siteLanguage = $this->session->userdata('site_lang');
+        if (!in_array($siteLanguage, $this->supported_languages, true)) {
+            $siteLanguage = 'en';
+            $this->session->set_userdata('site_lang', $siteLanguage);
+        }
+
+        $this->load->vars(array('site_lang' => $siteLanguage));
     }
     
     /**

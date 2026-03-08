@@ -158,6 +158,92 @@
 </head>
 <body>
 
+<?php
+$currentLanguage = isset($site_lang) ? $site_lang : 'en';
+$languageOptions = array(
+    'en' => 'English',
+    'om' => 'Afaan Oromo',
+    'am' => 'አማርኛ'
+);
+
+$uiText = array(
+    'en' => array(
+        'home' => 'Home',
+        'about' => 'About',
+        'about_journal' => 'About the Journal',
+        'aims_scope' => 'Aims & Scope',
+        'editorial_board' => 'Editorial Board',
+        'issues' => 'Issues',
+        'current_issue' => 'Current Issue',
+        'archive' => 'Archive',
+        'for_authors' => 'For Authors',
+        'for_reviewers' => 'For Reviewers',
+        'search' => 'Search',
+        'contact' => 'Contact',
+        'dashboard' => 'Dashboard',
+        'profile' => 'Profile',
+        'logout' => 'Logout',
+        'login' => 'Login',
+        'register' => 'Register',
+        'author_login' => 'Author Login',
+        'submit_manuscript' => 'Submit Manuscript',
+        'motto' => '"Connecting Agriculture and Science for a Sustainable Future"',
+        'language' => 'Language'
+    ),
+    'om' => array(
+        'home' => 'Mana',
+        'about' => 'Waa\'ee',
+        'about_journal' => 'Waa\'ee Joornaalii',
+        'aims_scope' => 'Kaayyoo fi Daangaa',
+        'editorial_board' => 'Garee Editoraa',
+        'issues' => 'Maxxansoota',
+        'current_issue' => 'Maxxansa Ammaa',
+        'archive' => 'Kuusaa',
+        'for_authors' => 'Barreessitootaaf',
+        'for_reviewers' => 'Qorattootaaf',
+        'search' => 'Barbaadi',
+        'contact' => 'Nu Quunnamaa',
+        'dashboard' => 'Daashboordii',
+        'profile' => 'Piroofaayilii',
+        'logout' => 'Ba\'i',
+        'login' => 'Seeni',
+        'register' => 'Galmaa\'i',
+        'author_login' => 'Seensa Barreessaa',
+        'submit_manuscript' => 'Barreeffama Galchi',
+        'motto' => '"Qonna fi Saayinsii Itti Walqabsiisnee Itti Fufiinsaaf"',
+        'language' => 'Afaan'
+    ),
+    'am' => array(
+        'home' => 'መነሻ',
+        'about' => 'ስለ እኛ',
+        'about_journal' => 'ስለ ጆርናሉ',
+        'aims_scope' => 'ዓላማ እና ወሰን',
+        'editorial_board' => 'የኤዲቶሪያል ቦርድ',
+        'issues' => 'እትሞች',
+        'current_issue' => 'የአሁኑ እትም',
+        'archive' => 'ማህደር',
+        'for_authors' => 'ለደራሲዎች',
+        'for_reviewers' => 'ለገምጋሚዎች',
+        'search' => 'ፈልግ',
+        'contact' => 'ያግኙን',
+        'dashboard' => 'ዳሽቦርድ',
+        'profile' => 'መገለጫ',
+        'logout' => 'ውጣ',
+        'login' => 'ግባ',
+        'register' => 'ይመዝገቡ',
+        'author_login' => 'የደራሲ መግቢያ',
+        'submit_manuscript' => 'ጽሁፍ አስገባ',
+        'motto' => '"ግብርናን እና ሳይንስን ለዘላቂ ወደፊት ማገናኘት"',
+        'language' => 'ቋንቋ'
+    )
+);
+
+$text = isset($uiText[$currentLanguage]) ? $uiText[$currentLanguage] : $uiText['en'];
+$currentUri = current_url();
+$queryParams = $this->input->get();
+unset($queryParams['lang']);
+?>
+
 <!-- Navigation -->
 <nav class="navbar navbar-ojas">
     <div class="container">
@@ -176,45 +262,60 @@
         <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
                 <li class="<?= (uri_string() == 'journal') ? 'active' : '' ?>">
-                    <a href="<?= base_url('journal') ?>">Home</a>
+                    <a href="<?= base_url('journal') ?>"><?= $text['home'] ?></a>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?= $text['about'] ?> <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="<?= base_url('journal/about') ?>">About the Journal</a></li>
-                        <li><a href="<?= base_url('journal/aims-scope') ?>">Aims & Scope</a></li>
-                        <li><a href="<?= base_url('journal/editorial-board') ?>">Editorial Board</a></li>
+                        <li><a href="<?= base_url('journal/about') ?>"><?= $text['about_journal'] ?></a></li>
+                        <li><a href="<?= base_url('journal/aims-scope') ?>"><?= $text['aims_scope'] ?></a></li>
+                        <li><a href="<?= base_url('journal/editorial-board') ?>"><?= $text['editorial_board'] ?></a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Issues <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?= $text['issues'] ?> <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="<?= base_url('journal/current-issue') ?>">Current Issue</a></li>
-                        <li><a href="<?= base_url('journal/archive') ?>">Archive</a></li>
+                        <li><a href="<?= base_url('journal/current-issue') ?>"><?= $text['current_issue'] ?></a></li>
+                        <li><a href="<?= base_url('journal/archive') ?>"><?= $text['archive'] ?></a></li>
                     </ul>
                 </li>
-                <li><a href="<?= base_url('journal/author-guidelines') ?>">For Authors</a></li>
-                <li><a href="<?= base_url('journal/reviewer-guidelines') ?>">For Reviewers</a></li>
-                <li><a href="<?= base_url('journal/search') ?>"><i class="fa fa-search"></i> Search</a></li>
-                <li><a href="<?= base_url('journal/contact') ?>">Contact</a></li>
+                <li><a href="<?= base_url('journal/author-guidelines') ?>"><?= $text['for_authors'] ?></a></li>
+                <li><a href="<?= base_url('journal/reviewer-guidelines') ?>"><?= $text['for_reviewers'] ?></a></li>
+                <li><a href="<?= base_url('journal/search') ?>"><i class="fa fa-search"></i> <?= $text['search'] ?></a></li>
+                <li><a href="<?= base_url('journal/contact') ?>"><?= $text['contact'] ?></a></li>
             </ul>
             
             <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-language"></i> <?= $text['language'] ?>: <?= $languageOptions[$currentLanguage] ?> <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php foreach($languageOptions as $langCode => $langLabel): ?>
+                            <?php
+                                $langParams = $queryParams;
+                                $langParams['lang'] = $langCode;
+                                $switchUrl = $currentUri . (empty($langParams) ? '' : '?' . http_build_query($langParams));
+                            ?>
+                            <li><a href="<?= $switchUrl ?>"><?= $langLabel ?></a></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
                 <?php if($this->session->userdata('isLoggedIn')): ?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-user"></i> <?= $this->session->userdata('name') ?> <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="<?= base_url('dashboard') ?>"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-                        <li><a href="<?= base_url('profile') ?>"><i class="fa fa-user-circle"></i> Profile</a></li>
+                        <li><a href="<?= base_url('dashboard') ?>"><i class="fa fa-dashboard"></i> <?= $text['dashboard'] ?></a></li>
+                        <li><a href="<?= base_url('profile') ?>"><i class="fa fa-user-circle"></i> <?= $text['profile'] ?></a></li>
                         <li class="divider"></li>
-                        <li><a href="<?= base_url('logout') ?>"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        <li><a href="<?= base_url('logout') ?>"><i class="fa fa-sign-out"></i> <?= $text['logout'] ?></a></li>
                     </ul>
                 </li>
                 <?php else: ?>
-                <li><a href="<?= base_url('login') ?>" class="btn-outline-ojas" style="padding: 8px 20px; margin-top: 8px;"><i class="fa fa-sign-in"></i> Login</a></li>
-                <li><a href="<?= base_url('register') ?>" class="btn-ojas" style="padding: 8px 20px; margin-top: 8px; margin-left: 5px;"><i class="fa fa-user-plus"></i> Register</a></li>
+                <li><a href="<?= base_url('login') ?>" class="btn-outline-ojas" style="padding: 8px 20px; margin-top: 8px;"><i class="fa fa-sign-in"></i> <?= $text['login'] ?></a></li>
+                <li><a href="<?= base_url('register') ?>" class="btn-ojas" style="padding: 8px 20px; margin-top: 8px; margin-left: 5px;"><i class="fa fa-user-plus"></i> <?= $text['register'] ?></a></li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -225,13 +326,13 @@
 <div class="journal-header">
     <div class="container">
         <h1>Oromia Journal of Agricultural Sciences</h1>
-        <p class="motto">"Connecting Agriculture and Science for a Sustainable Future"</p>
+        <p class="motto"><?= $text['motto'] ?></p>
         <p>ISSN: XXXXX-XXXX | Open Access | Peer-Reviewed</p>
         
         <div class="auth-buttons">
             <?php if(!$this->session->userdata('isLoggedIn')): ?>
-            <a href="<?= base_url('login') ?>" class="btn btn-lg btn-outline-ojas">Author Login</a>
-            <a href="<?= base_url('register') ?>" class="btn btn-lg btn-ojas">Submit Manuscript</a>
+            <a href="<?= base_url('login') ?>" class="btn btn-lg btn-outline-ojas"><?= $text['author_login'] ?></a>
+            <a href="<?= base_url('register') ?>" class="btn btn-lg btn-ojas"><?= $text['submit_manuscript'] ?></a>
             <?php endif; ?>
         </div>
     </div>
