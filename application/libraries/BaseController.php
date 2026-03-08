@@ -1,4 +1,5 @@
-<?php defined('BASEPATH') or exit('No direct script access allowed'); 
+<?php
+defined('BASEPATH') or exit('No direct script access allowed'); 
 
 /**
  * Class : BaseController
@@ -18,9 +19,23 @@ class BaseController extends CI_Controller {
     protected $lastLogin = '';
     protected $module = '';
     
-    // New properties for journal system
+    // Properties for journal system
     protected $profileImage = '';
     protected $institution = '';
+
+    /**
+     * Role constants for journal system
+     */
+    const ROLE_SYSTEM_ADMIN = 1;
+    const ROLE_EDITOR_IN_CHIEF = 13;
+    const ROLE_ASSOCIATE_EDITOR_IN_CHIEF = 14;
+    const ROLE_MANAGING_EDITOR = 15;
+    const ROLE_ASSOCIATE_EDITOR = 16;
+    const ROLE_SPECIALTY_CHIEF_EDITOR = 17;
+    const ROLE_EDITORIAL_ADVISORY_BOARD = 18;
+    const ROLE_REVIEWER = 19;
+    const ROLE_GUEST_EDITOR = 20;
+    const ROLE_AUTHOR = 21;
 
     /**
      * This is default constructor
@@ -91,6 +106,159 @@ class BaseController extends CI_Controller {
      */
     function isAdmin() {
         return ($this->isAdmin == 1);
+    }
+
+    /**
+     * Check if user has specific role
+     * @param mixed $roleIds Single role ID or array of role IDs
+     * @return boolean
+     */
+    protected function hasRole($roleIds) {
+        if(!is_array($roleIds)) {
+            $roleIds = array($roleIds);
+        }
+        return in_array($this->role, $roleIds);
+    }
+    
+    /**
+     * Check if user is Author (roleId = 21)
+     * @return boolean
+     */
+    protected function isAuthor() {
+        return ($this->role == self::ROLE_AUTHOR);
+    }
+    
+    /**
+     * Check if user is Reviewer (roleId = 19)
+     * @return boolean
+     */
+    protected function isReviewer() {
+        return ($this->role == self::ROLE_REVIEWER);
+    }
+    
+    /**
+     * Check if user is Editor (any editorial role)
+     * @return boolean
+     */
+    protected function isEditor() {
+        $editorRoles = [
+            self::ROLE_EDITOR_IN_CHIEF,
+            self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF,
+            self::ROLE_MANAGING_EDITOR,
+            self::ROLE_ASSOCIATE_EDITOR,
+            self::ROLE_SPECIALTY_CHIEF_EDITOR,
+            self::ROLE_EDITORIAL_ADVISORY_BOARD,
+            self::ROLE_GUEST_EDITOR
+        ];
+        return in_array($this->role, $editorRoles);
+    }
+    
+    /**
+     * Check if user is Editor-in-Chief (roleId = 13)
+     * @return boolean
+     */
+    protected function isEditorInChief() {
+        return ($this->role == self::ROLE_EDITOR_IN_CHIEF);
+    }
+    
+    /**
+     * Get dashboard URL based on user role
+     * @return string
+     */
+    protected function getDashboardUrl() {
+        if($this->isAdmin()) {
+            return 'admin/dashboard';
+        }
+        
+        switch($this->role) {
+            case self::ROLE_EDITOR_IN_CHIEF:
+            case self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF:
+            case self::ROLE_MANAGING_EDITOR:
+            case self::ROLE_ASSOCIATE_EDITOR:
+            case self::ROLE_SPECIALTY_CHIEF_EDITOR:
+            case self::ROLE_EDITORIAL_ADVISORY_BOARD:
+            case self::ROLE_GUEST_EDITOR:
+                return 'editor/dashboard';
+                
+            case self::ROLE_REVIEWER:
+                return 'reviewer/dashboard';
+                
+            case self::ROLE_AUTHOR:
+                return 'author/dashboard';
+                
+            default:
+                return 'dashboard';
+        }
+    }
+    
+    /**
+     * Get role-specific menu items for sidebar
+     * @return array
+     */
+    protected function getRoleMenuItems() {
+        $menu = [];
+        
+        if($this->isAdmin()) {
+            $menu[] = [
+                'header' => 'ADMINISTRATION',
+                'items' => [
+                    ['url' => 'userListing', 'icon' => 'fa-users', 'text' => 'User Management'],
+                    ['url' => 'addNew', 'icon' => 'fa-user-plus', 'text' => 'Add User'],
+                    ['url' => 'roleListing', 'icon' => 'fa-tags', 'text' => 'Roles']
+                ]
+            ];
+        }
+        
+        if($this->isAuthor()) {
+            $menu[] = [
+                'header' => 'AUTHOR ZONE',
+                'items' => [
+                    ['url' => 'author/manuscript', 'icon' => 'fa-file-text', 'text' => 'My Submissions'],
+                    ['url' => 'author/manuscript/submit', 'icon' => 'fa-upload', 'text' => 'New Submission']
+                ]
+            ];
+        }
+        
+        if($this->isReviewer()) {
+            $menu[] = [
+                'header' => 'REVIEWER ZONE',
+                'items' => [
+                    ['url' => 'reviewer/assignments', 'icon' => 'fa-tasks', 'text' => 'Review Assignments'],
+                    ['url' => 'reviewer/completed', 'icon' => 'fa-check-circle', 'text' => 'Completed Reviews']
+                ]
+            ];
+        }
+        
+        if($this->isEditor()) {
+            $menu[] = [
+                'header' => 'EDITORIAL ZONE',
+                'items' => [
+                    ['url' => 'editor/pending', 'icon' => 'fa-clock-o', 'text' => 'Pending Manuscripts'],
+                    ['url' => 'editor/all', 'icon' => 'fa-list', 'text' => 'All Manuscripts'],
+                    ['url' => 'editor/assignments', 'icon' => 'fa-users', 'text' => 'Reviewer Assignments']
+                ]
+            ];
+        }
+        
+        // Common menu items for all users
+        $menu[] = [
+            'header' => 'JOURNAL',
+            'items' => [
+                ['url' => 'journal/current-issue', 'icon' => 'fa-book', 'text' => 'Current Issue'],
+                ['url' => 'journal/archive', 'icon' => 'fa-archive', 'text' => 'Archive'],
+                ['url' => 'journal/search', 'icon' => 'fa-search', 'text' => 'Search Articles']
+            ]
+        ];
+        
+        $menu[] = [
+            'header' => 'USER',
+            'items' => [
+                ['url' => 'profile', 'icon' => 'fa-user', 'text' => 'My Profile'],
+                ['url' => 'logout', 'icon' => 'fa-sign-out', 'text' => 'Logout']
+            ]
+        ];
+        
+        return $menu;
     }
 
     /**

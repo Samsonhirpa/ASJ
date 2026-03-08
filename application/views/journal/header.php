@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $title; ?></title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title><?php echo $title; ?> | OJAS</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
+    <!-- Bootstrap 3.3.4 -->
+    <link href="<?php echo base_url(); ?>assets/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- FontAwesome 4.3.0 -->
+    <link href="<?php echo base_url(); ?>assets/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons 2.0.0 -->
+    <link href="<?php echo base_url(); ?>assets/bower_components/Ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="<?php echo base_url(); ?>assets/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Custom CSS for OJAS Public -->
     <style>
         :root {
             --primary-color: #2c5f2d;
@@ -18,194 +24,218 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', 'Source Sans Pro', sans-serif;
             background-color: #f8f9fa;
         }
         
-        .navbar-custom {
-            background-color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        .navbar-ojas {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3e7c40 100%);
+            border: none;
+            border-radius: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .navbar-custom .navbar-brand,
-        .navbar-custom .nav-link {
+        .navbar-ojas .navbar-brand {
             color: white;
+            font-weight: 600;
+            padding: 15px 20px;
         }
         
-        .navbar-custom .nav-link:hover {
+        .navbar-ojas .navbar-brand:hover {
             color: var(--accent-color);
+        }
+        
+        .navbar-ojas .navbar-nav > li > a {
+            color: white;
+            font-weight: 500;
+            padding: 15px 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-ojas .navbar-nav > li > a:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--accent-color);
+        }
+        
+        .navbar-ojas .navbar-nav > .active > a {
+            background: rgba(255,255,255,0.2);
+            color: white;
         }
         
         .journal-header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            text-align: center;
         }
         
         .journal-header h1 {
-            font-size: 2.5rem;
+            font-size: 3em;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 15px;
         }
         
         .journal-header .motto {
-            font-size: 1.2rem;
+            font-size: 1.3em;
             opacity: 0.9;
             font-style: italic;
         }
         
         .footer {
-            background-color: #343a40;
+            background-color: #2c3e50;
             color: white;
-            padding: 3rem 0 2rem;
-            margin-top: 4rem;
+            padding: 40px 0 20px;
+            margin-top: 60px;
         }
         
         .footer a {
-            color: var(--secondary-color);
+            color: var(--accent-color);
             text-decoration: none;
         }
         
         .footer a:hover {
-            color: var(--accent-color);
-        }
-        
-        .article-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-        }
-        
-        .article-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,.15);
-        }
-        
-        .article-meta {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .article-meta i {
-            margin-right: 0.3rem;
+            color: white;
         }
         
         .btn-ojas {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 0.5rem 1.5rem;
+            padding: 10px 25px;
             border-radius: 5px;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
         }
         
         .btn-ojas:hover {
             background-color: var(--secondary-color);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44,95,45,0.3);
         }
         
-        .badge-ojas {
-            background-color: var(--accent-color);
-            color: #333;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
+        .btn-outline-ojas {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 8px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-ojas:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+        
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .auth-buttons {
+            margin-top: 10px;
+        }
+        
+        .auth-buttons .btn {
+            margin: 0 5px;
         }
     </style>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+    
+    <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="<?php echo base_url('journal'); ?>">
-                <img src="<?php echo base_url('assets/images/logo200.jpg'); ?>" alt="IQQO" height="40" class="d-inline-block align-top">
-                <span class="ms-2">OJAS</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+
+<!-- Navigation -->
+<nav class="navbar navbar-ojas">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('journal'); ?>">Home</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown">
-                            About
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/about'); ?>">About the Journal</a></li>
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/aims_scope'); ?>">Aims & Scope</a></li>
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/editorial_board'); ?>">Editorial Board</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="issuesDropdown" role="button" data-bs-toggle="dropdown">
-                            Issues
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/current_issue'); ?>">Current Issue</a></li>
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/archive'); ?>">Archive</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="authorsDropdown" role="button" data-bs-toggle="dropdown">
-                            For Authors
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?php echo base_url('journal/author_guidelines'); ?>">Author Guidelines</a></li>
-                            <li><a class="dropdown-item" href="<?php echo base_url('author/manuscript/submit'); ?>">Submit Manuscript</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('journal/reviewer_guidelines'); ?>">For Reviewers</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('journal/search'); ?>">
-                            <i class="fas fa-search"></i> Search
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('journal/contact'); ?>">Contact</a>
-                    </li>
-                    <?php if($this->session->userdata('logged_in')): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> <?php echo $this->session->userdata('name'); ?>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="<?php echo base_url('dashboard'); ?>">Dashboard</a></li>
-                                <li><a class="dropdown-item" href="<?php echo base_url('auth/logout'); ?>">Logout</a></li>
-                            </ul>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo base_url('Login'); ?>">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo base_url('Login'); ?>">Register</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
+            <a class="navbar-brand" href="<?php echo base_url(); ?>journal">
+                <i class="fa fa-leaf"></i> OJAS | IQQO
+            </a>
         </div>
-    </nav>
-    
-    <!-- Page Header (if needed) -->
-    <?php if(isset($show_header) && $show_header !== false): ?>
-    <div class="journal-header">
-        <div class="container text-center">
-            <h1>Oromia Journal of Agricultural Sciences</h1>
-            <p class="motto">"Connecting Agriculture and Science for a Sustainable Future"</p>
-            <p class="mt-3">ISSN: XXXXX-XXXX | Open Access | Peer-Reviewed</p>
+
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="<?= (uri_string() == 'journal') ? 'active' : '' ?>">
+                    <a href="<?= base_url('journal') ?>">Home</a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="<?= base_url('journal/about') ?>">About the Journal</a></li>
+                        <li><a href="<?= base_url('journal/aims-scope') ?>">Aims & Scope</a></li>
+                        <li><a href="<?= base_url('journal/editorial-board') ?>">Editorial Board</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Issues <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="<?= base_url('journal/current-issue') ?>">Current Issue</a></li>
+                        <li><a href="<?= base_url('journal/archive') ?>">Archive</a></li>
+                    </ul>
+                </li>
+                <li><a href="<?= base_url('journal/author-guidelines') ?>">For Authors</a></li>
+                <li><a href="<?= base_url('journal/reviewer-guidelines') ?>">For Reviewers</a></li>
+                <li><a href="<?= base_url('journal/search') ?>"><i class="fa fa-search"></i> Search</a></li>
+                <li><a href="<?= base_url('journal/contact') ?>">Contact</a></li>
+            </ul>
+            
+            <ul class="nav navbar-nav navbar-right">
+                <?php if($this->session->userdata('isLoggedIn')): ?>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> <?= $this->session->userdata('name') ?> <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="<?= base_url('dashboard') ?>"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+                        <li><a href="<?= base_url('profile') ?>"><i class="fa fa-user-circle"></i> Profile</a></li>
+                        <li class="divider"></li>
+                        <li><a href="<?= base_url('logout') ?>"><i class="fa fa-sign-out"></i> Logout</a></li>
+                    </ul>
+                </li>
+                <?php else: ?>
+                <li><a href="<?= base_url('login') ?>" class="btn-outline-ojas" style="padding: 8px 20px; margin-top: 8px;"><i class="fa fa-sign-in"></i> Login</a></li>
+                <li><a href="<?= base_url('register') ?>" class="btn-ojas" style="padding: 8px 20px; margin-top: 8px; margin-left: 5px;"><i class="fa fa-user-plus"></i> Register</a></li>
+                <?php endif; ?>
+            </ul>
         </div>
     </div>
-    <?php endif; ?>
-    
-    <!-- Main Content -->
-    <div class="container min-vh-100">
+</nav>
+
+<!-- Journal Header -->
+<div class="journal-header">
+    <div class="container">
+        <h1>Oromia Journal of Agricultural Sciences</h1>
+        <p class="motto">"Connecting Agriculture and Science for a Sustainable Future"</p>
+        <p>ISSN: XXXXX-XXXX | Open Access | Peer-Reviewed</p>
+        
+        <div class="auth-buttons">
+            <?php if(!$this->session->userdata('isLoggedIn')): ?>
+            <a href="<?= base_url('login') ?>" class="btn btn-lg btn-outline-ojas">Author Login</a>
+            <a href="<?= base_url('register') ?>" class="btn btn-lg btn-ojas">Submit Manuscript</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Container -->
+<div class="container">

@@ -1,4 +1,5 @@
-<?php if(!defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+if(!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Class : Login (LoginController)
@@ -10,12 +11,27 @@
 class Login extends CI_Controller
 {
     /**
+     * Role constants
+     */
+    const ROLE_SYSTEM_ADMIN = 1;
+    const ROLE_EDITOR_IN_CHIEF = 13;
+    const ROLE_ASSOCIATE_EDITOR_IN_CHIEF = 14;
+    const ROLE_MANAGING_EDITOR = 15;
+    const ROLE_ASSOCIATE_EDITOR = 16;
+    const ROLE_SPECIALTY_CHIEF_EDITOR = 17;
+    const ROLE_EDITORIAL_ADVISORY_BOARD = 18;
+    const ROLE_REVIEWER = 19;
+    const ROLE_GUEST_EDITOR = 20;
+    const ROLE_AUTHOR = 21;
+
+    /**
      * This is default constructor of the class
      */
     public function __construct()
     {
         parent::__construct();
         $this->load->model('login_model');
+        $this->load->model('user_model');
     }
 
     /**
@@ -39,10 +55,48 @@ class Login extends CI_Controller
         }
         else
         {
-            redirect('/dashboard');
+            // Redirect to role-appropriate dashboard
+            $this->redirectToDashboard();
         }
     }
     
+    /**
+     * Redirect user to their role-specific dashboard
+     */
+    private function redirectToDashboard()
+    {
+        $roleId = $this->session->userdata('role');
+        $isAdmin = $this->session->userdata('isAdmin');
+        
+        // System Admin (isAdmin = 1)
+        if($isAdmin == 1) {
+            redirect('/dashboard');
+        }
+        
+        // Role-based redirection
+        switch($roleId) {
+            case self::ROLE_AUTHOR:
+                redirect('/author/dashboard');
+                break;
+                
+            case self::ROLE_REVIEWER:
+                redirect('/reviewer/dashboard');
+                break;
+                
+            case self::ROLE_EDITOR_IN_CHIEF:
+            case self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF:
+            case self::ROLE_MANAGING_EDITOR:
+            case self::ROLE_ASSOCIATE_EDITOR:
+            case self::ROLE_SPECIALTY_CHIEF_EDITOR:
+            case self::ROLE_EDITORIAL_ADVISORY_BOARD:
+            case self::ROLE_GUEST_EDITOR:
+                redirect('/editor/dashboard');
+                break;
+                
+            default:
+                redirect('/dashboard');
+        }
+    }
     
     /**
      * This function used to logged in user
@@ -64,8 +118,6 @@ class Login extends CI_Controller
             $password = $this->input->post('password');
             
             $result = $this->login_model->loginMe($email, $password);
-
-            //pre($result); die;
             
             if (!empty($result))
             {
@@ -76,28 +128,42 @@ class Login extends CI_Controller
                 }
 
                 $lastLogin = $this->login_model->lastLoginInfo($result->userId);
-
                 $accessInfo = $this->accessInfo($result->roleId);
+                
+                // Get user profile image
+                $userInfo = $this->user_model->getUserInfo($result->userId);
+                $profileImage = !empty($userInfo) ? $userInfo->profile_image : '';
 
-                $sessionArray = array('userId'=>$result->userId,
-                                        'role'=>$result->roleId,
-                                        'roleText'=>$result->role,
-                                        'name'=>$result->name,
-                                        'isAdmin'=>$result->isAdmin,
-                                        'accessInfo'=>$accessInfo,
-                                        'lastLogin'=> empty($lastLogin->createdDtm) ? '' : $lastLogin->createdDtm,
-                                        'isLoggedIn' => TRUE
-                                );
+                $sessionArray = array(
+                    'userId' => $result->userId,
+                    'role' => $result->roleId,
+                    'roleText' => $result->role,
+                    'name' => $result->name,
+                    'isAdmin' => $result->isAdmin,
+                    'accessInfo' => $accessInfo,
+                    'lastLogin' => empty($lastLogin->createdDtm) ? '' : $lastLogin->createdDtm,
+                    'profile_image' => $profileImage,
+                    'isLoggedIn' => TRUE
+                );
 
                 $this->session->set_userdata($sessionArray);
 
-                unset($sessionArray['userId'], $sessionArray['isLoggedIn'], $sessionArray['lastLogin'], $sessionArray['accessInfo']);
-
-                $loginInfo = array("userId"=>$result->userId, "sessionData" => json_encode($sessionArray), "machineIp"=>$_SERVER['REMOTE_ADDR'], "userAgent"=>getBrowserAgent(), "agentString"=>$this->agent->agent_string(), "platform"=>$this->agent->platform());
+                // Log login info
+                unset($sessionArray['userId'], $sessionArray['isLoggedIn'], $sessionArray['lastLogin'], $sessionArray['accessInfo'], $sessionArray['profile_image']);
+                
+                $loginInfo = array(
+                    "userId" => $result->userId, 
+                    "sessionData" => json_encode($sessionArray), 
+                    "machineIp" => $_SERVER['REMOTE_ADDR'], 
+                    "userAgent" => getBrowserAgent(), 
+                    "agentString" => $this->agent->agent_string(), 
+                    "platform" => $this->agent->platform()
+                );
 
                 $this->login_model->lastLogin($loginInfo);
                 
-                redirect('/dashboard');
+                // Redirect to role-appropriate dashboard
+                $this->redirectToDashboard();
             }
             else
             {
@@ -120,7 +186,7 @@ class Login extends CI_Controller
         }
         else
         {
-            redirect('/dashboard');
+            $this->redirectToDashboard();
         }
     }
     
@@ -284,5 +350,3 @@ class Login extends CI_Controller
         return $finalMatrixArray;
     }
 }
-
-?>

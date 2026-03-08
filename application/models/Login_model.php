@@ -1,4 +1,5 @@
-<?php if(!defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+if(!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Class : Login_model (Login Model)
@@ -7,7 +8,7 @@
  * @version : 1.1
  * @since : 15 November 2016
  */
-class Login_model extends CI_Model
+class Login_model extends CI_Model  // Class name MUST be Login_model, not Login
 {
     
     /**
@@ -156,5 +157,4 @@ class Login_model extends CI_Model
         return $result;
     }
 }
-
 ?>

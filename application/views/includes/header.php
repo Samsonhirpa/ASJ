@@ -343,13 +343,16 @@
             }
         }
         
-        .sidebar-menu > li:nth-child(1) { animation-delay: 0.1s; }
-        .sidebar-menu > li:nth-child(2) { animation-delay: 0.2s; }
-        .sidebar-menu > li:nth-child(3) { animation-delay: 0.3s; }
-        .sidebar-menu > li:nth-child(4) { animation-delay: 0.4s; }
-        .sidebar-menu > li:nth-child(5) { animation-delay: 0.5s; }
-        .sidebar-menu > li:nth-child(6) { animation-delay: 0.6s; }
-        .sidebar-menu > li:nth-child(7) { animation-delay: 0.7s; }
+        /* Active menu highlighting */
+        .sidebar-menu > li.active > a {
+            background: rgba(44,95,45,0.3);
+            border-left-color: var(--accent-color);
+        }
+        
+        .sidebar-menu .treeview-menu > li.active > a {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
     </style>
     
     <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
@@ -405,7 +408,7 @@
                 <ul class="dropdown-menu">
                   <li class="header"> 
                     <i class="fa fa-history"></i> 
-                    <?= empty($last_login) ? "First Time Login" : $last_login; ?>
+                    <?= empty($last_login) ? "First Time Login" : date('d M Y H:i', strtotime($last_login)); ?>
                   </li>
                 </ul>
               </li>
@@ -471,109 +474,199 @@
             </div>
           </div>
           
-          <!-- Sidebar Menu -->
+          <!-- Search form -->
+          <form action="<?php echo base_url(); ?>journal/search" method="get" class="sidebar-form">
+            <div class="input-group">
+              <input type="text" name="q" class="form-control" placeholder="Search articles...">
+              <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat">
+                  <i class="fa fa-search"></i>
+                </button>
+              </span>
+            </div>
+          </form>
+          
+          <!-- ========== SIDEBAR MENU - ROLE BASED ========== -->
           <ul class="sidebar-menu" data-widget="tree">
             <li class="header">MAIN NAVIGATION</li>
             
-            <!-- Dashboard -->
-            <li class="<?php echo (uri_string() == 'dashboard') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>dashboard">
+            <!-- Dashboard - Everyone sees this -->
+            <li class="<?php echo (uri_string() == 'dashboard' || uri_string() == 'author/dashboard' || uri_string() == 'reviewer/dashboard' || uri_string() == 'editor/dashboard') ? 'active' : ''; ?>">
+              <a href="<?php 
+                // Role-based dashboard URL
+                if($role == 21) echo base_url('author/dashboard');
+                elseif($role == 19) echo base_url('reviewer/dashboard');
+                elseif(in_array($role, [13,14,15,16,17,18,20])) echo base_url('editor/dashboard');
+                else echo base_url('dashboard');
+              ?>">
                 <i class="fa fa-dashboard"></i> 
                 <span>Dashboard</span>
-                <span class="pull-right-container">
-                  <small class="label pull-right bg-green">Home</small>
-                </span>
               </a>
             </li>
             
-            <!-- User Management (Admin only) -->
+            <!-- ========== SYSTEM ADMIN MENU (is_admin == 1) ========== -->
             <?php if($is_admin == 1): ?>
-            <li class="treeview <?php echo (uri_string() == 'userListing' || uri_string() == 'addNew' || uri_string() == 'roles/roleListing') ? 'active' : ''; ?>">
+            <li class="header">ADMINISTRATION</li>
+            
+            <li class="treeview <?php echo (uri_string() == 'userListing' || uri_string() == 'addNew' || uri_string() == 'roleListing') ? 'active' : ''; ?>">
               <a href="#">
                 <i class="fa fa-users"></i> 
                 <span>User Management</span>
-                <span class="pull-right-container">
-                  <i class="fa fa-angle-left pull-right"></i>
-                </span>
+                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
               </a>
               <ul class="treeview-menu">
                 <li class="<?php echo (uri_string() == 'userListing') ? 'active' : ''; ?>">
-                  <a href="<?php echo base_url(); ?>userListing">
-                    <i class="fa fa-list"></i> All Users
-                  </a>
+                  <a href="<?php echo base_url(); ?>userListing"><i class="fa fa-list"></i> All Users</a>
                 </li>
                 <li class="<?php echo (uri_string() == 'addNew') ? 'active' : ''; ?>">
-                  <a href="<?php echo base_url(); ?>addNew">
-                    <i class="fa fa-plus-circle"></i> Add New User
-                  </a>
+                  <a href="<?php echo base_url(); ?>addNew"><i class="fa fa-plus-circle"></i> Add New User</a>
                 </li>
-                <li class="<?php echo (uri_string() == 'roles/roleListing') ? 'active' : ''; ?>">
-                  <a href="<?php echo base_url(); ?>roles/roleListing">
-                    <i class="fa fa-user-circle-o"></i> Roles
-                  </a>
+                <li class="<?php echo (uri_string() == 'roleListing') ? 'active' : ''; ?>">
+                  <a href="<?php echo base_url(); ?>roleListing"><i class="fa fa-tags"></i> Roles & Permissions</a>
                 </li>
               </ul>
             </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>admin/settings">
+                <i class="fa fa-cogs"></i> <span>System Settings</span>
+              </a>
+            </li>
             <?php endif; ?>
             
-            <!-- Journal Management Section -->
-            <li class="header">JOURNAL MANAGEMENT</li>
+            <!-- ========== AUTHOR MENU (role == 21) ========== -->
+            <?php if($role == 21): ?>
+            <li class="header">AUTHOR ZONE</li>
             
-            <!-- Manuscripts -->
-            <li class="treeview">
-              <a href="#">
+            <li class="<?php echo (uri_string() == 'author/manuscript') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>author/manuscript">
                 <i class="fa fa-file-text"></i> 
-                <span>Manuscripts</span>
-                <span class="pull-right-container">
-                  <i class="fa fa-angle-left pull-right"></i>
-                </span>
+                <span>My Submissions</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'author/manuscript/submit') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>author/manuscript/submit">
+                <i class="fa fa-upload"></i> 
+                <span>New Submission</span>
+              </a>
+            </li>
+            <?php endif; ?>
+            
+            <!-- ========== REVIEWER MENU (role == 19) ========== -->
+            <?php if($role == 19): ?>
+            <li class="header">REVIEWER ZONE</li>
+            
+            <li class="<?php echo (uri_string() == 'reviewer/assignments') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>reviewer/assignments">
+                <i class="fa fa-tasks"></i> 
+                <span>Review Assignments</span>
+              </a>
+            </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>reviewer/guidelines">
+                <i class="fa fa-book"></i> 
+                <span>Review Guidelines</span>
+              </a>
+            </li>
+            <?php endif; ?>
+            
+            <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
+            <?php if(in_array($role, [13,14,15,16,17,18,20])): ?>
+            <li class="header">EDITORIAL ZONE</li>
+            
+            <li class="<?php echo (uri_string() == 'editor/pending') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/pending">
+                <i class="fa fa-clock-o"></i> 
+                <span>Pending Manuscripts</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'editor/all') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/all">
+                <i class="fa fa-list"></i> 
+                <span>All Manuscripts</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/assignments">
+                <i class="fa fa-users"></i> 
+                <span>Reviewer Assignments</span>
+              </a>
+            </li>
+            
+            <!-- Editor-in-Chief only menus -->
+            <?php if($role == 13): ?>
+            <li class="<?php echo (uri_string() == 'editor/board') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/board">
+                <i class="fa fa-address-card"></i> 
+                <span>Editorial Board</span>
+              </a>
+            </li>
+            <li>
+              <a href="<?php echo base_url(); ?>editor/ethics">
+                <i class="fa fa-gavel"></i> 
+                <span>Ethics Cases</span>
+              </a>
+            </li>
+            <?php endif; ?>
+            
+            <!-- Guest Editor only menus -->
+            <?php if($role == 20): ?>
+            <li class="<?php echo (uri_string() == 'editor/special-issues') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/special-issues">
+                <i class="fa fa-star"></i> 
+                <span>Special Issues</span>
+              </a>
+            </li>
+            <?php endif; ?>
+            <?php endif; ?>
+            
+            <!-- ========== JOURNAL MANAGEMENT (Common for all) ========== -->
+            <li class="header">JOURNAL</li>
+            
+            <li class="<?php echo (uri_string() == 'journal/current-issue') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>journal/current-issue">
+                <i class="fa fa-book"></i> 
+                <span>Current Issue</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'journal/archive') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>journal/archive">
+                <i class="fa fa-archive"></i> 
+                <span>All Issues</span>
+              </a>
+            </li>
+            
+            <li class="treeview <?php echo (uri_string() == 'journal/about' || uri_string() == 'journal/aims-scope' || uri_string() == 'journal/editorial-board') ? 'active' : ''; ?>">
+              <a href="#">
+                <i class="fa fa-info-circle"></i> 
+                <span>About Journal</span>
+                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
               </a>
               <ul class="treeview-menu">
-                <li><a href="<?php echo base_url(); ?>author/manuscripts"><i class="fa fa-upload"></i> My Submissions</a></li>
-                <li><a href="<?php echo base_url(); ?>author/submit"><i class="fa fa-pencil"></i> New Submission</a></li>
-                <?php if($role_text == 'Editor-in-Chief' || $role_text == 'Associate Editor'): ?>
-                <li><a href="<?php echo base_url(); ?>editor/pending"><i class="fa fa-clock-o"></i> Pending Reviews</a></li>
-                <li><a href="<?php echo base_url(); ?>editor/assignments"><i class="fa fa-tasks"></i> Assignments</a></li>
-                <?php endif; ?>
+                <li><a href="<?php echo base_url(); ?>journal/about"><i class="fa fa-info"></i> About OJAS</a></li>
+                <li><a href="<?php echo base_url(); ?>journal/aims-scope"><i class="fa fa-bullseye"></i> Aims & Scope</a></li>
+                <li><a href="<?php echo base_url(); ?>journal/editorial-board"><i class="fa fa-users"></i> Editorial Board</a></li>
+                <li><a href="<?php echo base_url(); ?>journal/author-guidelines"><i class="fa fa-pencil"></i> Author Guidelines</a></li>
+                <li><a href="<?php echo base_url(); ?>journal/reviewer-guidelines"><i class="fa fa-eye"></i> Reviewer Guidelines</a></li>
               </ul>
             </li>
             
-            <!-- Reviews (for Reviewers) -->
-            <?php if($role_text == 'Reviewer'): ?>
-            <li>
-              <a href="<?php echo base_url(); ?>reviewer/assignments">
-                <i class="fa fa-check-square-o"></i> 
-                <span>My Reviews</span>
-                <span class="pull-right-container">
-                  <small class="label pull-right bg-yellow">Pending</small>
-                </span>
-              </a>
-            </li>
-            <?php endif; ?>
-            
-            <!-- Issues -->
-            <li>
-              <a href="<?php echo base_url(); ?>journal/archive">
-                <i class="fa fa-book"></i> 
-                <span>Journal Issues</span>
-                <span class="pull-right-container">
-                  <small class="label pull-right bg-primary">Archive</small>
-                </span>
-              </a>
-            </li>
-            
-            <!-- Booking (if access) -->
-            <?php if($is_admin == 1 || (array_key_exists('Booking', $access_info) && ($access_info['Booking']['list'] == 1 || $access_info['Booking']['total_access'] == 1))): ?>
+            <!-- ========== BOOKING & TASKS (If access) ========== -->
+            <?php if($is_admin == 1 || (isset($access_info['Booking']) && ($access_info['Booking']['list'] == 1 || $access_info['Booking']['total_access'] == 1))): ?>
             <li class="<?php echo (uri_string() == 'booking') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>booking">
-                <i class="fa fa-anchor"></i> 
+                <i class="fa fa-calendar"></i> 
                 <span>Booking</span>
               </a>
             </li>
             <?php endif; ?>
             
-            <!-- Tasks (if access) -->
-            <?php if($is_admin == 1 || (array_key_exists('Task', $access_info) && ($access_info['Task']['list'] == 1 || $access_info['Task']['total_access'] == 1))): ?>
+            <?php if($is_admin == 1 || (isset($access_info['Task']) && ($access_info['Task']['list'] == 1 || $access_info['Task']['total_access'] == 1))): ?>
             <li class="<?php echo (uri_string() == 'task') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>task">
                 <i class="fa fa-tasks"></i> 
@@ -582,16 +675,14 @@
             </li>
             <?php endif; ?>
             
-            <!-- Reports Section -->
+            <!-- ========== REPORTS SECTION ========== -->
             <li class="header">REPORTS</li>
             
             <li class="treeview">
               <a href="#">
                 <i class="fa fa-bar-chart"></i> 
                 <span>Analytics</span>
-                <span class="pull-right-container">
-                  <i class="fa fa-angle-left pull-right"></i>
-                </span>
+                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
               </a>
               <ul class="treeview-menu">
                 <li><a href="#"><i class="fa fa-file-pdf-o"></i> Annual Report</a></li>
@@ -600,13 +691,20 @@
               </ul>
             </li>
             
-            <!-- System Section -->
-            <li class="header">SYSTEM</li>
+            <!-- ========== USER SETTINGS ========== -->
+            <li class="header">USER</li>
             
             <li class="<?php echo (uri_string() == 'profile') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>profile">
-                <i class="fa fa-cog"></i> 
-                <span>Settings</span>
+                <i class="fa fa-user-circle"></i> 
+                <span>My Profile</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'changePassword') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>changePassword">
+                <i class="fa fa-key"></i> 
+                <span>Change Password</span>
               </a>
             </li>
             
@@ -617,6 +715,22 @@
               </a>
             </li>
             
+            <!-- Help & Support -->
+            <li class="header">SUPPORT</li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>journal/contact">
+                <i class="fa fa-envelope"></i> 
+                <span>Contact Us</span>
+              </a>
+            </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>faq">
+                <i class="fa fa-question-circle"></i> 
+                <span>FAQ</span>
+              </a>
+            </li>
           </ul>
         </section>
         <!-- /.sidebar -->

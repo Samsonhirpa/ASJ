@@ -1,28 +1,32 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Journal extends CI_Controller {
-    
+class Journal extends CI_Controller  // Don't extend BaseController for public pages
+{
     public function __construct() {
         parent::__construct();
-        $this->load->helper('url');
-        $this->load->helper('journal'); // Load journal helper
-        // Load models conditionally - only when needed
+        $this->load->model('journal_model');
+        $this->load->model('issue_model');
+        $this->load->helper('journal');
     }
     
+    /**
+     * Journal Homepage - PUBLIC ACCESS
+     */
     public function index() {
-        $this->load->model('Journal_model');
-        $this->load->model('Issue_model');
-        
         $data['title'] = 'Oromia Journal of Agricultural Sciences';
-        $data['latest_issue'] = $this->Journal_model->get_latest_issue();
-        $data['recent_articles'] = $this->Journal_model->get_published_articles(5);
+        $data['latest_issue'] = $this->journal_model->get_latest_issue();
+        $data['recent_articles'] = $this->journal_model->get_published_articles(5);
         
+        // No login check - public access
         $this->load->view('journal/header', $data);
         $this->load->view('journal/home', $data);
-        $this->load->view('journal/footer');
+      $this->load->view('journal/footer');
     }
     
+    /**
+     * About the Journal - PUBLIC ACCESS
+     */
     public function about() {
         $data['title'] = 'About - OJAS';
         $this->load->view('journal/header', $data);
@@ -30,6 +34,9 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Aims & Scope - PUBLIC ACCESS
+     */
     public function aims_scope() {
         $data['title'] = 'Aims & Scope - OJAS';
         $this->load->view('journal/header', $data);
@@ -37,20 +44,25 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Editorial Board - PUBLIC ACCESS
+     */
     public function editorial_board() {
         $data['title'] = 'Editorial Board - OJAS';
-        $this->load->model('User_model');
-        $data['board_members'] = $this->User_model->get_editorial_board();
+        $this->load->model('user_model');
+        $data['board_members'] = $this->user_model->get_editorial_board();
         
         $this->load->view('journal/header', $data);
         $this->load->view('journal/editorial_board', $data);
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Current Issue - PUBLIC ACCESS
+     */
     public function current_issue() {
-        $this->load->model('Journal_model');
         $data['title'] = 'Current Issue - OJAS';
-        $data['issue'] = $this->Journal_model->get_latest_issue();
+        $data['issue'] = $this->journal_model->get_latest_issue();
         
         if(!$data['issue']) {
             show_404();
@@ -61,19 +73,25 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Archive (All Issues) - PUBLIC ACCESS
+     */
     public function archive() {
-        $this->load->model('Issue_model');
         $data['title'] = 'Archive - OJAS';
-        $data['issues'] = $this->Issue_model->get_issues(true);
+        $this->load->model('issue_model');
+        $data['issues'] = $this->issue_model->get_issues(true); // published only
         
         $this->load->view('journal/header', $data);
         $this->load->view('journal/archive', $data);
         $this->load->view('journal/footer');
     }
     
+    /**
+     * View Single Issue - PUBLIC ACCESS
+     */
     public function issue($issueId) {
-        $this->load->model('Issue_model');
-        $data['issue'] = $this->Issue_model->get_issue_with_articles($issueId);
+        $this->load->model('issue_model');
+        $data['issue'] = $this->issue_model->get_issue_with_articles($issueId);
         
         if(!$data['issue'] || $data['issue']->status != 'published') {
             show_404();
@@ -83,12 +101,14 @@ class Journal extends CI_Controller {
         
         $this->load->view('journal/header', $data);
         $this->load->view('journal/issue', $data);
-        $this->load->view('journal/footer');
+       $this->load->view('journal/footer');
     }
     
+    /**
+     * View Article - PUBLIC ACCESS
+     */
     public function article($identifier) {
-        $this->load->model('Journal_model');
-        $data['article'] = $this->Journal_model->get_published_article($identifier);
+        $data['article'] = $this->journal_model->get_published_article($identifier);
         
         if(!$data['article']) {
             show_404();
@@ -101,8 +121,10 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Search - PUBLIC ACCESS
+     */
     public function search() {
-        $this->load->model('Journal_model');
         $keyword = $this->input->get('q');
         $data['title'] = 'Search Results - OJAS';
         $data['keyword'] = $keyword;
@@ -112,7 +134,7 @@ class Journal extends CI_Controller {
                 'year' => $this->input->get('year'),
                 'articleType' => $this->input->get('type')
             );
-            $data['results'] = $this->Journal_model->search_articles($keyword, $filters);
+            $data['results'] = $this->journal_model->search_articles($keyword, $filters);
         } else {
             $data['results'] = array();
         }
@@ -137,6 +159,9 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Guidelines for Authors - PUBLIC ACCESS
+     */
     public function author_guidelines() {
         $data['title'] = 'Author Guidelines - OJAS';
         $this->load->view('journal/header', $data);
@@ -144,6 +169,9 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Guidelines for Reviewers - PUBLIC ACCESS
+     */
     public function reviewer_guidelines() {
         $data['title'] = 'Reviewer Guidelines - OJAS';
         $this->load->view('journal/header', $data);
@@ -151,6 +179,9 @@ class Journal extends CI_Controller {
         $this->load->view('journal/footer');
     }
     
+    /**
+     * Contact Us - PUBLIC ACCESS
+     */
     public function contact() {
         $data['title'] = 'Contact Us - OJAS';
         
@@ -161,8 +192,19 @@ class Journal extends CI_Controller {
             $this->form_validation->set_rules('message', 'Message', 'required');
             
             if($this->form_validation->run()) {
-                // For now, just show success message
-                $this->session->set_flashdata('success', 'Your message has been sent. Thank you!');
+                // Send email (configure your email settings)
+                $this->load->library('email');
+                $this->email->from($this->input->post('email'), $this->input->post('name'));
+                $this->email->to('ojas@iqqo.gov.et');
+                $this->email->subject('Contact Form: ' . $this->input->post('subject'));
+                $this->email->message($this->input->post('message'));
+                
+                if($this->email->send()) {
+                    $this->session->set_flashdata('success', 'Your message has been sent. Thank you!');
+                } else {
+                    $this->session->set_flashdata('error', 'Failed to send message. Please try again.');
+                }
+                
                 redirect('journal/contact');
             }
         }
