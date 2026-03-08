@@ -39,6 +39,17 @@
             color: white;
             font-weight: 600;
             padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.4);
         }
         
         .navbar-ojas .navbar-brand:hover {
@@ -255,7 +266,8 @@ unset($queryParams['lang']);
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="<?php echo base_url(); ?>journal">
-                <i class="fa fa-leaf"></i> OJAS | IQQO
+                <img src="<?= base_url('assets/images/logo.jpg') ?>" alt="OJAS Logo" class="navbar-logo">
+                <span>OJAS | IQQO</span>
             </a>
         </div>
 
@@ -328,6 +340,7 @@ unset($queryParams['lang']);
         <h1>Oromia Journal of Agricultural Sciences</h1>
         <p class="motto"><?= $text['motto'] ?></p>
         <p>ISSN: XXXXX-XXXX | Open Access | Peer-Reviewed</p>
+        <img src="<?= base_url('assets/images/logo.jpg') ?>" alt="OJAS Official Logo" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); margin-top: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
         
         <div class="auth-buttons">
             <?php if(!$this->session->userdata('isLoggedIn')): ?>
