@@ -172,6 +172,15 @@ $route['editor/assign-reviewers/(:num)'] = 'editor/manuscript/assignReviewers/$1
 $route['editor/decision/(:num)'] = 'editor/manuscript/makeDecision/$1';
 $route['editor/all-manuscripts'] = 'editor/manuscript/index';
 
+$route['editor/all'] = 'editor/manuscript/index';
+$route['editor/assignments'] = 'editor/manuscript/index';
+$route['editor/screening/(:num)'] = 'editor/manuscript/screening/$1';
+$route['editor/plagiarism/(:num)'] = 'editor/manuscript/plagiarism/$1';
+$route['editor/board'] = 'editor/chief/board';
+$route['editor/ethics'] = 'editor/chief/ethics';
+$route['editor/policies'] = 'editor/chief/policies';
+$route['editor/override-decision/(:num)'] = 'editor/chief/overrideDecision/$1';
+
 // Issue Management Routes (Coming Soon)
 $route['admin/issues'] = 'admin/issue/index';
 $route['admin/issues/create'] = 'admin/issue/create';
