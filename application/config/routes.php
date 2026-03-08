@@ -157,6 +157,8 @@ $route['editor/pending'] = 'editor/manuscript/pending';
 // Reviewer Module Routes (Coming Soon)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';
 $route['reviewer/assignments'] = 'reviewer/assignment/index';
+$route['reviewer/completed'] = 'reviewer/assignment/completed';
+$route['reviewer/dashboard/reminders'] = 'reviewer/dashboard/reminders';
 $route['reviewer/assignment/(:num)'] = 'reviewer/assignment/view/$1';
 $route['reviewer/assignment/accept/(:num)'] = 'reviewer/assignment/accept/$1';
 $route['reviewer/assignment/decline/(:num)'] = 'reviewer/assignment/decline/$1';
