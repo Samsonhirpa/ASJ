@@ -169,43 +169,18 @@ class Editor_model extends CI_Model
     public function getReviewProgressList()
     {
         $this->db->select('
-            m.manuscriptId,
-            m.manuscriptNumber,
-            m.title as manuscriptTitle,
-            GROUP_CONCAT(DISTINCT u.name ORDER BY u.name SEPARATOR ", ") as reviewerNames,
-            GROUP_CONCAT(DISTINCT ra.status ORDER BY ra.status SEPARATOR ", ") as assignmentStatus,
-            GROUP_CONCAT(DISTINCT COALESCE(ra.recommendationDecision, "pending") ORDER BY COALESCE(ra.recommendationDecision, "pending") SEPARATOR ", ") as recommendation,
-            GROUP_CONCAT(DISTINCT COALESCE(ra.editorReviewApprovalStatus, "pending") ORDER BY COALESCE(ra.editorReviewApprovalStatus, "pending") SEPARATOR ", ") as editorApproval,
-            MIN(ra.reviewDueDate) as reviewDueDate
-        ', false);
-        $this->db->from('tbl_manuscripts m');
-        $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
-        $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
-        $this->db->where('m.isDeleted', 0);
-        $this->db->where('ra.assignmentId IS NOT NULL', null, false);
-        $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title']);
-        $this->db->order_by('MAX(ra.assignedDate)', 'DESC', false);
-        return $this->db->get()->result();
-    }
-
-    public function getReviewProgressDetails($manuscriptId)
-    {
-        $this->db->select('
             ra.*,
             u.name as reviewerName,
             u.email as reviewerEmail,
             m.manuscriptNumber,
-            m.title as manuscriptTitle,
-            m.submittedBy as authorId,
-            m.status as manuscriptStatus
+            m.title as manuscriptTitle
         ');
         $this->db->from('tbl_reviewer_assignments ra');
         $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
         $this->db->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId', 'left');
-        $this->db->where('ra.manuscriptId', $manuscriptId);
         $this->db->where('ra.isDeleted', 0);
         $this->db->where('m.isDeleted', 0);
-        $this->db->order_by('ra.assignedDate', 'ASC');
+        $this->db->order_by('ra.assignedDate', 'DESC');
         return $this->db->get()->result();
     }
 
