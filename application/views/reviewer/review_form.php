@@ -33,12 +33,13 @@
                             <div class="form-group">
                                 <label>Recommendation</label>
                                 <select name="recommendationDecision" class="form-control" required>
-                                    <option value="">Select Recommendation</option>
+                                    <option value="">Select Recommendation (Standard)</option>
                                     <option value="accept">Accept</option>
-                                    <option value="minor_revision">Minor Revision</option>
-                                    <option value="major_revision">Major Revision</option>
+                                    <option value="minor_review">Minor Review</option>
+                                    <option value="major_review">Major Review</option>
                                     <option value="reject">Reject</option>
                                 </select>
+                                <p class="help-block">Use one of the standard outcomes: accept, reject, minor review, or major review.</p>
                             </div>
 
                             <div class="form-group">

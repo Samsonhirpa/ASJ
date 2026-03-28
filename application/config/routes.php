@@ -176,6 +176,7 @@ $route['editor/all'] = 'editor/manuscript/index';
 $route['editor/assignments'] = 'editor/manuscript/index';
 $route['editor/screening/(:num)'] = 'editor/manuscript/screening/$1';
 $route['editor/plagiarism/(:num)'] = 'editor/manuscript/plagiarism/$1';
+$route['editor/review-approval/(:num)/(:num)'] = 'editor/manuscript/approveReview/$1/$2';
 $route['editor/board'] = 'editor/chief/board';
 $route['editor/ethics'] = 'editor/chief/ethics';
 $route['editor/policies'] = 'editor/chief/policies';

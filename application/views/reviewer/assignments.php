@@ -13,13 +13,24 @@
                                 <td><?= $item->manuscriptNumber ?></td>
                                 <td><?= html_escape(strlen($item->title) > 80 ? substr($item->title,0,80).'...' : $item->title) ?></td>
                                 <td><?= $item->reviewDueDate ? date('d M Y', strtotime($item->reviewDueDate)) : '-' ?></td>
-                                <td><span class="label label-<?= $item->responseStatus === 'accepted' ? 'success' : ($item->responseStatus === 'declined' ? 'danger' : 'warning') ?>"><?= ucfirst($item->responseStatus) ?></span></td>
+                                <td>
+                                    <span class="label label-<?= $item->responseStatus === 'accepted' ? 'success' : ($item->responseStatus === 'declined' ? 'danger' : 'warning') ?>"><?= ucfirst($item->responseStatus) ?></span>
+                                    <?php if (!empty($item->responseReason)): ?>
+                                        <div class="small text-muted" style="margin-top:4px;">Reason: <?= html_escape($item->responseReason) ?></div>
+                                    <?php endif; ?>
+                                </td>
                                 <td><span class="label label-default"><?= ucfirst($item->status) ?></span></td>
                                 <td>
                                     <a class="btn btn-xs btn-info" href="<?= base_url('reviewer/assignment/'.$item->assignmentId) ?>"><i class="fa fa-eye"></i> Open</a>
                                     <?php if ($item->responseStatus === 'pending'): ?>
-                                        <a class="btn btn-xs btn-success" href="<?= base_url('reviewer/assignment/accept/'.$item->assignmentId) ?>"><i class="fa fa-check"></i> Accept</a>
-                                        <a class="btn btn-xs btn-danger" href="<?= base_url('reviewer/assignment/decline/'.$item->assignmentId) ?>"><i class="fa fa-times"></i> Decline</a>
+                                        <form method="post" action="<?= base_url('reviewer/assignment/accept/'.$item->assignmentId) ?>" style="display:inline-block;">
+                                            <input type="text" name="responseReason" class="form-control input-sm" style="width:160px; display:inline-block;" placeholder="Reason to accept" required>
+                                            <button class="btn btn-xs btn-success" type="submit"><i class="fa fa-check"></i> Accept</button>
+                                        </form>
+                                        <form method="post" action="<?= base_url('reviewer/assignment/decline/'.$item->assignmentId) ?>" style="display:inline-block; margin-top:4px;">
+                                            <input type="text" name="responseReason" class="form-control input-sm" style="width:160px; display:inline-block;" placeholder="Reason to reject" required>
+                                            <button class="btn btn-xs btn-danger" type="submit"><i class="fa fa-times"></i> Reject</button>
+                                        </form>
                                     <?php endif; ?>
                                 </td>
                             </tr>

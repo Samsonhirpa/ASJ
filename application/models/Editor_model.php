@@ -237,6 +237,66 @@ class Editor_model extends CI_Model
         return $assigned;
     }
 
+    public function processReviewApproval($assignmentId, $editorId, $approvalStatus, $reason, $price = null)
+    {
+        $assignment = $this->db->get_where('tbl_reviewer_assignments', [
+            'assignmentId' => $assignmentId,
+            'isDeleted' => 0
+        ])->row();
+
+        if (!$assignment || $assignment->status !== 'completed') {
+            return false;
+        }
+
+        $update = [
+            'editorReviewApprovalStatus' => $approvalStatus,
+            'editorReviewApprovalReason' => $reason,
+            'editorReviewApprovalDate' => date('Y-m-d H:i:s'),
+            'updatedBy' => $editorId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ];
+
+        if ($approvalStatus === 'approved') {
+            $update['editorSetPrice'] = $price;
+            $update['paymentStatus'] = 'pending_gateway';
+        } else {
+            $update['editorSetPrice'] = null;
+            $update['paymentStatus'] = 'not_ready';
+        }
+
+        $this->db->where('assignmentId', $assignmentId);
+        $ok = $this->db->update('tbl_reviewer_assignments', $update);
+
+        if ($ok) {
+            $assignment = $this->db->select('ra.*, m.manuscriptNumber')
+                ->from('tbl_reviewer_assignments ra')
+                ->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId')
+                ->where('ra.assignmentId', $assignmentId)
+                ->get()->row();
+
+            if ($assignment) {
+                $subject = $approvalStatus === 'approved'
+                    ? 'Your review has been approved by editor'
+                    : 'Your review has been rejected by editor';
+                $message = $approvalStatus === 'approved'
+                    ? 'Editor approved your review for manuscript ' . $assignment->manuscriptNumber . '. Payment gateway processing is now pending.'
+                    : 'Editor rejected your review for manuscript ' . $assignment->manuscriptNumber . '. Reason: ' . $reason;
+
+                $this->db->insert('tbl_notifications', [
+                    'userId' => $assignment->reviewerId,
+                    'type' => 'review_editor_approval',
+                    'subject' => $subject,
+                    'message' => $message,
+                    'referenceId' => $assignmentId,
+                    'referenceType' => 'review_assignment',
+                    'createdDtm' => date('Y-m-d H:i:s')
+                ]);
+            }
+        }
+
+        return $ok;
+    }
+
     public function makeDecision($manuscriptId, $editorId, $decision, $letter)
     {
         $map = [
