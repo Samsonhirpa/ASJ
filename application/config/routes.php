@@ -160,6 +160,7 @@ $route['reviewer/assignments'] = 'reviewer/assignment/index';
 $route['reviewer/completed'] = 'reviewer/assignment/completed';
 $route['reviewer/dashboard/reminders'] = 'reviewer/dashboard/reminders';
 $route['reviewer/assignment/(:num)'] = 'reviewer/assignment/view/$1';
+$route['reviewer/assignment/download/(:num)'] = 'reviewer/assignment/downloadManuscript/$1';
 $route['reviewer/assignment/accept/(:num)'] = 'reviewer/assignment/accept/$1';
 $route['reviewer/assignment/decline/(:num)'] = 'reviewer/assignment/decline/$1';
 $route['reviewer/assignment/submit/(:num)'] = 'reviewer/assignment/submitReview/$1';

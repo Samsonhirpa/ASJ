@@ -169,6 +169,6 @@ class Manuscript extends BaseController
             $this->session->set_flashdata('error', 'Failed to process review approval. Ensure review is completed first.');
         }
 
-        redirect('editor/manuscript/' . (int)$manuscriptId);
+        redirect('editor/assignments/view/' . (int)$manuscriptId);
     }
 }

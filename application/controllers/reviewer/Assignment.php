@@ -134,6 +134,35 @@ class Assignment extends BaseController
         redirect('reviewer/completed');
     }
 
+    public function downloadManuscript($assignmentId)
+    {
+        $assignment = $this->reviewer_model->getAssignmentForReviewer($assignmentId, $this->vendorId);
+
+        if (!$assignment) {
+            $this->session->set_flashdata('error', 'Assignment not found or you do not have access.');
+            redirect('reviewer/assignments');
+        }
+
+        if (!in_array($assignment->status, ['accepted', 'completed'], true)) {
+            $this->session->set_flashdata('error', 'Please accept the assignment before downloading the manuscript.');
+            redirect('reviewer/assignment/' . (int)$assignmentId);
+        }
+
+        if (empty($assignment->mainFilePath)) {
+            $this->session->set_flashdata('error', 'Main manuscript file is not available.');
+            redirect('reviewer/assignment/' . (int)$assignmentId);
+        }
+
+        $absolutePath = FCPATH . ltrim($assignment->mainFilePath, '/');
+        if (!is_file($absolutePath)) {
+            $this->session->set_flashdata('error', 'Manuscript file could not be found on the server.');
+            redirect('reviewer/assignment/' . (int)$assignmentId);
+        }
+
+        $this->load->helper('download');
+        force_download($absolutePath, null);
+    }
+
     private function uploadReviewAttachment()
     {
         if (!is_dir('./uploads/reviews/')) {
