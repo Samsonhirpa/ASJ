@@ -16,6 +16,15 @@
                         <p><strong>Keywords:</strong> <?= html_escape($assignment->keywords) ?></p>
                         <hr>
                         <p class="text-muted"><i class="fa fa-user-secret"></i> Author identities are intentionally hidden.</p>
+                        <?php if (in_array($assignment->status, ['accepted', 'completed'])): ?>
+                            <a href="<?= base_url('reviewer/assignment/download/' . (int)$assignment->assignmentId) ?>" class="btn btn-sm btn-success" style="margin-right:6px;">
+                                <i class="fa fa-download"></i> Download Manuscript
+                            </a>
+                        <?php else: ?>
+                            <div class="alert alert-warning" style="padding:8px; margin-bottom:8px;">
+                                Download is enabled only after you accept this assignment.
+                            </div>
+                        <?php endif; ?>
                         <a href="<?= base_url('journal/reviewer-guidelines') ?>" class="btn btn-sm btn-default"><i class="fa fa-book"></i> Review Guidelines</a>
                     </div>
                 </div>

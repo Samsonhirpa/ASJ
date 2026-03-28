@@ -51,6 +51,57 @@ class Manuscript extends BaseController
         $this->loadViews('editor/manuscript_view', $this->global, $data, NULL);
     }
 
+    public function reviewProgress()
+    {
+        $data['assignments'] = $this->editor_model->getReviewProgressList();
+        $this->global['pageTitle'] = 'Track Review Progress - OJAS';
+        $this->global['activeMenu'] = 'reviewprogress';
+        $this->loadViews('editor/review_progress', $this->global, $data, NULL);
+    }
+
+    public function reviewProgressView($manuscriptId)
+    {
+        $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
+        if (!$data['manuscript']) {
+            $this->session->set_flashdata('error', 'Manuscript not found.');
+            redirect('editor/assignments');
+        }
+
+        $data['reviews'] = $this->editor_model->getReviewProgressDetails((int)$manuscriptId);
+        $this->global['pageTitle'] = 'Review Progress Details - OJAS';
+        $this->global['activeMenu'] = 'reviewprogress';
+        $this->loadViews('editor/review_progress_view', $this->global, $data, NULL);
+    }
+
+    public function reviewProgressDecision($manuscriptId)
+    {
+        $this->form_validation->set_rules('decision', 'Decision', 'required|in_list[accept,reject,rereview,minor_review,major_review]');
+        $this->form_validation->set_rules('decisionReason', 'Decision Note', 'trim|required|min_length[10]');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/assignments/view/' . (int)$manuscriptId);
+        }
+
+        $ok = $this->editor_model->applyProgressDecision(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $this->input->post('decision', true),
+            $this->input->post('decisionReason', true)
+        );
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Editorial decision saved successfully.' : 'Failed to save editorial decision.');
+        redirect('editor/assignments/view/' . (int)$manuscriptId);
+    }
+
+    public function payment()
+    {
+        $data['payments'] = $this->editor_model->getPaymentQueue();
+        $this->global['pageTitle'] = 'Payment Queue - OJAS';
+        $this->global['activeMenu'] = 'payment';
+        $this->loadViews('editor/payment', $this->global, $data, NULL);
+    }
+
     public function screening($manuscriptId)
     {
         $this->form_validation->set_rules('screeningStatus', 'Screening Status', 'required|in_list[pending,passed,failed]');
@@ -161,6 +212,6 @@ class Manuscript extends BaseController
             $this->session->set_flashdata('error', 'Failed to process review approval. Ensure review is completed first.');
         }
 
-        redirect('editor/manuscript/' . (int)$manuscriptId);
+        redirect('editor/assignments/view/' . (int)$manuscriptId);
     }
 }
