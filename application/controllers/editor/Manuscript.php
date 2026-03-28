@@ -127,4 +127,40 @@ class Manuscript extends BaseController
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Decision recorded and letter sent.' : 'Failed to process decision.');
         redirect('editor/manuscript/' . (int)$manuscriptId);
     }
+
+    public function approveReview($manuscriptId, $assignmentId)
+    {
+        $this->form_validation->set_rules('approvalStatus', 'Approval Status', 'required|in_list[approved,rejected]');
+        $this->form_validation->set_rules('approvalReason', 'Approval Reason', 'trim|required|min_length[5]');
+
+        $approvalStatus = $this->input->post('approvalStatus', true);
+        if ($approvalStatus === 'approved') {
+            $this->form_validation->set_rules('editorSetPrice', 'Price', 'required|numeric|greater_than[0]');
+        }
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/manuscript/' . (int)$manuscriptId);
+        }
+
+        $price = $approvalStatus === 'approved' ? (float)$this->input->post('editorSetPrice') : null;
+        $ok = $this->editor_model->processReviewApproval(
+            (int)$assignmentId,
+            $this->vendorId,
+            $approvalStatus,
+            $this->input->post('approvalReason', true),
+            $price
+        );
+
+        if ($ok) {
+            $msg = $approvalStatus === 'approved'
+                ? 'Review comments approved. Sent to payment gateway queue with editor-defined price.'
+                : 'Review comments rejected and reviewer notified.';
+            $this->session->set_flashdata('success', $msg);
+        } else {
+            $this->session->set_flashdata('error', 'Failed to process review approval. Ensure review is completed first.');
+        }
+
+        redirect('editor/manuscript/' . (int)$manuscriptId);
+    }
 }

@@ -34,6 +34,30 @@ class Reviewer_model extends CI_Model
         if (!in_array('reviewerRecognitionPoints', $fields)) {
             $this->db->query("ALTER TABLE {$this->table} ADD COLUMN reviewerRecognitionPoints INT(11) DEFAULT 0 AFTER status");
         }
+
+        if (!in_array('responseReason', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN responseReason TEXT DEFAULT NULL AFTER responseStatus");
+        }
+
+        if (!in_array('editorReviewApprovalStatus', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN editorReviewApprovalStatus ENUM('pending','approved','rejected') DEFAULT 'pending' AFTER reviewSubmittedDate");
+        }
+
+        if (!in_array('editorReviewApprovalReason', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN editorReviewApprovalReason TEXT DEFAULT NULL AFTER editorReviewApprovalStatus");
+        }
+
+        if (!in_array('editorReviewApprovalDate', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN editorReviewApprovalDate DATETIME DEFAULT NULL AFTER editorReviewApprovalReason");
+        }
+
+        if (!in_array('editorSetPrice', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN editorSetPrice DECIMAL(10,2) DEFAULT NULL AFTER editorReviewApprovalDate");
+        }
+
+        if (!in_array('paymentStatus', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN paymentStatus ENUM('not_ready','pending_gateway','paid') DEFAULT 'not_ready' AFTER editorSetPrice");
+        }
     }
 
     public function getDashboardSummary($reviewerId)
@@ -120,12 +144,13 @@ class Reviewer_model extends CI_Model
         return $this->db->get()->row();
     }
 
-    public function updateInvitationResponse($assignmentId, $reviewerId, $response)
+    public function updateInvitationResponse($assignmentId, $reviewerId, $response, $reason = null)
     {
         $status = ($response === 'accepted') ? 'accepted' : 'declined';
 
         $update = [
             'responseStatus' => $response,
+            'responseReason' => $reason,
             'responseDate' => date('Y-m-d H:i:s'),
             'status' => $status,
             'updatedBy' => $reviewerId,
@@ -149,6 +174,11 @@ class Reviewer_model extends CI_Model
             'confidentialComments' => $data['commentsToEditor'],
             'score' => $data['score'],
             'reviewFilePath' => $data['reviewFilePath'],
+            'editorReviewApprovalStatus' => 'pending',
+            'editorReviewApprovalReason' => null,
+            'editorReviewApprovalDate' => null,
+            'editorSetPrice' => null,
+            'paymentStatus' => 'not_ready',
             'reviewerRecognitionPoints' => 10,
             'updatedBy' => $reviewerId,
             'updatedDtm' => date('Y-m-d H:i:s')

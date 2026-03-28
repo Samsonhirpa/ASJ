@@ -52,7 +52,14 @@ class Assignment extends BaseController
 
     public function accept($assignmentId)
     {
-        if ($this->reviewer_model->updateInvitationResponse($assignmentId, $this->vendorId, 'accepted')) {
+        $reason = trim((string)$this->input->post('responseReason', true));
+        if ($reason === '') {
+            $this->session->set_flashdata('error', 'Please provide a reason while accepting the assignment.');
+            redirect('reviewer/assignments');
+        }
+
+        if ($this->reviewer_model->updateInvitationResponse($assignmentId, $this->vendorId, 'accepted', $reason)) {
+            $this->notifyEditorOnInvitationResponse($assignmentId, 'accepted', $reason);
             $this->session->set_flashdata('success', 'Review invitation accepted successfully.');
         } else {
             $this->session->set_flashdata('error', 'Unable to accept this invitation. It may already be responded to.');
@@ -63,7 +70,14 @@ class Assignment extends BaseController
 
     public function decline($assignmentId)
     {
-        if ($this->reviewer_model->updateInvitationResponse($assignmentId, $this->vendorId, 'declined')) {
+        $reason = trim((string)$this->input->post('responseReason', true));
+        if ($reason === '') {
+            $this->session->set_flashdata('error', 'Please provide a reason while rejecting the assignment.');
+            redirect('reviewer/assignments');
+        }
+
+        if ($this->reviewer_model->updateInvitationResponse($assignmentId, $this->vendorId, 'declined', $reason)) {
+            $this->notifyEditorOnInvitationResponse($assignmentId, 'declined', $reason);
             $this->session->set_flashdata('success', 'Review invitation declined.');
         } else {
             $this->session->set_flashdata('error', 'Unable to decline this invitation. It may already be responded to.');
@@ -81,7 +95,7 @@ class Assignment extends BaseController
             redirect('reviewer/assignments');
         }
 
-        $this->form_validation->set_rules('recommendationDecision', 'Recommendation', 'trim|required|in_list[accept,minor_revision,major_revision,reject]');
+        $this->form_validation->set_rules('recommendationDecision', 'Recommendation', 'trim|required|in_list[accept,reject,minor_review,major_review]');
         $this->form_validation->set_rules('commentsToAuthor', 'Comments to Author', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('commentsToEditor', 'Comments to Editor', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('score', 'Score', 'required|integer|greater_than_equal_to[1]|less_than_equal_to[5]');
@@ -111,6 +125,7 @@ class Assignment extends BaseController
         ];
 
         if ($this->reviewer_model->submitReview($assignmentId, $this->vendorId, $payload)) {
+            $this->notifyEditorReviewSubmitted($assignment);
             $this->session->set_flashdata('success', 'Review submitted successfully. Thank you for your contribution.');
         } else {
             $this->session->set_flashdata('error', 'Failed to submit review. Please try again.');
@@ -139,5 +154,46 @@ class Assignment extends BaseController
 
         $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
         return false;
+    }
+
+    private function notifyEditorOnInvitationResponse($assignmentId, $response, $reason)
+    {
+        $assignment = $this->db->select('ra.*, m.manuscriptNumber, u.name as reviewerName')
+            ->from('tbl_reviewer_assignments ra')
+            ->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId')
+            ->join('tbl_users u', 'u.userId = ra.reviewerId')
+            ->where('ra.assignmentId', $assignmentId)
+            ->get()->row();
+
+        if (!$assignment || empty($assignment->assignedBy)) {
+            return;
+        }
+
+        $this->db->insert('tbl_notifications', [
+            'userId' => $assignment->assignedBy,
+            'type' => 'review_invitation_response',
+            'subject' => 'Reviewer has ' . $response . ' the assignment',
+            'message' => $assignment->reviewerName . ' has ' . $response . ' manuscript ' . $assignment->manuscriptNumber . '. Reason: ' . $reason,
+            'referenceId' => $assignmentId,
+            'referenceType' => 'review_assignment',
+            'createdDtm' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    private function notifyEditorReviewSubmitted($assignment)
+    {
+        if (empty($assignment->assignedBy)) {
+            return;
+        }
+
+        $this->db->insert('tbl_notifications', [
+            'userId' => $assignment->assignedBy,
+            'type' => 'review_submitted',
+            'subject' => 'New reviewer comments submitted',
+            'message' => 'A reviewer submitted comments for manuscript ' . $assignment->manuscriptNumber . '. Please approve or reject the review comments.',
+            'referenceId' => $assignment->assignmentId,
+            'referenceType' => 'review_assignment',
+            'createdDtm' => date('Y-m-d H:i:s')
+        ]);
     }
 }
