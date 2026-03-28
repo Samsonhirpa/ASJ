@@ -150,9 +150,9 @@
                 </a>
             </li>
             
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'assignments') ? 'active' : '' ?>">
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewprogress') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/assignments') ?>">
-                    <i class="fa fa-users"></i> <span>Reviewer Assignments</span>
+                    <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
                 </a>
             </li>
             

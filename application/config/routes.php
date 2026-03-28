@@ -173,7 +173,7 @@ $route['editor/decision/(:num)'] = 'editor/manuscript/makeDecision/$1';
 $route['editor/all-manuscripts'] = 'editor/manuscript/index';
 
 $route['editor/all'] = 'editor/manuscript/index';
-$route['editor/assignments'] = 'editor/manuscript/index';
+$route['editor/assignments'] = 'editor/manuscript/reviewProgress';
 $route['editor/screening/(:num)'] = 'editor/manuscript/screening/$1';
 $route['editor/plagiarism/(:num)'] = 'editor/manuscript/plagiarism/$1';
 $route['editor/review-approval/(:num)/(:num)'] = 'editor/manuscript/approveReview/$1/$2';

@@ -592,8 +592,8 @@
             
             <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/assignments">
-                <i class="fa fa-users"></i> 
-                <span>Reviewer Assignments</span>
+                <i class="fa fa-line-chart"></i> 
+                <span>Track Review Progress</span>
               </a>
             </li>
             

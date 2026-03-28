@@ -56,58 +56,11 @@
 
                 <div class="box box-default">
                     <div class="box-header with-border"><h3 class="box-title">4) Track Review Progress</h3></div>
-                    <div class="box-body table-responsive">
-                        <table class="table table-condensed">
-                            <thead><tr><th>Reviewer</th><th>Status</th><th>Recommendation</th><th>Editor Approval</th><th>Due</th></tr></thead>
-                            <tbody>
-                            <?php if (!empty($assignments)): foreach ($assignments as $a): ?>
-                                <tr>
-                                    <td>
-                                        <?= html_escape($a->reviewerName) ?>
-                                        <?php if (!empty($a->responseReason)): ?>
-                                            <div class="small text-muted">Invitation Reason: <?= html_escape($a->responseReason) ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= html_escape($a->status) ?></td>
-                                    <td>
-                                        <?= html_escape($a->recommendationDecision ?: '-') ?>
-                                        <?php if (!empty($a->reviewFilePath)): ?>
-                                            <div><a href="<?= base_url($a->reviewFilePath) ?>" target="_blank">Attachment</a></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="label label-<?= $a->editorReviewApprovalStatus === 'approved' ? 'success' : ($a->editorReviewApprovalStatus === 'rejected' ? 'danger' : 'warning') ?>">
-                                            <?= ucfirst($a->editorReviewApprovalStatus ?: 'pending') ?>
-                                        </span>
-                                        <?php if (!empty($a->editorSetPrice)): ?>
-                                            <div class="small text-success">Price: $<?= number_format((float)$a->editorSetPrice, 2) ?></div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($a->paymentStatus)): ?>
-                                            <div class="small text-muted">Payment: <?= html_escape($a->paymentStatus) ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= html_escape($a->reviewDueDate) ?></td>
-                                </tr>
-                                <?php if ($a->status === 'completed' && ($a->editorReviewApprovalStatus === 'pending' || empty($a->editorReviewApprovalStatus))): ?>
-                                    <tr>
-                                        <td colspan="5" style="background:#fafafa;">
-                                            <form method="post" action="<?= base_url('editor/review-approval/'.$manuscript->manuscriptId.'/'.$a->assignmentId) ?>" class="form-inline">
-                                                <select name="approvalStatus" class="form-control input-sm approval-status" required>
-                                                    <option value="approved">Approve Reviewer Comment</option>
-                                                    <option value="rejected">Reject Reviewer Comment</option>
-                                                </select>
-                                                <input type="text" name="approvalReason" class="form-control input-sm" style="min-width:220px;" placeholder="Reason for approval/rejection" required>
-                                                <input type="number" step="0.01" min="0.01" name="editorSetPrice" class="form-control input-sm approval-price" placeholder="Price for payment gateway">
-                                                <button class="btn btn-xs btn-primary" type="submit">Submit Editor Approval</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            <?php endforeach; else: ?>
-                                <tr><td colspan="5">No assignments yet.</td></tr>
-                            <?php endif; ?>
-                            </tbody>
-                        </table>
+                    <div class="box-body">
+                        <p>Track reviewer status, recommendations, and editor approval from the dedicated progress page.</p>
+                        <a class="btn btn-default" href="<?= base_url('editor/assignments') ?>">
+                            <i class="fa fa-line-chart"></i> Open Track Review Progress
+                        </a>
                     </div>
                 </div>
             </div>
@@ -132,25 +85,3 @@
         </div>
     </section>
 </div>
-<script>
-    (function() {
-        var rows = document.querySelectorAll('.form-inline');
-        rows.forEach(function(form) {
-            var status = form.querySelector('.approval-status');
-            var price = form.querySelector('.approval-price');
-            if (!status || !price) return;
-            var toggle = function() {
-                if (status.value === 'approved') {
-                    price.required = true;
-                    price.disabled = false;
-                } else {
-                    price.required = false;
-                    price.disabled = true;
-                    price.value = '';
-                }
-            };
-            status.addEventListener('change', toggle);
-            toggle();
-        });
-    })();
-</script>
