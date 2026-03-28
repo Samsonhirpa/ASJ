@@ -51,6 +51,14 @@ class Manuscript extends BaseController
         $this->loadViews('editor/manuscript_view', $this->global, $data, NULL);
     }
 
+    public function reviewProgress()
+    {
+        $data['assignments'] = $this->editor_model->getReviewProgressList();
+        $this->global['pageTitle'] = 'Track Review Progress - OJAS';
+        $this->global['activeMenu'] = 'reviewprogress';
+        $this->loadViews('editor/review_progress', $this->global, $data, NULL);
+    }
+
     public function screening($manuscriptId)
     {
         $this->form_validation->set_rules('screeningStatus', 'Screening Status', 'required|in_list[pending,passed,failed]');

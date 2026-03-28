@@ -13,6 +13,7 @@ class Editor_model extends CI_Model
     private function ensureSchema()
     {
         $manuscriptFields = $this->db->list_fields('tbl_manuscripts');
+        $assignmentFields = $this->db->list_fields('tbl_reviewer_assignments');
 
         if (!in_array('screeningStatus', $manuscriptFields)) {
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN screeningStatus ENUM('pending','passed','failed') DEFAULT 'pending' AFTER status");
@@ -28,6 +29,26 @@ class Editor_model extends CI_Model
 
         if (!in_array('assignedEditorId', $manuscriptFields)) {
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN assignedEditorId INT(11) DEFAULT NULL AFTER correspondingAuthorId");
+        }
+
+        if (!in_array('editorReviewApprovalStatus', $assignmentFields)) {
+            $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN editorReviewApprovalStatus ENUM('pending','approved','rejected') DEFAULT 'pending' AFTER reviewSubmittedDate");
+        }
+
+        if (!in_array('editorReviewApprovalReason', $assignmentFields)) {
+            $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN editorReviewApprovalReason TEXT DEFAULT NULL AFTER editorReviewApprovalStatus");
+        }
+
+        if (!in_array('editorReviewApprovalDate', $assignmentFields)) {
+            $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN editorReviewApprovalDate DATETIME DEFAULT NULL AFTER editorReviewApprovalReason");
+        }
+
+        if (!in_array('editorSetPrice', $assignmentFields)) {
+            $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN editorSetPrice DECIMAL(10,2) DEFAULT NULL AFTER editorReviewApprovalDate");
+        }
+
+        if (!in_array('paymentStatus', $assignmentFields)) {
+            $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN paymentStatus ENUM('not_ready','pending_gateway','completed') DEFAULT 'not_ready' AFTER editorSetPrice");
         }
 
         if (!$this->db->table_exists('tbl_ethics_cases')) {
@@ -142,6 +163,24 @@ class Editor_model extends CI_Model
         $this->db->join('tbl_users u', 'u.userId = ra.reviewerId');
         $this->db->where('ra.manuscriptId', $manuscriptId);
         $this->db->where('ra.isDeleted', 0);
+        return $this->db->get()->result();
+    }
+
+    public function getReviewProgressList()
+    {
+        $this->db->select('
+            ra.*,
+            u.name as reviewerName,
+            u.email as reviewerEmail,
+            m.manuscriptNumber,
+            m.title as manuscriptTitle
+        ');
+        $this->db->from('tbl_reviewer_assignments ra');
+        $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
+        $this->db->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId', 'left');
+        $this->db->where('ra.isDeleted', 0);
+        $this->db->where('m.isDeleted', 0);
+        $this->db->order_by('ra.assignedDate', 'DESC');
         return $this->db->get()->result();
     }
 
