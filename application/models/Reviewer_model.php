@@ -133,7 +133,25 @@ class Reviewer_model extends CI_Model
 
     public function getAssignmentForReviewer($assignmentId, $reviewerId)
     {
-        $this->db->select('ra.*, m.manuscriptNumber, m.title, m.abstract, m.keywords, m.articleType, m.createdDtm as manuscriptSubmittedDate, rr.roundNumber');
+        $this->db->select('
+            ra.*,
+            m.manuscriptNumber,
+            m.title,
+            m.abstract,
+            m.keywords,
+            m.articleType,
+            m.createdDtm as manuscriptSubmittedDate,
+            rr.roundNumber,
+            (
+                SELECT mf.filePath
+                FROM tbl_manuscript_files mf
+                WHERE mf.manuscriptId = m.manuscriptId
+                    AND mf.fileType = "main"
+                    AND mf.isDeleted = 0
+                ORDER BY mf.createdDtm DESC
+                LIMIT 1
+            ) as mainFilePath
+        ');
         $this->db->from("{$this->table} ra");
         $this->db->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId');
         $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = ra.manuscriptId AND rr.status = "active"', 'left');
