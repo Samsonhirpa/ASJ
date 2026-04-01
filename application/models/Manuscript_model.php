@@ -9,6 +9,28 @@ class Manuscript_model extends CI_Model
     {
         parent::__construct();
         $this->load->database();
+        $this->ensurePaymentSchema();
+    }
+
+    private function ensurePaymentSchema()
+    {
+        if (!$this->db->table_exists('tbl_manuscript_payments')) {
+            return;
+        }
+
+        $fields = $this->db->list_fields('tbl_manuscript_payments');
+
+        if (!in_array('transactionReference', $fields)) {
+            $this->db->query("ALTER TABLE tbl_manuscript_payments ADD COLUMN transactionReference VARCHAR(120) DEFAULT NULL AFTER otherDetails");
+        }
+
+        if (!in_array('paidBy', $fields)) {
+            $this->db->query("ALTER TABLE tbl_manuscript_payments ADD COLUMN paidBy INT(11) DEFAULT NULL AFTER paymentStatus");
+        }
+
+        if (!in_array('paidDtm', $fields)) {
+            $this->db->query("ALTER TABLE tbl_manuscript_payments ADD COLUMN paidDtm DATETIME DEFAULT NULL AFTER paidBy");
+        }
     }
     
     /**
@@ -119,5 +141,60 @@ class Manuscript_model extends CI_Model
         $this->db->order_by('fileType', 'ASC');
         $query = $this->db->get('tbl_manuscript_files');
         return $query->result();
+    }
+
+    public function getAuthorPaymentQueue($authorId)
+    {
+        $this->db->select('
+            m.manuscriptId,
+            m.manuscriptNumber,
+            m.title,
+            m.status,
+            p.paymentId,
+            p.paymentMethod,
+            p.amount,
+            p.paymentStatus,
+            p.otherDetails,
+            p.transactionReference,
+            p.paidDtm
+        ');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_manuscript_payments p', 'p.manuscriptId = m.manuscriptId', 'left');
+        $this->db->where('m.submittedBy', $authorId);
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where_in('m.status', ['accepted', 'published']);
+        $this->db->order_by('m.updatedDtm', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function submitAuthorPayment($manuscriptId, $authorId, $reference, $note = null)
+    {
+        $payment = $this->db->select('p.*, m.submittedBy, m.status as manuscriptStatus')
+            ->from('tbl_manuscript_payments p')
+            ->join('tbl_manuscripts m', 'm.manuscriptId = p.manuscriptId')
+            ->where('p.manuscriptId', $manuscriptId)
+            ->order_by('p.paymentId', 'DESC')
+            ->limit(1)
+            ->get()->row();
+
+        if (!$payment || (int)$payment->submittedBy !== (int)$authorId || !in_array($payment->manuscriptStatus, ['accepted', 'published'], true)) {
+            return false;
+        }
+
+        if ($payment->paymentStatus === 'free' || (float)$payment->amount === 0.0) {
+            return false;
+        }
+
+        $update = [
+            'paymentStatus' => 'paid',
+            'transactionReference' => $reference,
+            'otherDetails' => $note,
+            'paidBy' => $authorId,
+            'paidDtm' => date('Y-m-d H:i:s'),
+            'updatedBy' => $authorId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ];
+
+        return $this->db->where('paymentId', $payment->paymentId)->update('tbl_manuscript_payments', $update);
     }
 }

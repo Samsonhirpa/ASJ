@@ -145,6 +145,8 @@ $route['author/manuscript/submitStep1'] = 'author/manuscript/submitStep1';
 $route['author/manuscript/submitStep2'] = 'author/manuscript/submitStep2';
 $route['author/manuscript/finalSubmit'] = 'author/manuscript/finalSubmit';
 $route['author/manuscript/view/(:num)'] = 'author/manuscript/view/$1';
+$route['author/manuscript/payment'] = 'author/manuscript/payment';
+$route['author/manuscript/payment/submit/(:num)'] = 'author/manuscript/submitPayment/$1';
 
 // Reviewer Routes (add these later)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';

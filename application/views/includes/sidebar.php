@@ -91,6 +91,12 @@
                     <i class="fa fa-upload"></i> <span>New Submission</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'authorpayment') ? 'active' : '' ?>">
+                <a href="<?= base_url('author/manuscript/payment') ?>">
+                    <i class="fa fa-credit-card"></i> <span>Pay Publishing Fee</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (roleId = 19) ========== -->
