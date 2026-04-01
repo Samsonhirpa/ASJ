@@ -155,12 +155,6 @@
                     <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
                 </a>
             </li>
-
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/payment') ?>">
-                    <i class="fa fa-credit-card"></i> <span>Payment</span>
-                </a>
-            </li>
             
             <?php if($role == 13): // Editor-in-Chief only ?>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'editorboard') ? 'active' : '' ?>">

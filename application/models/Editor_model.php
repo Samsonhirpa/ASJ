@@ -215,6 +215,7 @@ class Editor_model extends CI_Model
             m.title as manuscriptTitle,
             m.submittedBy as authorId,
             m.status as manuscriptStatus
+            m.title as manuscriptTitle
         ');
         $this->db->from('tbl_reviewer_assignments ra');
         $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
@@ -223,6 +224,9 @@ class Editor_model extends CI_Model
         $this->db->where('ra.isDeleted', 0);
         $this->db->where('m.isDeleted', 0);
         $this->db->order_by('ra.assignedDate', 'ASC');
+        $this->db->where('ra.isDeleted', 0);
+        $this->db->where('m.isDeleted', 0);
+        $this->db->order_by('ra.assignedDate', 'DESC');
         return $this->db->get()->result();
     }
 
@@ -380,10 +384,33 @@ class Editor_model extends CI_Model
 
     public function approveReviewerResult($manuscriptId, $editorId, $reason)
     {
+    public function applyProgressDecision($manuscriptId, $editorId, $decision, $reason)
+    {
+        $allowed = ['accept', 'reject', 'rereview', 'minor_review', 'major_review'];
+        if (!in_array($decision, $allowed, true)) {
+            return false;
+        }
+
         $manuscript = $this->getManuscript($manuscriptId);
         if (!$manuscript) {
             return false;
         }
+
+        $statusMap = [
+            'accept' => 'accepted',
+            'reject' => 'rejected',
+            'rereview' => 'under_review',
+            'minor_review' => 'revision_required',
+            'major_review' => 'revision_required'
+        ];
+
+        $labelMap = [
+            'accept' => 'Accepted',
+            'reject' => 'Rejected',
+            'rereview' => 'Re-review Requested',
+            'minor_review' => 'Minor Revision Required',
+            'major_review' => 'Major Revision Required'
+        ];
 
         $this->db->trans_start();
 
@@ -391,6 +418,8 @@ class Editor_model extends CI_Model
         $this->db->update('tbl_manuscripts', [
             'status' => 'accepted',
             'decisionLetter' => 'Reviewer comments approved: ' . $reason,
+            'status' => $statusMap[$decision],
+            'decisionLetter' => $labelMap[$decision] . ': ' . $reason,
             'assignedEditorId' => $editorId,
             'updatedBy' => $editorId,
             'updatedDtm' => date('Y-m-d H:i:s')
@@ -407,12 +436,61 @@ class Editor_model extends CI_Model
             'updatedBy' => $editorId,
             'updatedDtm' => date('Y-m-d H:i:s')
         ]);
+        if ($decision === 'accept') {
+            $this->db->where('manuscriptId', $manuscriptId);
+            $this->db->where('isDeleted', 0);
+            $this->db->where('status', 'completed');
+            $this->db->update('tbl_reviewer_assignments', [
+                'editorReviewApprovalStatus' => 'approved',
+                'editorReviewApprovalReason' => $reason,
+                'editorReviewApprovalDate' => date('Y-m-d H:i:s'),
+                'paymentStatus' => 'pending_gateway',
+                'updatedBy' => $editorId,
+                'updatedDtm' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        if ($decision === 'rereview') {
+            $this->db->where('manuscriptId', $manuscriptId);
+            $this->db->where('isDeleted', 0);
+            $this->db->update('tbl_reviewer_assignments', [
+                'status' => 'accepted',
+                'recommendationDecision' => null,
+                'commentsToAuthor' => null,
+                'commentsToEditor' => null,
+                'confidentialComments' => null,
+                'reviewSubmittedDate' => null,
+                'editorReviewApprovalStatus' => 'pending',
+                'editorReviewApprovalReason' => null,
+                'editorReviewApprovalDate' => null,
+                'paymentStatus' => 'not_ready',
+                'updatedBy' => $editorId,
+                'updatedDtm' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        $compiledComments = '';
+        if (in_array($decision, ['minor_review', 'major_review'], true)) {
+            $comments = $this->db->select('u.name as reviewerName, ra.commentsToAuthor')
+                ->from('tbl_reviewer_assignments ra')
+                ->join('tbl_users u', 'u.userId = ra.reviewerId', 'left')
+                ->where('ra.manuscriptId', $manuscriptId)
+                ->where('ra.isDeleted', 0)
+                ->where('ra.commentsToAuthor IS NOT NULL', null, false)
+                ->get()->result();
+
+            foreach ($comments as $item) {
+                $compiledComments .= "\n- " . $item->reviewerName . ': ' . trim((string)$item->commentsToAuthor);
+            }
+        }
 
         $this->db->insert('tbl_notifications', [
             'userId' => $manuscript->submittedBy,
             'type' => 'editorial_decision',
             'subject' => 'Reviewer comments approved for ' . $manuscript->manuscriptNumber,
             'message' => 'Your manuscript review comments were approved by the editor. ' . $reason,
+            'subject' => 'Editorial decision for manuscript ' . $manuscript->manuscriptNumber,
+            'message' => $labelMap[$decision] . '. ' . $reason . $compiledComments,
             'referenceId' => $manuscriptId,
             'referenceType' => 'manuscript',
             'createdDtm' => date('Y-m-d H:i:s')
@@ -473,6 +551,24 @@ class Editor_model extends CI_Model
                 'referenceType' => 'manuscript',
                 'createdDtm' => date('Y-m-d H:i:s')
             ]);
+        if ($decision === 'rereview') {
+            $reviewers = $this->db->select('reviewerId')
+                ->from('tbl_reviewer_assignments')
+                ->where('manuscriptId', $manuscriptId)
+                ->where('isDeleted', 0)
+                ->get()->result();
+
+            foreach ($reviewers as $r) {
+                $this->db->insert('tbl_notifications', [
+                    'userId' => $r->reviewerId,
+                    'type' => 'rereview_request',
+                    'subject' => 'Re-review requested for manuscript ' . $manuscript->manuscriptNumber,
+                    'message' => 'Please review the manuscript again. Editor note: ' . $reason,
+                    'referenceId' => $manuscriptId,
+                    'referenceType' => 'manuscript',
+                    'createdDtm' => date('Y-m-d H:i:s')
+                ]);
+            }
         }
 
         $this->db->trans_complete();
@@ -498,6 +594,14 @@ class Editor_model extends CI_Model
         $this->db->where('m.isDeleted', 0);
         $this->db->where('m.status', 'accepted');
         $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title', 'm.status', 'p.paymentMethod', 'p.amount', 'p.otherDetails', 'p.paymentStatus']);
+            SUM(CASE WHEN ra.paymentStatus = "pending_gateway" THEN 1 ELSE 0 END) as pendingPayments
+        ', false);
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'accepted');
+        $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title', 'm.status']);
+        $this->db->having('pendingPayments >', 0);
         $this->db->order_by('m.updatedDtm', 'DESC');
         return $this->db->get()->result();
     }

@@ -14,10 +14,7 @@
                             <th>Manuscript #</th>
                             <th>Document Name</th>
                             <th>Status</th>
-                            <th>Payment Method</th>
-                            <th>Amount</th>
-                            <th>Payment Status</th>
-                            <th>Action</th>
+                            <th>Pending Payments</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,6 +43,10 @@
                         </tr>
                     <?php endforeach; else: ?>
                         <tr><td colspan="7" class="text-center text-muted">No manuscripts in payment queue.</td></tr>
+                            <td><?= (int)$item->pendingPayments ?></td>
+                        </tr>
+                    <?php endforeach; else: ?>
+                        <tr><td colspan="4" class="text-center text-muted">No manuscripts in payment queue.</td></tr>
                     <?php endif; ?>
                     </tbody>
                 </table>

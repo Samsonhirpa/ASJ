@@ -596,13 +596,6 @@
                 <span>Track Review Progress</span>
               </a>
             </li>
-
-            <li class="<?php echo (uri_string() == 'editor/payment') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>editor/payment">
-                <i class="fa fa-credit-card"></i> 
-                <span>Payment</span>
-              </a>
-            </li>
             
             <!-- Editor-in-Chief only menus -->
             <?php if($role == 13): ?>

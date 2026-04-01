@@ -21,14 +21,6 @@
                                 <p><strong>Recommendation:</strong> <?= html_escape($review->recommendationDecision ?: 'pending') ?></p>
                                 <p><strong>Comments to Author:</strong><br><?= nl2br(html_escape($review->commentsToAuthor ?: '-')) ?></p>
                                 <p><strong>Comments to Editor:</strong><br><?= nl2br(html_escape($review->commentsToEditor ?: '-')) ?></p>
-                                <p>
-                                    <strong>Reviewer Attachment:</strong>
-                                    <?php if (!empty($review->reviewFilePath)): ?>
-                                        <a href="<?= base_url($review->reviewFilePath) ?>" target="_blank">View/Download File</a>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?>
-                                </p>
                                 <p><strong>Editor Approval:</strong> <?= html_escape($review->editorReviewApprovalStatus ?: 'pending') ?></p>
                                 <p><strong>Due Date:</strong> <?= !empty($review->reviewDueDate) ? html_escape(date('d M Y', strtotime($review->reviewDueDate))) : '-' ?></p>
                             </div>
@@ -39,24 +31,20 @@
                 <?php endif; ?>
 
                 <hr>
-                <h4>Reviewer Result Actions</h4>
-                <form method="post" action="<?= base_url('editor/assignments/approve/' . (int)$manuscript->manuscriptId) ?>" style="margin-bottom:15px;">
+                <h4>Editorial Decision</h4>
+                <form method="post" action="<?= base_url('editor/assignments/decision/' . (int)$manuscript->manuscriptId) ?>">
                     <div class="form-group">
-                        <label>Approval Note</label>
-                        <textarea name="approvalNote" class="form-control" rows="3" required placeholder="Write short note before approving reviewer comments."></textarea>
+                        <label>Decision Note</label>
+                        <textarea name="decisionReason" class="form-control" rows="4" required placeholder="Write the note that will be sent to author/reviewers as applicable."></textarea>
                     </div>
-                    <div>
-                        <button class="btn btn-success" type="submit">Approve Reviewer Comment</button>
-                    </div>
-                </form>
-
-                <form method="post" action="<?= base_url('editor/assignments/rereview/' . (int)$manuscript->manuscriptId) ?>">
                     <div class="form-group">
-                        <label>Why to Review Again</label>
-                        <textarea name="rereviewReason" class="form-control" rows="3" required placeholder="Explain why this manuscript should be re-reviewed."></textarea>
+                        <button name="decision" value="accept" class="btn btn-success" type="submit">Approval</button>
+                        <button name="decision" value="reject" class="btn btn-danger" type="submit">Reject</button>
+                        <button name="decision" value="rereview" class="btn btn-warning" type="submit">Request Re-Review</button>
+                        <button name="decision" value="minor_review" class="btn btn-primary" type="submit">Minor Review</button>
+                        <button name="decision" value="major_review" class="btn btn-info" type="submit">Major Review</button>
+                        <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
                     </div>
-                    <button class="btn btn-warning" type="submit">Re-Review</button>
-                    <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
                 </form>
             </div>
         </div>

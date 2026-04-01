@@ -175,12 +175,6 @@ $route['editor/all-manuscripts'] = 'editor/manuscript/index';
 
 $route['editor/all'] = 'editor/manuscript/index';
 $route['editor/assignments'] = 'editor/manuscript/reviewProgress';
-$route['editor/assignments/view/(:num)'] = 'editor/manuscript/reviewProgressView/$1';
-$route['editor/assignments/approve/(:num)'] = 'editor/manuscript/approveReviewerResult/$1';
-$route['editor/assignments/rereview/(:num)'] = 'editor/manuscript/requestReReview/$1';
-$route['editor/payment'] = 'editor/manuscript/payment';
-$route['editor/payment/save/(:num)'] = 'editor/manuscript/savePayment/$1';
-$route['editor/payment/publish/(:num)'] = 'editor/manuscript/publishFromPayment/$1';
 $route['editor/screening/(:num)'] = 'editor/manuscript/screening/$1';
 $route['editor/plagiarism/(:num)'] = 'editor/manuscript/plagiarism/$1';
 $route['editor/review-approval/(:num)/(:num)'] = 'editor/manuscript/approveReview/$1/$2';
