@@ -241,6 +241,23 @@
                     <i class="fa fa-key"></i> <span>Change Password</span>
                 </a>
             </li>
+
+            <?php
+            $paymentUrl = 'javascript:void(0);';
+            $paymentLabel = 'Payment (Not Available)';
+            if ($role == 21) {
+                $paymentUrl = base_url('author/manuscript/payment');
+                $paymentLabel = 'Payment';
+            } elseif ($is_admin == 1 || in_array($role, [13,14,15,16,17,18,20])) {
+                $paymentUrl = base_url('editor/payment');
+                $paymentLabel = 'Payment';
+            }
+            ?>
+            <li class="<?= (isset($activeMenu) && in_array($activeMenu, ['payment', 'authorpayment'])) ? 'active' : '' ?>">
+                <a href="<?= $paymentUrl ?>">
+                    <i class="fa fa-credit-card"></i> <span><?= $paymentLabel ?></span>
+                </a>
+            </li>
             
             <li>
                 <a href="<?= base_url('logout') ?>">
