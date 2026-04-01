@@ -5,16 +5,19 @@
     <section class="content">
         <div class="box box-default">
             <div class="box-header with-border">
-                <h3 class="box-title">Accepted manuscripts waiting for payment</h3>
+                <h3 class="box-title">Approved manuscripts waiting for payment action</h3>
             </div>
             <div class="box-body table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Manuscript #</th>
-                            <th>Document Name</th>
+                            <th>Title</th>
                             <th>Status</th>
-                            <th>Pending Payments</th>
+                            <th>Payment Method</th>
+                            <th>Amount</th>
+                            <th>Payment Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,10 +46,6 @@
                         </tr>
                     <?php endforeach; else: ?>
                         <tr><td colspan="7" class="text-center text-muted">No manuscripts in payment queue.</td></tr>
-                            <td><?= (int)$item->pendingPayments ?></td>
-                        </tr>
-                    <?php endforeach; else: ?>
-                        <tr><td colspan="4" class="text-center text-muted">No manuscripts in payment queue.</td></tr>
                     <?php endif; ?>
                     </tbody>
                 </table>
@@ -81,8 +80,8 @@
                         <p class="help-block">If free to publish, set amount to 0.</p>
                     </div>
                     <div class="form-group">
-                        <label>Other Details</label>
-                        <textarea name="paymentOther" class="form-control" rows="3"></textarea>
+                        <label>Other</label>
+                        <textarea name="paymentOther" class="form-control" rows="3" placeholder="Optional notes"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

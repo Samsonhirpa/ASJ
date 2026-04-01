@@ -14,7 +14,7 @@
                             <thead>
                                 <tr>
                                     <th>Manuscript</th>
-                                    <th>Reviewer</th>
+                                    <th>Reviewers</th>
                                     <th>Status</th>
                                     <th>Recommendation</th>
                                     <th>Editor Approval</th>
@@ -24,46 +24,24 @@
                             </thead>
                             <tbody>
                             <?php if (!empty($assignments)): foreach ($assignments as $a): ?>
-                                <?php $approvalStatus = isset($a->editorReviewApprovalStatus) ? $a->editorReviewApprovalStatus : 'pending'; ?>
                                 <tr>
                                     <td>
                                         <strong><?= html_escape($a->manuscriptNumber) ?></strong><br>
                                         <span class="small text-muted"><?= html_escape($a->manuscriptTitle) ?></span>
                                     </td>
                                     <td>
-                                        <?= html_escape($a->reviewerName) ?><br>
-                                        <span class="small text-muted"><?= html_escape($a->reviewerEmail) ?></span>
+                                        <?= html_escape(!empty($a->reviewerNames) ? $a->reviewerNames : '-') ?>
                                     </td>
-                                    <td><?= html_escape($a->status) ?></td>
-                                    <td><?= html_escape(!empty($a->recommendationDecision) ? $a->recommendationDecision : '-') ?></td>
+                                    <td><?= html_escape(!empty($a->assignmentStatus) ? $a->assignmentStatus : '-') ?></td>
+                                    <td><?= html_escape(!empty($a->recommendation) ? $a->recommendation : '-') ?></td>
+                                    <td><?= html_escape(!empty($a->editorApproval) ? $a->editorApproval : 'pending') ?></td>
+                                    <td><?= !empty($a->reviewDueDate) ? html_escape(date('d M Y', strtotime($a->reviewDueDate))) : '-' ?></td>
                                     <td>
-                                        <span class="label label-<?= $approvalStatus === 'approved' ? 'success' : ($approvalStatus === 'rejected' ? 'danger' : 'warning') ?>">
-                                            <?= ucfirst($approvalStatus) ?>
-                                        </span>
-                                        <?php if (!empty($a->editorSetPrice)): ?>
-                                            <div class="small text-success">Price: $<?= number_format((float)$a->editorSetPrice, 2) ?></div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= html_escape($a->reviewDueDate) ?></td>
-                                    <td>
-                                        <a class="btn btn-xs btn-primary" href="<?= base_url('editor/manuscript/' . (int)$a->manuscriptId) ?>">Open Workflow</a>
+                                        <a class="btn btn-xs btn-info" href="<?= base_url('editor/assignments/view/' . (int)$a->manuscriptId) ?>">
+                                            Reviewer Result Action
+                                        </a>
                                     </td>
                                 </tr>
-                                <?php if ($a->status === 'completed' && $approvalStatus === 'pending'): ?>
-                                    <tr>
-                                        <td colspan="7" style="background:#fafafa;">
-                                            <form method="post" action="<?= base_url('editor/review-approval/' . (int)$a->manuscriptId . '/' . (int)$a->assignmentId) ?>" class="form-inline">
-                                                <select name="approvalStatus" class="form-control input-sm approval-status" required>
-                                                    <option value="approved">Approve Reviewer Comment</option>
-                                                    <option value="rejected">Reject Reviewer Comment</option>
-                                                </select>
-                                                <input type="text" name="approvalReason" class="form-control input-sm" style="min-width:220px;" placeholder="Reason for approval/rejection" required>
-                                                <input type="number" step="0.01" min="0.01" name="editorSetPrice" class="form-control input-sm approval-price" placeholder="Price for payment gateway">
-                                                <button class="btn btn-xs btn-primary" type="submit">Submit Editor Approval</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
                             <?php endforeach; else: ?>
                                 <tr><td colspan="7">No reviewer assignments found.</td></tr>
                             <?php endif; ?>
@@ -75,25 +53,3 @@
         </div>
     </section>
 </div>
-<script>
-    (function() {
-        var rows = document.querySelectorAll('.form-inline');
-        rows.forEach(function(form) {
-            var status = form.querySelector('.approval-status');
-            var price = form.querySelector('.approval-price');
-            if (!status || !price) return;
-            var toggle = function() {
-                if (status.value === 'approved') {
-                    price.required = true;
-                    price.disabled = false;
-                } else {
-                    price.required = false;
-                    price.disabled = true;
-                    price.value = '';
-                }
-            };
-            status.addEventListener('change', toggle);
-            toggle();
-        });
-    })();
-</script>

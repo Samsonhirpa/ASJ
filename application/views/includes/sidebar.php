@@ -91,6 +91,12 @@
                     <i class="fa fa-upload"></i> <span>New Submission</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'authorpayment') ? 'active' : '' ?>">
+                <a href="<?= base_url('author/manuscript/payment') ?>">
+                    <i class="fa fa-credit-card"></i> <span>Pay Publishing Fee</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (roleId = 19) ========== -->
@@ -153,6 +159,12 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewprogress') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/assignments') ?>">
                     <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
+                </a>
+            </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/payment') ?>">
+                    <i class="fa fa-money"></i> <span>Payment Menu</span>
                 </a>
             </li>
             

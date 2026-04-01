@@ -73,41 +73,35 @@ class Manuscript extends BaseController
         $this->loadViews('editor/review_progress_view', $this->global, $data, NULL);
     }
 
-    public function approveReviewerResult($manuscriptId)
+    public function reviewProgressDecision($manuscriptId)
     {
-        $this->form_validation->set_rules('approvalNote', 'Approval Note', 'trim|required|min_length[5]');
+        $decision = $this->input->post('decision', true);
+        $allowed = ['accept', 'rereview'];
+        if (!in_array($decision, $allowed, true)) {
+            $this->session->set_flashdata('error', 'Invalid reviewer result action selected.');
+            redirect('editor/assignments/view/' . (int)$manuscriptId);
+        }
 
+        $reasonField = $decision === 'rereview' ? 'rereviewReason' : 'approvalReason';
+        $label = $decision === 'rereview' ? 'Reason for re-review' : 'Approval reason';
+        $minLength = $decision === 'rereview' ? 10 : 5;
+        $this->form_validation->set_rules($reasonField, $label, 'trim|required|min_length[' . $minLength . ']');
         if ($this->form_validation->run() === false) {
             $this->session->set_flashdata('error', validation_errors('', ''));
             redirect('editor/assignments/view/' . (int)$manuscriptId);
         }
 
-        $ok = $this->editor_model->approveReviewerResult(
+        $ok = $this->editor_model->applyProgressDecision(
             (int)$manuscriptId,
             (int)$this->vendorId,
-            $this->input->post('approvalNote', true)
+            $decision,
+            $this->input->post($reasonField, true)
         );
 
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Reviewer comments approved and manuscript moved to payment queue.' : 'Failed to approve reviewer comments.');
-        redirect('editor/assignments/view/' . (int)$manuscriptId);
-    }
-
-    public function requestReReview($manuscriptId)
-    {
-        $this->form_validation->set_rules('rereviewReason', 'Re-review Reason', 'trim|required|min_length[10]');
-
-        if ($this->form_validation->run() === false) {
-            $this->session->set_flashdata('error', validation_errors('', ''));
-            redirect('editor/assignments/view/' . (int)$manuscriptId);
-        }
-
-        $ok = $this->editor_model->requestReReview(
-            (int)$manuscriptId,
-            (int)$this->vendorId,
-            $this->input->post('rereviewReason', true)
-        );
-
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Re-review request sent to reviewers.' : 'Failed to request re-review.');
+        $successMessage = $decision === 'accept'
+            ? 'Reviewer comments approved. Manuscript moved to payment menu.'
+            : 'Re-review requested successfully.';
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $successMessage : 'Failed to save reviewer result action.');
         redirect('editor/assignments/view/' . (int)$manuscriptId);
     }
 
