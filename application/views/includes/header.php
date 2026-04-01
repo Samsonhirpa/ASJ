@@ -551,6 +551,13 @@
                 <span>New Submission</span>
               </a>
             </li>
+
+            <li class="<?php echo (uri_string() == 'author/manuscript/payment') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>author/manuscript/payment">
+                <i class="fa fa-credit-card"></i>
+                <span>Pay Publishing Fee</span>
+              </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (role == 19) ========== -->
@@ -594,6 +601,13 @@
               <a href="<?php echo base_url(); ?>editor/assignments">
                 <i class="fa fa-line-chart"></i> 
                 <span>Track Review Progress</span>
+              </a>
+            </li>
+
+            <li class="<?php echo (uri_string() == 'editor/payment') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/payment">
+                <i class="fa fa-money"></i>
+                <span>Payment Menu</span>
               </a>
             </li>
             
@@ -705,6 +719,24 @@
               <a href="<?php echo base_url(); ?>changePassword">
                 <i class="fa fa-key"></i> 
                 <span>Change Password</span>
+              </a>
+            </li>
+
+            <?php
+            $headerPaymentUrl = 'javascript:void(0);';
+            $headerPaymentLabel = 'Payment (Not Available)';
+            if ($role == 21) {
+                $headerPaymentUrl = base_url('author/manuscript/payment');
+                $headerPaymentLabel = 'Payment';
+            } elseif ($is_admin == 1 || in_array($role, [13,14,15,16,17,18,20])) {
+                $headerPaymentUrl = base_url('editor/payment');
+                $headerPaymentLabel = 'Payment';
+            }
+            ?>
+            <li class="<?php echo (uri_string() == 'author/manuscript/payment' || uri_string() == 'editor/payment') ? 'active' : ''; ?>">
+              <a href="<?php echo $headerPaymentUrl; ?>">
+                <i class="fa fa-credit-card"></i>
+                <span><?php echo $headerPaymentLabel; ?></span>
               </a>
             </li>
             

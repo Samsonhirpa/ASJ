@@ -145,6 +145,8 @@ $route['author/manuscript/submitStep1'] = 'author/manuscript/submitStep1';
 $route['author/manuscript/submitStep2'] = 'author/manuscript/submitStep2';
 $route['author/manuscript/finalSubmit'] = 'author/manuscript/finalSubmit';
 $route['author/manuscript/view/(:num)'] = 'author/manuscript/view/$1';
+$route['author/manuscript/payment'] = 'author/manuscript/payment';
+$route['author/manuscript/payment/submit/(:num)'] = 'author/manuscript/submitPayment/$1';
 
 // Reviewer Routes (add these later)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';
@@ -175,9 +177,14 @@ $route['editor/all-manuscripts'] = 'editor/manuscript/index';
 
 $route['editor/all'] = 'editor/manuscript/index';
 $route['editor/assignments'] = 'editor/manuscript/reviewProgress';
+$route['editor/assignments/view/(:num)'] = 'editor/manuscript/reviewProgressView/$1';
+$route['editor/assignments/decision/(:num)'] = 'editor/manuscript/reviewProgressDecision/$1';
 $route['editor/screening/(:num)'] = 'editor/manuscript/screening/$1';
 $route['editor/plagiarism/(:num)'] = 'editor/manuscript/plagiarism/$1';
 $route['editor/review-approval/(:num)/(:num)'] = 'editor/manuscript/approveReview/$1/$2';
+$route['editor/payment'] = 'editor/manuscript/payment';
+$route['editor/payment/save/(:num)'] = 'editor/manuscript/savePayment/$1';
+$route['editor/payment/publish/(:num)'] = 'editor/manuscript/publishFromPayment/$1';
 $route['editor/board'] = 'editor/chief/board';
 $route['editor/ethics'] = 'editor/chief/ethics';
 $route['editor/policies'] = 'editor/chief/policies';

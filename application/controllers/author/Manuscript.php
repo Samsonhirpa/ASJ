@@ -50,6 +50,35 @@ class Manuscript extends BaseController
         
         $this->loadViews("author/manuscripts", $this->global, $data, NULL);
     }
+
+    public function payment()
+    {
+        $data['payments'] = $this->manuscript_model->getAuthorPaymentQueue($this->vendorId);
+        $this->global['pageTitle'] = 'Pay Publishing Fee - OJAS';
+        $this->global['activeMenu'] = 'authorpayment';
+        $this->loadViews("author/payment", $this->global, $data, NULL);
+    }
+
+    public function submitPayment($manuscriptId)
+    {
+        $this->form_validation->set_rules('transactionReference', 'Transaction Reference', 'trim|required|min_length[4]');
+        $this->form_validation->set_rules('paymentNote', 'Payment Note', 'trim');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('author/manuscript/payment');
+        }
+
+        $ok = $this->manuscript_model->submitAuthorPayment(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $this->input->post('transactionReference', true),
+            $this->input->post('paymentNote', true)
+        );
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Payment submitted successfully.' : 'Unable to submit payment for this manuscript.');
+        redirect('author/manuscript/payment');
+    }
     
     /**
      * Submit new manuscript (Step 1)

@@ -91,6 +91,12 @@
                     <i class="fa fa-upload"></i> <span>New Submission</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'authorpayment') ? 'active' : '' ?>">
+                <a href="<?= base_url('author/manuscript/payment') ?>">
+                    <i class="fa fa-credit-card"></i> <span>Pay Publishing Fee</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (roleId = 19) ========== -->
@@ -153,6 +159,12 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewprogress') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/assignments') ?>">
                     <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
+                </a>
+            </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/payment') ?>">
+                    <i class="fa fa-money"></i> <span>Payment Menu</span>
                 </a>
             </li>
             
@@ -227,6 +239,23 @@
             <li>
                 <a href="<?= base_url('changePassword') ?>">
                     <i class="fa fa-key"></i> <span>Change Password</span>
+                </a>
+            </li>
+
+            <?php
+            $paymentUrl = 'javascript:void(0);';
+            $paymentLabel = 'Payment (Not Available)';
+            if ($role == 21) {
+                $paymentUrl = base_url('author/manuscript/payment');
+                $paymentLabel = 'Payment';
+            } elseif ($is_admin == 1 || in_array($role, [13,14,15,16,17,18,20])) {
+                $paymentUrl = base_url('editor/payment');
+                $paymentLabel = 'Payment';
+            }
+            ?>
+            <li class="<?= (isset($activeMenu) && in_array($activeMenu, ['payment', 'authorpayment'])) ? 'active' : '' ?>">
+                <a href="<?= $paymentUrl ?>">
+                    <i class="fa fa-credit-card"></i> <span><?= $paymentLabel ?></span>
                 </a>
             </li>
             
