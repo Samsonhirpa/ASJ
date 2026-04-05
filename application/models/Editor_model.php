@@ -541,6 +541,19 @@ class Editor_model extends CI_Model
         return $this->db->get()->result();
     }
 
+
+    public function getPublishedManuscripts()
+    {
+        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.updatedDtm, p.articleId, p.doi, p.publishedDate, ji.volume, ji.issueNumber, ji.year');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_published_articles p', 'p.manuscriptId = m.manuscriptId', 'inner');
+        $this->db->join('tbl_journal_issues ji', 'ji.issueId = p.issueId', 'left');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'published');
+        $this->db->order_by('p.publishedDate', 'DESC');
+        return $this->db->get()->result();
+    }
+
     public function savePaymentAction($manuscriptId, $editorId, $method, $amount, $other)
     {
         $existing = $this->db->select('paymentId')

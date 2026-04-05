@@ -137,6 +137,23 @@ class Journal extends CI_Controller  // Don't extend BaseController for public p
     }
     
     /**
+     * View published manuscript by manuscript id - PUBLIC ACCESS
+     */
+    public function manuscript($manuscriptId) {
+        $data['article'] = $this->journal_model->get_published_manuscript((int)$manuscriptId);
+
+        if(!$data['article']) {
+            show_404();
+        }
+
+        $data['title'] = $data['article']->title . ' - OJAS';
+
+        $this->load->view('journal/header', $data);
+        $this->load->view('journal/manuscript_detail', $data);
+        $this->load->view('journal/footer');
+    }
+
+    /**
      * Search - PUBLIC ACCESS
      */
     public function search() {

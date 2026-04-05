@@ -76,6 +76,31 @@ class Journal_model extends CI_Model {
         return $article;
     }
     
+
+    /**
+     * Get published manuscript detail by manuscript id
+     */
+    public function get_published_manuscript($manuscriptId) {
+        $this->db->select('pa.articleId, pa.doi, pa.publishedDate, m.manuscriptId, m.title, m.abstract, m.keywords, m.articleType, m.manuscriptNumber, ji.volume, ji.issueNumber, ji.year as issue_year, ji.month as issue_month');
+        $this->db->from('tbl_published_articles pa');
+        $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
+        $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId', 'left');
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.manuscriptId', (int)$manuscriptId);
+        $article = $this->db->get()->row();
+
+        if($article) {
+            $this->db->select('u.name, ma.authorOrder, ma.isCorresponding');
+            $this->db->from('tbl_manuscript_authors ma');
+            $this->db->join('tbl_users u', 'ma.userId = u.userId');
+            $this->db->where('ma.manuscriptId', $article->manuscriptId);
+            $this->db->order_by('ma.authorOrder', 'ASC');
+            $article->authors = $this->db->get()->result();
+        }
+
+        return $article;
+    }
+
     /**
      * Search articles
      */
