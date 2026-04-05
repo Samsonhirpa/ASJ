@@ -289,19 +289,18 @@
                 <?php endif; ?>
             </div>
 
-            <div class="col-md-4">
-                <h2 class="jh-section-title">Current Issue</h2>
-                <div class="jh-card">
-                    <?php if (isset($latest_issue) && $latest_issue): ?>
-                        <p class="jh-pill">Latest Issue</p>
-                        <h4 style="margin-top:10px;">Volume <?= (int)$latest_issue->volume; ?> · Issue <?= (int)$latest_issue->issueNumber; ?></h4>
-                        <p class="jh-meta"><i class="fa fa-calendar"></i> <?= (int)$latest_issue->year; ?> <?= !empty($latest_issue->month) ? html_escape($latest_issue->month) : ''; ?></p>
-                        <p style="margin-top:12px;"><?= !empty($latest_issue->title) ? html_escape($latest_issue->title) : 'Official issue release of OJAS.'; ?></p>
-                        <a class="jh-link" href="<?= base_url('journal/current-issue'); ?>">View current issue <i class="fa fa-arrow-right"></i></a>
-                    <?php else: ?>
-                        <p class="jh-empty">No published issue is currently available.</p>
-                    <?php endif; ?>
-                </div>
+    <!-- Recently Published Articles -->
+    <section class="container ojas-section">
+        <div class="section-head">
+            <div>
+                <small>Fresh research</small>
+                <h2>Recently published articles</h2>
+                <p class="mb-0 text-muted">Articles appear here after editor payment verification and publish approval.</p>
+            </div>
+            <a href="javascript:void(0)" class="btn btn-ojas-outline btn-sm" onclick="window.location.href='<?php echo base_url('journal/search'); ?>'">
+                <i class="fas fa-search me-1"></i> Search all articles
+            </a>
+        </div>
 
                 <div class="jh-card">
                     <h4 style="margin-top:0;">Why publish with OJAS?</h4>
