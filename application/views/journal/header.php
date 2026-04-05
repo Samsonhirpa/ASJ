@@ -250,9 +250,6 @@ $uiText = array(
 );
 
 $text = isset($uiText[$currentLanguage]) ? $uiText[$currentLanguage] : $uiText['en'];
-$currentUri = current_url();
-$queryParams = $this->input->get();
-unset($queryParams['lang']);
 ?>
 
 <!-- Navigation -->
@@ -291,28 +288,11 @@ unset($queryParams['lang']);
                         <li><a href="<?= base_url('journal/archive') ?>"><?= $text['archive'] ?></a></li>
                     </ul>
                 </li>
-                <li><a href="<?= base_url('journal/author-guidelines') ?>"><?= $text['for_authors'] ?></a></li>
-                <li><a href="<?= base_url('journal/reviewer-guidelines') ?>"><?= $text['for_reviewers'] ?></a></li>
                 <li><a href="<?= base_url('journal/search') ?>"><i class="fa fa-search"></i> <?= $text['search'] ?></a></li>
                 <li><a href="<?= base_url('journal/contact') ?>"><?= $text['contact'] ?></a></li>
             </ul>
             
             <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-language"></i> <?= $text['language'] ?>: <?= $languageOptions[$currentLanguage] ?> <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <?php foreach($languageOptions as $langCode => $langLabel): ?>
-                            <?php
-                                $langParams = $queryParams;
-                                $langParams['lang'] = $langCode;
-                                $switchUrl = $currentUri . (empty($langParams) ? '' : '?' . http_build_query($langParams));
-                            ?>
-                            <li><a href="<?= $switchUrl ?>"><?= $langLabel ?></a></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </li>
                 <?php if($this->session->userdata('isLoggedIn')): ?>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
