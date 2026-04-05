@@ -583,11 +583,63 @@ class Editor_model extends CI_Model
             return false;
         }
 
-        return $this->db->where('manuscriptId', $manuscriptId)->update('tbl_manuscripts', [
+        $manuscript = $this->db->select('manuscriptId, status, isDeleted')
+            ->from('tbl_manuscripts')
+            ->where('manuscriptId', $manuscriptId)
+            ->limit(1)
+            ->get()->row();
+
+        if (!$manuscript || (int)$manuscript->isDeleted === 1 || !in_array($manuscript->status, ['accepted', 'published'], true)) {
+            return false;
+        }
+
+        $issue = $this->db->select('issueId')
+            ->from('tbl_journal_issues')
+            ->where('status', 'published')
+            ->where('isDeleted', 0)
+            ->order_by('year', 'DESC')
+            ->order_by('volume', 'DESC')
+            ->order_by('issueNumber', 'DESC')
+            ->limit(1)
+            ->get()->row();
+
+        if (!$issue) {
+            return false;
+        }
+
+        $published = $this->db->select('articleId')
+            ->from('tbl_published_articles')
+            ->where('manuscriptId', $manuscriptId)
+            ->limit(1)
+            ->get()->row();
+
+        $publishedDate = date('Y-m-d H:i:s');
+        $this->db->trans_start();
+
+        $this->db->where('manuscriptId', $manuscriptId)->update('tbl_manuscripts', [
             'status' => 'published',
             'updatedBy' => $editorId,
-            'updatedDtm' => date('Y-m-d H:i:s')
+            'updatedDtm' => $publishedDate
         ]);
+
+        if ($published) {
+            $this->db->where('articleId', $published->articleId)->update('tbl_published_articles', [
+                'issueId' => $issue->issueId,
+                'publishedDate' => $publishedDate
+            ]);
+        } else {
+            $doi = '10.1234/ojas.' . date('Y') . '.' . $issue->issueId . '.' . $manuscriptId;
+            $this->db->insert('tbl_published_articles', [
+                'manuscriptId' => $manuscriptId,
+                'issueId' => $issue->issueId,
+                'doi' => $doi,
+                'publishedDate' => $publishedDate,
+                'createdDtm' => $publishedDate
+            ]);
+        }
+
+        $this->db->trans_complete();
+        return $this->db->trans_status();
     }
 
     public function makeDecision($manuscriptId, $editorId, $decision, $letter)

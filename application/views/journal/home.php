@@ -502,6 +502,7 @@
             <div>
                 <small>Fresh research</small>
                 <h2>Recently published articles</h2>
+                <p class="mb-0 text-muted">Articles appear here after editor payment verification and publish approval.</p>
             </div>
             <a href="javascript:void(0)" class="btn btn-ojas-outline btn-sm" onclick="window.location.href='<?php echo base_url('journal/search'); ?>'">
                 <i class="fas fa-search me-1"></i> Search all articles

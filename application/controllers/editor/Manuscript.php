@@ -139,7 +139,7 @@ class Manuscript extends BaseController
     public function publishFromPayment($manuscriptId)
     {
         $ok = $this->editor_model->publishFromPayment((int)$manuscriptId, (int)$this->vendorId);
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Manuscript published successfully.' : 'Cannot publish yet. Set payment as free (0) or paid first.');
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Manuscript published successfully and now appears on the journal home page.' : 'Cannot publish yet. Confirm payment as free/paid and ensure at least one published issue exists.');
         redirect('editor/payment');
     }
 
