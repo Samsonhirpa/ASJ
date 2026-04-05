@@ -6,6 +6,11 @@
         <div class="box box-default">
             <div class="box-header with-border">
                 <h3 class="box-title">Approved manuscripts waiting for payment action</h3>
+                <div class="box-tools pull-right">
+                    <a href="<?= base_url('editor/published') ?>" class="btn btn-success btn-sm">
+                        <i class="fa fa-newspaper-o"></i> View Published Manuscripts
+                    </a>
+                </div>
             </div>
             <div class="box-body table-responsive">
                 <table class="table table-bordered table-striped">

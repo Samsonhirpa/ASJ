@@ -167,6 +167,12 @@
                     <i class="fa fa-money"></i> <span>Payment Menu</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'published') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/published') ?>">
+                    <i class="fa fa-newspaper-o"></i> <span>Published Manuscripts</span>
+                </a>
+            </li>
             
             <?php if($role == 13): // Editor-in-Chief only ?>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'editorboard') ? 'active' : '' ?>">
