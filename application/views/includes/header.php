@@ -551,6 +551,12 @@
                 <span>New Submission</span>
               </a>
             </li>
+            <li class="<?php echo (uri_string() == 'author/manuscript/payment') ? 'active' : ''; ?>">
+  <a href="<?php echo base_url(); ?>author/manuscript/payment">
+    <i class="fa fa-credit-card"></i> 
+    <span>Pay Fee</span>
+  </a>
+</li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (role == 19) ========== -->
@@ -596,6 +602,12 @@
                 <span>Track Review Progress</span>
               </a>
             </li>
+               <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/payment') ?>">
+                    <i class="fa fa-money"></i> <span>Payment Menu</span>
+                </a>
+            </li>
+
             
             <!-- Editor-in-Chief only menus -->
             <?php if($role == 13): ?>
