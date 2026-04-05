@@ -108,6 +108,7 @@ class Manuscript extends BaseController
     public function payment()
     {
         $data['payments'] = $this->editor_model->getPaymentQueue();
+        $data['hasPublishedIssue'] = $this->editor_model->hasPublishedIssue();
         $this->global['pageTitle'] = 'Payment Queue - OJAS';
         $this->global['activeMenu'] = 'payment';
         $this->loadViews('editor/payment', $this->global, $data, NULL);
@@ -146,8 +147,18 @@ class Manuscript extends BaseController
 
     public function publishFromPayment($manuscriptId)
     {
+        if (!$this->editor_model->hasPublishedIssue()) {
+            $this->session->set_flashdata('error', 'Cannot publish yet. Please publish at least one journal issue first (Admin > Issues).');
+            redirect('editor/payment');
+        }
+
         $ok = $this->editor_model->publishFromPayment((int)$manuscriptId, (int)$this->vendorId);
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Manuscript published successfully and now appears on the journal home page.' : 'Cannot publish yet. Confirm payment as free/paid and ensure at least one published issue exists.');
+        $this->session->set_flashdata(
+            $ok ? 'success' : 'error',
+            $ok
+                ? 'Manuscript published successfully and now appears on the journal home page.'
+                : 'Cannot publish yet. Confirm payment status is free/paid and manuscript status is accepted.'
+        );
         redirect('editor/payment');
     }
 
