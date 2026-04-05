@@ -13,6 +13,12 @@
                 </div>
             </div>
             <div class="box-body table-responsive">
+                <?php if (empty($hasPublishedIssue)): ?>
+                    <div class="alert alert-warning">
+                        <strong>Publish is currently unavailable:</strong> there is no published journal issue yet.
+                        Please ask admin to publish an issue first from <em>Admin &gt; Issues</em>.
+                    </div>
+                <?php endif; ?>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -42,8 +48,14 @@
                                 >
                                     Payment Action
                                 </button>
+                                <?php $canPublishPayment = ($item->paymentStatus === 'free' || $item->paymentStatus === 'paid'); ?>
                                 <form method="post" action="<?= base_url('editor/payment/publish/' . (int)$item->manuscriptId) ?>" style="display:inline-block;">
-                                    <button class="btn btn-xs btn-success" type="submit" <?= ($item->paymentStatus === 'free' || $item->paymentStatus === 'paid') ? '' : 'disabled' ?>>
+                                    <button
+                                        class="btn btn-xs btn-success"
+                                        type="submit"
+                                        <?= ($canPublishPayment && !empty($hasPublishedIssue)) ? '' : 'disabled' ?>
+                                        title="<?= empty($hasPublishedIssue) ? 'No published issue exists yet' : (!$canPublishPayment ? 'Payment must be Free or Paid first' : 'Publish') ?>"
+                                    >
                                         Publish
                                     </button>
                                 </form>
