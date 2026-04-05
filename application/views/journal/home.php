@@ -1,561 +1,333 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>OJAS | Oromia Journal of Agricultural Sciences</title>
-    <!-- Font Awesome 6 (free icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Bootstrap 5 CSS for grid & utilities -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    :root {
+        --ojas-brand-900: #123524;
+        --ojas-brand-700: #1f5a3e;
+        --ojas-brand-500: #2f7a52;
+        --ojas-accent: #f2c14e;
+        --ojas-bg: #f4f8f5;
+        --ojas-text: #1f2933;
+        --ojas-muted: #5f6f66;
+        --ojas-border: #dce9df;
+    }
 
-        body {
-            font-family: system-ui, 'Segoe UI', 'Inter', 'Helvetica Neue', sans-serif;
-            background: #f6f8f4;
-            line-height: 1.5;
-        }
+    .navbar-ojas {
+        background: linear-gradient(135deg, var(--ojas-brand-900) 0%, var(--ojas-brand-700) 100%) !important;
+    }
 
-        .ojas-home {
-            background: #f6f8f4;
-            padding-bottom: 60px;
-        }
+    .footer {
+        background: linear-gradient(180deg, #0f2d1f 0%, #0a1f15 100%) !important;
+        border-top: 4px solid var(--ojas-accent);
+    }
 
-        .ojas-hero {
-            background: linear-gradient(130deg, #0f3d2e 0%, #2f6949 100%);
-            color: #fff;
-            padding: 80px 0;
-            margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
-        }
+    .journal-home-pro {
+        background: var(--ojas-bg);
+        color: var(--ojas-text);
+        padding-bottom: 50px;
+    }
 
-        .ojas-hero::before {
-            content: "";
-            position: absolute;
-            top: -30%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(246, 198, 75, 0.08);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+    .jh-hero {
+        background: linear-gradient(125deg, var(--ojas-brand-900), var(--ojas-brand-500));
+        color: #fff;
+        padding: 55px 0;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
 
-        .ojas-pill {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(2px);
-            margin-bottom: 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
+    .jh-hero:after {
+        content: '';
+        position: absolute;
+        right: -120px;
+        top: -60px;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+    }
 
-        .ojas-hero h1 {
-            font-size: 3.2rem;
-            line-height: 1.2;
-            margin: 0 0 16px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
+    .jh-hero h1 {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 12px;
+        line-height: 1.25;
+    }
 
-        .ojas-hero p {
-            max-width: 620px;
-            opacity: 0.92;
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-        }
+    .jh-hero p {
+        font-size: 16px;
+        opacity: 0.95;
+        max-width: 760px;
+    }
 
-        .ojas-hero-actions {
-            margin-top: 8px;
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
+    .jh-kpi {
+        background: #fff;
+        border: 1px solid var(--ojas-border);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        margin-top: 16px;
+        box-shadow: 0 6px 18px rgba(15, 45, 31, 0.08);
+    }
 
-        .btn-ojas-primary {
-            background: #f6c64b;
-            color: #173027;
-            border: none;
-            border-radius: 999px;
-            padding: 12px 28px;
-            font-weight: 700;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-        
-        .btn-ojas-primary:hover {
-            background: #f5bc2a;
-            transform: translateY(-2px);
-            color: #0f3d2e;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
+    .jh-kpi .num {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--ojas-brand-700);
+    }
 
-        .btn-ojas-outline {
-            background: transparent;
-            color: #2f6949;
-            border: 1.5px solid #2f6949;
-            border-radius: 999px;
-            padding: 10px 26px;
-            font-weight: 700;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-        
-        .btn-ojas-outline:hover {
-            background: #2f6949;
-            color: white;
-            transform: translateY(-2px);
-        }
+    .jh-kpi .lbl {
+        color: var(--ojas-muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
 
-        .ojas-highlight-card {
-            background: #ffffff;
-            color: #1f2937;
-            border-radius: 28px;
-            padding: 28px 26px;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-        
-        .ojas-highlight-card:hover {
-            transform: translateY(-4px);
-        }
-        
-        .ojas-highlight-card ul {
-            list-style: none;
-            padding-left: 0;
-            margin: 18px 0 20px;
-        }
-        
-        .ojas-highlight-card li {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-        
-        .ojas-highlight-card i.fa-check-circle {
-            color: #2f6949;
-            font-size: 1.2rem;
-            width: 24px;
-        }
-        
-        .ojas-highlight-card .link {
-            font-weight: 700;
-            color: #2f6949;
-            text-decoration: none;
-            border-bottom: 1.5px solid #d4e2da;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .ojas-highlight-card .link:hover {
-            border-bottom-color: #2f6949;
-        }
+    .jh-section-title {
+        margin: 0 0 16px;
+        font-size: 27px;
+        font-weight: 700;
+        color: var(--ojas-brand-900);
+    }
 
-        .ojas-metrics {
-            margin-bottom: 45px;
-        }
-        
-        .metric-box {
-            background: white;
-            border-radius: 24px;
-            padding: 28px 16px;
-            text-align: center;
-            height: 100%;
-            border: 1px solid #e9efe5;
-            transition: all 0.2s;
-            box-shadow: 0 6px 12px -8px rgba(0,0,0,0.05);
-        }
-        
-        .metric-box:hover {
-            border-color: #c0dbc9;
-            box-shadow: 0 12px 22px -12px rgba(0,0,0,0.1);
-        }
-        
-        .metric-box h3 {
-            color: #2f6949;
-            margin: 0 0 8px;
-            font-weight: 800;
-            font-size: 2rem;
-        }
-        
-        .metric-box p {
-            margin: 0;
-            color: #4b5563;
-            font-weight: 500;
-        }
+    .jh-card {
+        background: #fff;
+        border: 1px solid var(--ojas-border);
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 20px rgba(18, 53, 36, 0.05);
+    }
 
-        .ojas-section {
-            margin-bottom: 50px;
-        }
-        
-        .section-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            margin-bottom: 28px;
-            border-bottom: 2px solid #e2e8e0;
-            padding-bottom: 12px;
-        }
-        
-        .section-head small {
-            color: #5a6e5a;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.8px;
-            font-size: 0.75rem;
-        }
-        
-        .section-head h2 {
-            margin: 4px 0 0;
-            font-size: 1.9rem;
-            font-weight: 700;
-            color: #173027;
-        }
+    .jh-pill {
+        display: inline-block;
+        padding: 6px 10px;
+        background: #e9f5ed;
+        color: var(--ojas-brand-700);
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
 
-        .issue-panel {
-            background: #fff;
-            border-radius: 28px;
-            border: 1px solid #eef3e9;
-            padding: 28px 30px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
-        }
-        
-        .issue-meta h3 {
-            color: #2f6949;
-            font-weight: 800;
-            font-size: 1.7rem;
-            margin: 0 0 6px;
-        }
-        
-        .featured-article {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 2px solid #eef2e7;
-        }
-        
-        .type-tag {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            border-radius: 40px;
-            padding: 5px 14px;
-            background: #eef4ea;
-            color: #2f6949;
-            letter-spacing: 0.3px;
-            margin-bottom: 14px;
-        }
-        
-        .featured-article h4 a, .article-tile h5 a {
-            color: #111827;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .featured-article h4 a:hover, .article-tile h5 a:hover {
-            color: #2f6949;
-        }
-        
-        .authors {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin: 10px 0 12px;
-        }
-        
-        .authors i {
-            margin-right: 6px;
-        }
+    .jh-meta {
+        color: var(--ojas-muted);
+        font-size: 13px;
+        margin: 8px 0 0;
+    }
 
-        .article-tile {
-            background: white;
-            border-radius: 20px;
-            padding: 22px;
-            height: 100%;
-            transition: all 0.25s;
-            border: 1px solid #ecf3e8;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .article-tile:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.08);
-            border-color: #cfe3d3;
-        }
-        
-        .article-tile h5 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            line-height: 1.4;
-            margin: 8px 0 12px;
-        }
-        
-        .tile-footer {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 14px;
-            border-top: 1px solid #eef2e7;
-        }
-        
-        .tile-footer a {
-            font-weight: 700;
-            color: #2f6949;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .no-data {
-            color: #5a6b5a;
-            padding: 20px 0;
-            font-style: italic;
-        }
+    .jh-article {
+        height: 100%;
+    }
 
-        .ojas-cta {
-            background: #fff;
-            border-radius: 32px;
-            margin-top: 20px;
-            padding: 32px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 24px;
-            border: 1px solid #e2ecd9;
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.03);
-        }
-        
-        .ojas-cta h3 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin: 0 0 8px;
-            color: #173027;
-        }
-        
-        .cta-actions {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
+    .jh-article h4 {
+        margin: 8px 0 10px;
+        font-size: 19px;
+        line-height: 1.4;
+    }
 
-        @media (max-width: 992px) {
-            .ojas-hero h1 {
-                font-size: 2.4rem;
-            }
-            .section-head h2 {
-                font-size: 1.6rem;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .ojas-hero {
-                padding: 50px 0;
-            }
-            .ojas-cta {
-                flex-direction: column;
-                align-items: flex-start;
-                text-align: left;
-                padding: 28px;
-            }
-            .btn-ojas-primary, .btn-ojas-outline {
-                padding: 8px 20px;
-            }
-            .issue-panel {
-                padding: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="ojas-home">
-    <!-- Hero Section -->
-    <section class="ojas-hero">
+    .jh-article h4 a {
+        color: var(--ojas-text);
+        text-decoration: none;
+    }
+
+    .jh-article h4 a:hover {
+        color: var(--ojas-brand-700);
+    }
+
+    .jh-authors {
+        color: var(--ojas-muted);
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .jh-link {
+        color: var(--ojas-brand-700);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .jh-link:hover {
+        color: var(--ojas-brand-900);
+        text-decoration: underline;
+    }
+
+    .jh-sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .jh-sidebar-list li {
+        border-bottom: 1px dashed #d8e6dc;
+        padding: 10px 0;
+        color: #3d4a43;
+    }
+
+    .jh-empty {
+        color: var(--ojas-muted);
+        font-style: italic;
+    }
+
+    .jh-cta {
+        background: linear-gradient(135deg, #f6fff8 0%, #e9f4ec 100%);
+        border: 1px solid var(--ojas-border);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .btn-ojas-pro {
+        background: var(--ojas-brand-700);
+        color: #fff !important;
+        border-radius: 6px;
+        border: 1px solid var(--ojas-brand-700);
+        padding: 9px 15px;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .btn-ojas-pro:hover {
+        background: var(--ojas-brand-900);
+        border-color: var(--ojas-brand-900);
+    }
+
+    .btn-ojas-ghost {
+        background: #fff;
+        color: var(--ojas-brand-700) !important;
+        border-radius: 6px;
+        border: 1px solid var(--ojas-brand-700);
+        padding: 9px 15px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-ojas-ghost:hover {
+        background: #eaf4ee;
+    }
+</style>
+
+<div class="journal-home-pro">
+    <section class="jh-hero">
         <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-7">
-                    <span class="ojas-pill"><i class="fas fa-check-circle me-1"></i> Peer Reviewed • Open Access • International</span>
-                    <h1>Research-driven agriculture for resilient food systems.</h1>
+            <div class="row">
+                <div class="col-md-8">
+                    <h1>Oromia Journal of Agricultural Sciences (OJAS)</h1>
                     <p>
-                        Oromia Journal of Agricultural Sciences (OJAS) publishes high-impact studies in crop science,
-                        livestock, natural resources, and agri-innovation.
+                        A peer-reviewed, open-access platform advancing agricultural research, innovation, and evidence-based policy for Ethiopia and the wider region.
                     </p>
-                    <div class="ojas-hero-actions">
-                        <a href="javascript:void(0)" class="btn btn-ojas-primary" onclick="window.location.href='<?php echo base_url('journal/current_issue'); ?>'">
-                            <i class="fas fa-book-open me-2"></i>Current Issue
-                        </a>
-                        <a href="javascript:void(0)" class="btn btn-ojas-outline" onclick="window.location.href='<?php echo base_url('author/manuscript/submit'); ?>'">
-                            <i class="fas fa-pen-fancy me-2"></i>Submit Manuscript
-                        </a>
-                    </div>
+                    <a class="btn-ojas-pro" href="<?= base_url('author/manuscript/submit') ?>"><i class="fa fa-upload"></i> Submit Manuscript</a>
+                    <a class="btn-ojas-ghost" href="<?= base_url('journal/archive') ?>"><i class="fa fa-book"></i> Browse Archive</a>
                 </div>
-                <div class="col-lg-5">
-                    <div class="ojas-highlight-card">
-                        <h4><i class="fas fa-seedling me-2" style="color:#2f6949;"></i> Why publish with OJAS?</h4>
-                        <ul>
-                            <li><i class="fas fa-check-circle"></i> Rigorous double-blind review workflow.</li>
-                            <li><i class="fas fa-check-circle"></i> Regional relevance with global scholarly visibility.</li>
-                            <li><i class="fas fa-check-circle"></i> Fast editorial communication and transparent decisions.</li>
-                        </ul>
-                        <a href="javascript:void(0)" class="link" onclick="window.location.href='<?php echo base_url('journal/author_guidelines'); ?>'">
-                            Read author guidelines <i class="fas fa-arrow-right"></i>
-                        </a>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="jh-kpi">
+                                <span class="num"><?= !empty($recent_articles) ? count($recent_articles) : 0 ?></span>
+                                <span class="lbl">Recent Articles</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="jh-kpi">
+                                <span class="num"><?= isset($latest_issue) && $latest_issue ? (int)$latest_issue->year : date('Y') ?></span>
+                                <span class="lbl">Current Year</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="jh-kpi">
+                                <span class="num">Open</span>
+                                <span class="lbl">Access Model</span>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="jh-kpi">
+                                <span class="num">Double</span>
+                                <span class="lbl">Blind Review</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Metrics Section -->
-    <section class="ojas-metrics container">
-        <div class="row g-4">
-            <div class="col-md-4 col-sm-6">
-                <div class="metric-box">
-                    <h3>500+</h3>
-                    <p>Published articles</p>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="metric-box">
-                    <h3>2–4 weeks</h3>
-                    <p>Average first decision</p>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-12">
-                <div class="metric-box">
-                    <h3>50+ countries</h3>
-                    <p>Authors and reviewers network</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Featured Issue Section -->
-    <section class="container ojas-section">
-        <div class="section-head">
-            <div>
-                <small>Latest publication</small>
-                <h2>Featured issue</h2>
-            </div>
-            <a href="javascript:void(0)" class="btn btn-ojas-outline btn-sm" onclick="window.location.href='<?php echo base_url('journal/archive'); ?>'">
-                Browse archive <i class="fas fa-archive ms-1"></i>
-            </a>
-        </div>
-
-        <?php if (isset($latest_issue) && $latest_issue): ?>
-            <div class="issue-panel">
-                <div class="issue-meta">
-                    <h3>Volume <?php echo $latest_issue->volume; ?>, Issue <?php echo $latest_issue->issueNumber; ?></h3>
-                    <p><i class="far fa-calendar-alt me-1"></i> <?php echo $latest_issue->year; ?></p>
-                </div>
-
-                <?php if (!empty($latest_issue->articles)): ?>
-                    <?php $featured = $latest_issue->articles[0]; ?>
-                    <div class="featured-article">
-                        <span class="type-tag"><i class="fas fa-microphone-alt"></i> <?php echo get_article_type_name($featured->articleType); ?></span>
-                        <h4>
-                            <a href="javascript:void(0)" onclick="window.location.href='<?php echo base_url('journal/article/' . $featured->articleId); ?>'">
-                                <?php echo $featured->title; ?>
-                            </a>
-                        </h4>
-                        <p class="authors"><i class="fas fa-users"></i> <?php echo $featured->author_names; ?></p>
-                        <p><?php echo substr(strip_tags($featured->abstract), 0, 260); ?>...</p>
-                        <a href="javascript:void(0)" class="btn btn-ojas-primary btn-sm" onclick="window.location.href='<?php echo base_url('journal/article/' . $featured->articleId); ?>'">
-                            <i class="fas fa-file-alt me-1"></i> Read article
-                        </a>
+    <section class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="jh-section-title">Recent Published Articles</h2>
+                <?php if (!empty($recent_articles)): ?>
+                    <div class="row">
+                        <?php foreach ($recent_articles as $article): ?>
+                            <div class="col-sm-6">
+                                <div class="jh-card jh-article">
+                                    <span class="jh-pill"><?= html_escape(get_article_type_name($article->articleType)); ?></span>
+                                    <h4>
+                                        <a href="<?= base_url('journal/article/' . $article->articleId); ?>">
+                                            <?= html_escape($article->title); ?>
+                                        </a>
+                                    </h4>
+                                    <div class="jh-authors">
+                                        <i class="fa fa-user"></i>
+                                        <?= html_escape($article->author_names); ?>
+                                    </div>
+                                    <p class="jh-meta">
+                                        <i class="fa fa-calendar"></i>
+                                        Volume <?= (int)$article->volume; ?>, Issue <?= (int)$article->issueNumber; ?>
+                                        <?php if (!empty($article->issue_year)): ?>
+                                            (<?= (int)$article->issue_year; ?>)
+                                        <?php endif; ?>
+                                    </p>
+                                    <a class="jh-link" href="<?= base_url('journal/article/' . $article->articleId); ?>">Read article <i class="fa fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php else: ?>
-                    <p class="no-data">This issue is available, but article details are not yet listed.</p>
+                    <div class="jh-card">
+                        <p class="jh-empty">No published articles are available yet. Published manuscripts will appear here once editors complete payment verification and publishing.</p>
+                    </div>
                 <?php endif; ?>
             </div>
-        <?php else: ?>
-            <div class="issue-panel">
-                <p class="no-data">No published issue available yet.</p>
-            </div>
-        <?php endif; ?>
-    </section>
 
-    <!-- Recently Published Articles -->
-    <section class="container ojas-section">
-        <div class="section-head">
-            <div>
-                <small>Fresh research</small>
-                <h2>Recently published articles</h2>
-            </div>
-            <a href="javascript:void(0)" class="btn btn-ojas-outline btn-sm" onclick="window.location.href='<?php echo base_url('journal/search'); ?>'">
-                <i class="fas fa-search me-1"></i> Search all articles
-            </a>
-        </div>
-
-        <div class="row g-4">
-            <?php if (isset($recent_articles) && !empty($recent_articles)): ?>
-                <?php foreach ($recent_articles as $article): ?>
-                    <div class="col-lg-4 col-md-6">
-                        <article class="article-tile">
-                            <span class="type-tag"><?php echo get_article_type_name($article->articleType); ?></span>
-                            <h5>
-                                <a href="javascript:void(0)" onclick="window.location.href='<?php echo base_url('journal/article/' . $article->articleId); ?>'">
-                                    <?php echo substr($article->title, 0, 110); ?>...
-                                </a>
-                            </h5>
-                            <p class="authors"><i class="fas fa-user-pen"></i> <?php echo substr($article->author_names, 0, 80); ?>...</p>
-                            <div class="tile-footer">
-                                <small>Vol <?php echo $article->volume; ?> (<?php echo $article->issueNumber; ?>)</small>
-                                <a href="javascript:void(0)" onclick="window.location.href='<?php echo base_url('journal/article/' . $article->articleId); ?>'">
-                                    View <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </article>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="col-12">
-                    <p class="no-data">No recent articles found.</p>
+            <div class="col-md-4">
+                <h2 class="jh-section-title">Current Issue</h2>
+                <div class="jh-card">
+                    <?php if (isset($latest_issue) && $latest_issue): ?>
+                        <p class="jh-pill">Latest Issue</p>
+                        <h4 style="margin-top:10px;">Volume <?= (int)$latest_issue->volume; ?> · Issue <?= (int)$latest_issue->issueNumber; ?></h4>
+                        <p class="jh-meta"><i class="fa fa-calendar"></i> <?= (int)$latest_issue->year; ?> <?= !empty($latest_issue->month) ? html_escape($latest_issue->month) : ''; ?></p>
+                        <p style="margin-top:12px;"><?= !empty($latest_issue->title) ? html_escape($latest_issue->title) : 'Official issue release of OJAS.'; ?></p>
+                        <a class="jh-link" href="<?= base_url('journal/current-issue'); ?>">View current issue <i class="fa fa-arrow-right"></i></a>
+                    <?php else: ?>
+                        <p class="jh-empty">No published issue is currently available.</p>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+
+                <div class="jh-card">
+                    <h4 style="margin-top:0;">Why publish with OJAS?</h4>
+                    <ul class="jh-sidebar-list">
+                        <li><i class="fa fa-check-circle text-success"></i> Rigorous and ethical peer-review process.</li>
+                        <li><i class="fa fa-check-circle text-success"></i> Open-access dissemination for wider impact.</li>
+                        <li><i class="fa fa-check-circle text-success"></i> Focus on context-relevant agricultural science.</li>
+                        <li><i class="fa fa-check-circle text-success"></i> Editorial support for authors and reviewers.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="container">
-        <div class="ojas-cta">
-            <div>
-                <h3><i class="fas fa-hand-peace me-2" style="color:#2f6949;"></i> Join the OJAS scholarly community</h3>
-                <p>Contribute evidence that improves agriculture, livelihoods, and sustainability across regions.</p>
-            </div>
-            <div class="cta-actions">
-                <a href="javascript:void(0)" class="btn btn-ojas-outline" onclick="window.location.href='<?php echo base_url('journal/about'); ?>'">
-                    <i class="fas fa-info-circle"></i> About OJAS
-                </a>
-                <a href="javascript:void(0)" class="btn btn-ojas-primary" onclick="window.location.href='<?php echo base_url('login'); ?>'">
-                    <i class="fas fa-sign-in-alt"></i> Author login
-                </a>
+    <section class="container" style="margin-top:10px;">
+        <div class="jh-cta">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 style="margin-top:0; color: var(--ojas-brand-900);">Contribute to evidence-driven agricultural transformation</h3>
+                    <p style="color:#42554a; margin-bottom:0;">Submit original research, reviews, and technical notes that shape practice and policy.</p>
+                </div>
+                <div class="col-md-4 text-right" style="margin-top:10px;">
+                    <a class="btn-ojas-pro" href="<?= base_url('journal/author-guidelines') ?>"><i class="fa fa-file-text"></i> Author Guidelines</a>
+                    <a class="btn-ojas-ghost" href="<?= base_url('journal/search') ?>"><i class="fa fa-search"></i> Search Articles</a>
+                </div>
             </div>
         </div>
     </section>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
