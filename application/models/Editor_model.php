@@ -541,6 +541,18 @@ class Editor_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function hasPublishedIssue()
+    {
+        $issue = $this->db->select('issueId')
+            ->from('tbl_journal_issues')
+            ->where('status', 'published')
+            ->where('isDeleted', 0)
+            ->limit(1)
+            ->get()->row();
+
+        return !empty($issue);
+    }
+
 
     public function getPublishedManuscripts()
     {

@@ -68,8 +68,9 @@ class Issue_model extends CI_Model {
     /**
      * Create new issue
      */
-    public function create_issue($data) {
-        $data['createdBy'] = $this->session->userdata('user_id');
+    public function create_issue($data, $userId = null) {
+        $createdBy = $userId ?: (int)$this->session->userdata('userId');
+        $data['createdBy'] = $createdBy;
         $data['createdDtm'] = date('Y-m-d H:i:s');
         
         return $this->db->insert($this->table, $data);
@@ -78,26 +79,37 @@ class Issue_model extends CI_Model {
     /**
      * Update issue
      */
-    public function update_issue($issueId, $data) {
-        $data['updatedBy'] = $this->session->userdata('user_id');
+    public function update_issue($issueId, $data, $userId = null) {
+        $updatedBy = $userId ?: (int)$this->session->userdata('userId');
+        $data['updatedBy'] = $updatedBy;
         $data['updatedDtm'] = date('Y-m-d H:i:s');
         
         $this->db->where('issueId', $issueId);
+        $this->db->where('isDeleted', 0);
         return $this->db->update($this->table, $data);
     }
     
     /**
      * Delete issue (soft delete)
      */
-    public function delete_issue($issueId) {
+    public function delete_issue($issueId, $userId = null) {
+        $updatedBy = $userId ?: (int)$this->session->userdata('userId');
         $data = array(
             'isDeleted' => 1,
-            'updatedBy' => $this->session->userdata('user_id'),
+            'updatedBy' => $updatedBy,
             'updatedDtm' => date('Y-m-d H:i:s')
         );
         
         $this->db->where('issueId', $issueId);
+        $this->db->where('isDeleted', 0);
         return $this->db->update($this->table, $data);
+    }
+
+    public function publish_issue($issueId, $userId = null) {
+        return $this->update_issue((int)$issueId, [
+            'status' => 'published',
+            'publishedDate' => date('Y-m-d')
+        ], $userId);
     }
     
     /**

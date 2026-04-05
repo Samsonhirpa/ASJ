@@ -42,7 +42,7 @@
             <?php if($is_admin == 1): ?>
             <li class="header">ADMINISTRATION</li>
             
-            <li class="treeview <?= (isset($activeMenu) && in_array($activeMenu, ['users', 'roles', 'adduser'])) ? 'active' : '' ?>">
+            <li class="treeview <?= (isset($activeMenu) && in_array($activeMenu, ['users', 'roles', 'adduser', 'issues'])) ? 'active' : '' ?>">
                 <a href="#">
                     <i class="fa fa-users"></i> <span>User Management</span>
                     <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
@@ -56,6 +56,9 @@
                     </li>
                     <li class="<?= (isset($activeMenu) && $activeMenu == 'roles') ? 'active' : '' ?>">
                         <a href="<?= base_url('roleListing') ?>"><i class="fa fa-tags"></i> Roles & Permissions</a>
+                    </li>
+                    <li class="<?= (isset($activeMenu) && $activeMenu == 'issues') ? 'active' : '' ?>">
+                        <a href="<?= base_url('admin/issues') ?>"><i class="fa fa-book"></i> Journal Issues</a>
                     </li>
                 </ul>
             </li>
