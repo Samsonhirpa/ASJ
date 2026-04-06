@@ -380,7 +380,7 @@ class Editor_model extends CI_Model
 
     public function applyProgressDecision($manuscriptId, $editorId, $decision, $reason)
     {
-        $allowed = ['accept', 'reject', 'rereview', 'minor_review', 'major_review'];
+        $allowed = ['accept', 'rereview'];
         if (!in_array($decision, $allowed, true)) {
             return false;
         }
@@ -392,19 +392,33 @@ class Editor_model extends CI_Model
 
         $statusMap = [
             'accept' => 'accepted',
-            'reject' => 'rejected',
-            'rereview' => 'under_review',
-            'minor_review' => 'revision_required',
-            'major_review' => 'revision_required'
+            'rereview' => 'under_review'
         ];
 
         $labelMap = [
             'accept' => 'Accepted',
-            'reject' => 'Rejected',
-            'rereview' => 'Re-review Requested',
-            'minor_review' => 'Minor Revision Required',
-            'major_review' => 'Major Revision Required'
+            'rereview' => 'Re-review Requested'
         ];
+
+        $recommendations = $this->db->select('recommendationDecision')
+            ->from('tbl_reviewer_assignments')
+            ->where('manuscriptId', $manuscriptId)
+            ->where('isDeleted', 0)
+            ->where('status', 'completed')
+            ->get()->result();
+
+        $hasRevisionRecommendation = false;
+        foreach ($recommendations as $rec) {
+            if (in_array($rec->recommendationDecision, ['minor_review', 'major_review'], true)) {
+                $hasRevisionRecommendation = true;
+                break;
+            }
+        }
+
+        if ($decision === 'accept' && $hasRevisionRecommendation) {
+            $statusMap['accept'] = 'revision_required';
+            $labelMap['accept'] = 'Revision Required by Reviewer';
+        }
 
         $this->db->trans_start();
 
@@ -417,7 +431,7 @@ class Editor_model extends CI_Model
             'updatedDtm' => date('Y-m-d H:i:s')
         ]);
 
-        if ($decision === 'accept') {
+        if ($decision === 'accept' && !$hasRevisionRecommendation) {
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->where('isDeleted', 0);
             $this->db->where('status', 'completed');
@@ -431,7 +445,7 @@ class Editor_model extends CI_Model
             ]);
         }
 
-        if (in_array($decision, ['reject', 'minor_review', 'major_review'], true)) {
+        if ($decision === 'accept' && $hasRevisionRecommendation) {
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->where('isDeleted', 0);
             $this->db->where('status', 'completed');
@@ -465,7 +479,7 @@ class Editor_model extends CI_Model
         }
 
         $compiledComments = '';
-        if (in_array($decision, ['minor_review', 'major_review'], true)) {
+        if ($decision === 'accept' && $hasRevisionRecommendation) {
             $comments = $this->db->select('u.name as reviewerName, ra.commentsToAuthor')
                 ->from('tbl_reviewer_assignments ra')
                 ->join('tbl_users u', 'u.userId = ra.reviewerId', 'left')
@@ -488,6 +502,18 @@ class Editor_model extends CI_Model
             'referenceType' => 'manuscript',
             'createdDtm' => date('Y-m-d H:i:s')
         ]);
+
+        if ($decision === 'accept' && !$hasRevisionRecommendation) {
+            $this->db->insert('tbl_notifications', [
+                'userId' => $manuscript->submittedBy,
+                'type' => 'payment_pending',
+                'subject' => 'There is new payment pending',
+                'message' => 'Your manuscript ' . $manuscript->manuscriptNumber . ' is accepted and moved to payment gateway.',
+                'referenceId' => $manuscriptId,
+                'referenceType' => 'manuscript',
+                'createdDtm' => date('Y-m-d H:i:s')
+            ]);
+        }
 
         if ($decision === 'rereview') {
             $reviewers = $this->db->select('reviewerId')
@@ -586,13 +612,49 @@ class Editor_model extends CI_Model
         ];
 
         if ($existing) {
-            return $this->db->where('paymentId', $existing->paymentId)->update('tbl_manuscript_payments', $payload);
+            $ok = $this->db->where('paymentId', $existing->paymentId)->update('tbl_manuscript_payments', $payload);
+            if ($ok) {
+                $this->notifyAuthorPaymentPending($manuscriptId, $status);
+            }
+            return $ok;
         }
 
         $payload['manuscriptId'] = $manuscriptId;
         $payload['createdBy'] = $editorId;
         $payload['createdDtm'] = date('Y-m-d H:i:s');
-        return $this->db->insert('tbl_manuscript_payments', $payload);
+        $ok = $this->db->insert('tbl_manuscript_payments', $payload);
+        if ($ok) {
+            $this->notifyAuthorPaymentPending($manuscriptId, $status);
+        }
+        return $ok;
+    }
+
+    private function notifyAuthorPaymentPending($manuscriptId, $paymentStatus)
+    {
+        $manuscript = $this->db->select('manuscriptId, manuscriptNumber, submittedBy')
+            ->from('tbl_manuscripts')
+            ->where('manuscriptId', $manuscriptId)
+            ->where('isDeleted', 0)
+            ->limit(1)
+            ->get()->row();
+
+        if (!$manuscript) {
+            return;
+        }
+
+        $message = $paymentStatus === 'free'
+            ? 'Your manuscript ' . $manuscript->manuscriptNumber . ' has no publication fee.'
+            : 'There is new payment pending for manuscript ' . $manuscript->manuscriptNumber . '.';
+
+        $this->db->insert('tbl_notifications', [
+            'userId' => $manuscript->submittedBy,
+            'type' => 'payment_pending',
+            'subject' => 'Payment update available',
+            'message' => $message,
+            'referenceId' => $manuscriptId,
+            'referenceType' => 'manuscript',
+            'createdDtm' => date('Y-m-d H:i:s')
+        ]);
     }
 
     public function publishFromPayment($manuscriptId, $editorId)

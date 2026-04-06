@@ -187,13 +187,35 @@
                     </div>
                     
                     <div class="box-body" style="padding: 20px;">
-                        <a href="<?= base_url('author/manuscript/edit/'.$manuscript->manuscriptId) ?>" class="btn btn-warning btn-block" style="border-radius: 8px; padding: 12px;">
-                            <i class="fa fa-edit"></i> Submit Revision
+                        <a href="<?= base_url('author/manuscript/revision-notifications') ?>" class="btn btn-warning btn-block" style="border-radius: 8px; padding: 12px;">
+                            <i class="fa fa-edit"></i> Open Revision Notification Page
                         </a>
                     </div>
                 </div>
                 <?php endif; ?>
             </div>
         </div>
+
+        <?php if(!empty($reviewComments)): ?>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 20px;">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-comments"></i> Reviewer Comments to Author</h3>
+                    </div>
+                    <div class="box-body">
+                        <?php foreach($reviewComments as $comment): ?>
+                            <div style="border:1px solid #eee; border-radius:8px; padding:12px; margin-bottom:10px;">
+                                <strong><?= html_escape($comment->reviewerName ?: 'Reviewer') ?></strong>
+                                <span class="label label-default"><?= html_escape(ucwords(str_replace('_', ' ', $comment->recommendationDecision ?: 'pending'))) ?></span>
+                                <div class="text-muted" style="margin:6px 0;"><?= $comment->reviewSubmittedDate ? date('d M Y H:i', strtotime($comment->reviewSubmittedDate)) : '-' ?></div>
+                                <div><?= nl2br(html_escape($comment->commentsToAuthor)) ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </section>
 </div>

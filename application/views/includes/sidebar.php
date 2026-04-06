@@ -37,6 +37,12 @@
                     <i class="fa fa-dashboard"></i> <span>Dashboard</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'journalHome') ? 'active' : '' ?>">
+                <a href="<?= base_url('journal') ?>">
+                    <i class="fa fa-home"></i> <span>Journal Home</span>
+                </a>
+            </li>
             
             <!-- ========== SYSTEM ADMIN MENU (isAdmin = 1) ========== -->
             <?php if($is_admin == 1): ?>
@@ -100,6 +106,12 @@
                     <i class="fa fa-credit-card"></i> <span>Pay Publishing Fee</span>
                 </a>
             </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'revisionNotifications') ? 'active' : '' ?>">
+                <a href="<?= base_url('author/manuscript/revision-notifications') ?>">
+                    <i class="fa fa-bell"></i> <span>Revision Notifications</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (roleId = 19) ========== -->
@@ -127,7 +139,7 @@
                 </a>
             </li>
             
-            <li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewGuidelines') ? 'active' : '' ?>">
                 <a href="<?= base_url('reviewer/guidelines') ?>">
                     <i class="fa fa-book"></i> <span>Review Guidelines</span>
                 </a>

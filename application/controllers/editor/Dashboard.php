@@ -16,6 +16,7 @@ class Dashboard extends BaseController
         }
 
         $this->load->model('editor_model');
+        $this->load->model('notification_model');
     }
 
     public function index()
@@ -23,9 +24,10 @@ class Dashboard extends BaseController
         $data['stats'] = $this->editor_model->getDashboardStats();
         $data['manuscripts'] = $this->editor_model->getAllManuscripts();
         $data['activities'] = $this->editor_model->getRecentActivity();
+        $data['notifications'] = $this->notification_model->getUserNotifications($this->vendorId, 8);
 
         $this->global['pageTitle'] = 'Editor Dashboard - OJAS';
-        $this->global['activeMenu'] = 'editorDashboard';
+        $this->global['activeMenu'] = 'dashboard';
         $this->loadViews('editor/dashboard', $this->global, $data, NULL);
     }
 }

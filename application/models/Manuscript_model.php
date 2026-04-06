@@ -195,6 +195,95 @@ class Manuscript_model extends CI_Model
             'updatedDtm' => date('Y-m-d H:i:s')
         ];
 
-        return $this->db->where('paymentId', $payment->paymentId)->update('tbl_manuscript_payments', $update);
+        $ok = $this->db->where('paymentId', $payment->paymentId)->update('tbl_manuscript_payments', $update);
+        if ($ok) {
+            $manuscript = $this->db->select('manuscriptNumber, assignedEditorId')
+                ->from('tbl_manuscripts')
+                ->where('manuscriptId', $manuscriptId)
+                ->limit(1)
+                ->get()->row();
+
+            if ($manuscript && !empty($manuscript->assignedEditorId)) {
+                $this->db->insert('tbl_notifications', [
+                    'userId' => $manuscript->assignedEditorId,
+                    'type' => 'payment_submitted',
+                    'subject' => 'Author submitted payment',
+                    'message' => 'Author submitted payment for manuscript ' . $manuscript->manuscriptNumber . '.',
+                    'referenceId' => $manuscriptId,
+                    'referenceType' => 'manuscript',
+                    'createdDtm' => date('Y-m-d H:i:s')
+                ]);
+            }
+        }
+
+        return $ok;
+    }
+
+    public function getAuthorRevisionNotifications($authorId)
+    {
+        $this->db->select('
+            m.manuscriptId,
+            m.manuscriptNumber,
+            m.title,
+            m.status,
+            m.updatedDtm,
+            GROUP_CONCAT(CONCAT(u.name, ": ", LEFT(COALESCE(ra.commentsToAuthor, ""), 220)) SEPARATOR "\n") as reviewerComments
+        ', false);
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
+        $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
+        $this->db->where('m.submittedBy', $authorId);
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'revision_required');
+        $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title', 'm.status', 'm.updatedDtm']);
+        $this->db->order_by('m.updatedDtm', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function getManuscriptReviewerComments($manuscriptId)
+    {
+        $this->db->select('u.name as reviewerName, ra.recommendationDecision, ra.commentsToAuthor, ra.reviewSubmittedDate');
+        $this->db->from('tbl_reviewer_assignments ra');
+        $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
+        $this->db->where('ra.manuscriptId', $manuscriptId);
+        $this->db->where('ra.isDeleted', 0);
+        $this->db->where('ra.commentsToAuthor IS NOT NULL', null, false);
+        $this->db->order_by('ra.reviewSubmittedDate', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function markRevisionResubmitted($manuscriptId, $authorId, $responseNote = '')
+    {
+        $this->db->trans_start();
+
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('submittedBy', $authorId);
+        $this->db->where('status', 'revision_required');
+        $this->db->update('tbl_manuscripts', [
+            'status' => 'under_review',
+            'decisionLetter' => trim('Author resubmitted revision. ' . $responseNote),
+            'updatedBy' => $authorId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('isDeleted', 0);
+        $this->db->update('tbl_reviewer_assignments', [
+            'status' => 'accepted',
+            'recommendationDecision' => null,
+            'commentsToAuthor' => null,
+            'commentsToEditor' => null,
+            'confidentialComments' => null,
+            'reviewSubmittedDate' => null,
+            'editorReviewApprovalStatus' => 'pending',
+            'editorReviewApprovalReason' => null,
+            'editorReviewApprovalDate' => null,
+            'paymentStatus' => 'not_ready',
+            'updatedBy' => $authorId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->db->trans_complete();
+        return $this->db->trans_status();
     }
 }

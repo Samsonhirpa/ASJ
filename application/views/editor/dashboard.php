@@ -5,6 +5,20 @@
 
     <section class="content">
         <div class="row">
+            <div class="col-md-12">
+                <div class="box box-solid" style="background:linear-gradient(135deg,#1f7a8c,#2c5f2d); color:#fff;">
+                    <div class="box-body" style="padding:16px 20px;">
+                        <h4 style="margin:0 0 12px 0;"><i class="fa fa-th-large"></i> Dashboard Home Menu</h4>
+                        <a class="btn btn-default btn-sm" href="<?= base_url('journal') ?>"><i class="fa fa-home"></i> Journal Home</a>
+                        <a class="btn btn-default btn-sm" href="<?= base_url('editor/all-manuscripts') ?>"><i class="fa fa-list"></i> Manuscripts</a>
+                        <a class="btn btn-default btn-sm" href="<?= base_url('editor/assignments') ?>"><i class="fa fa-line-chart"></i> Review Progress</a>
+                        <a class="btn btn-default btn-sm" href="<?= base_url('editor/payment') ?>"><i class="fa fa-money"></i> Payment Queue</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-3 col-sm-6"><div class="small-box bg-aqua"><div class="inner"><h3><?= (int)$stats['all'] ?></h3><p>All Manuscripts</p></div><a href="<?= base_url('editor/all-manuscripts') ?>" class="small-box-footer">Open <i class="fa fa-arrow-circle-right"></i></a></div></div>
             <div class="col-md-3 col-sm-6"><div class="small-box bg-yellow"><div class="inner"><h3><?= (int)$stats['pending'] ?></h3><p>Pending Manuscripts</p></div><a href="<?= base_url('editor/pending') ?>" class="small-box-footer">Open <i class="fa fa-arrow-circle-right"></i></a></div></div>
             <div class="col-md-3 col-sm-6"><div class="small-box bg-orange"><div class="inner"><h3><?= (int)$stats['underReview'] ?></h3><p>Under Review</p></div><a href="<?= base_url('editor/all-manuscripts') ?>" class="small-box-footer">Track <i class="fa fa-arrow-circle-right"></i></a></div></div>
@@ -53,6 +67,23 @@
                                 <li><div class="timeline-item"><div class="timeline-body">No recent editorial activity.</div></div></li>
                             <?php endif; ?>
                         </ul>
+                    </div>
+                </div>
+                <div class="box box-info">
+                    <div class="box-header with-border"><h3 class="box-title">Notifications</h3></div>
+                    <div class="box-body">
+                        <?php if (!empty($notifications)): ?>
+                            <ul class="list-group">
+                                <?php foreach ($notifications as $n): ?>
+                                    <li class="list-group-item">
+                                        <strong><?= html_escape($n->subject) ?></strong><br>
+                                        <span class="text-muted"><?= html_escape($n->message) ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <div class="text-muted">No new notifications.</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

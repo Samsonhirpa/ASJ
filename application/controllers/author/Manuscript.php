@@ -431,6 +431,7 @@ class Manuscript extends BaseController
         
         $data['manuscript'] = $manuscript;
         $data['files'] = $this->manuscript_model->getManuscriptFiles($manuscriptId);
+        $data['reviewComments'] = $this->manuscript_model->getManuscriptReviewerComments($manuscriptId);
         
         // Get authors (existing users)
         $this->db->select('u.*, ma.isCorresponding, ma.authorOrder');
@@ -456,6 +457,71 @@ class Manuscript extends BaseController
         $data['activeTab'] = 'submissions';
         
         $this->loadViews("author/view_manuscript", $this->global, $data, NULL);
+    }
+
+    public function revisionNotifications()
+    {
+        $authorId = $this->vendorId;
+        $data['manuscripts'] = $this->manuscript_model->getAuthorRevisionNotifications($authorId);
+        $this->global['pageTitle'] = 'Revision Notifications - OJAS';
+        $this->global['activeMenu'] = 'revisionNotifications';
+        $this->loadViews("author/revision_notifications", $this->global, $data, NULL);
+    }
+
+    public function resubmitRevision($manuscriptId)
+    {
+        $manuscript = $this->manuscript_model->getManuscript((int)$manuscriptId);
+        if (!$manuscript || (int)$manuscript->submittedBy !== (int)$this->vendorId || $manuscript->status !== 'revision_required') {
+            $this->session->set_flashdata('error', 'This manuscript is not available for revision resubmission.');
+            redirect('author/manuscript/revision-notifications');
+        }
+
+        if (empty($_FILES['revised_main_file']['name'])) {
+            $this->session->set_flashdata('error', 'Please upload a revised manuscript file.');
+            redirect('author/manuscript/revision-notifications');
+        }
+
+        $upload = $this->file_model->uploadFile((int)$manuscriptId, 'revised_main_file', 'revised_main');
+        if ($upload !== true) {
+            $this->session->set_flashdata('error', 'Revision upload failed: ' . $upload);
+            redirect('author/manuscript/revision-notifications');
+        }
+
+        $response = trim((string)$this->input->post('authorRevisionResponse', true));
+        $this->manuscript_model->markRevisionResubmitted((int)$manuscriptId, (int)$this->vendorId, $response);
+
+        $reviewers = $this->db->select('reviewerId')
+            ->from('tbl_reviewer_assignments')
+            ->where('manuscriptId', (int)$manuscriptId)
+            ->where('isDeleted', 0)
+            ->get()->result();
+
+        foreach ($reviewers as $reviewer) {
+            $this->db->insert('tbl_notifications', [
+                'userId' => $reviewer->reviewerId,
+                'type' => 'revision_resubmitted',
+                'subject' => 'Revised manuscript is available for your review',
+                'message' => 'The author resubmitted manuscript ' . $manuscript->manuscriptNumber . '. You can continue reviewing without new assignment.',
+                'referenceId' => (int)$manuscriptId,
+                'referenceType' => 'manuscript',
+                'createdDtm' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        if (!empty($manuscript->assignedEditorId)) {
+            $this->db->insert('tbl_notifications', [
+                'userId' => $manuscript->assignedEditorId,
+                'type' => 'revision_resubmitted',
+                'subject' => 'Author revised manuscript resubmitted',
+                'message' => 'Manuscript ' . $manuscript->manuscriptNumber . ' was resubmitted and returned to review workflow.',
+                'referenceId' => (int)$manuscriptId,
+                'referenceType' => 'manuscript',
+                'createdDtm' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        $this->session->set_flashdata('success', 'Revision submitted successfully. Reviewers have been notified.');
+        redirect('author/manuscript/revision-notifications');
     }
     
     /**

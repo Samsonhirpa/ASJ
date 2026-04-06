@@ -98,9 +98,18 @@ class Manuscript extends BaseController
             $this->input->post($reasonField, true)
         );
 
-        $successMessage = $decision === 'accept'
-            ? 'Reviewer comments approved. Manuscript moved to payment menu.'
-            : 'Re-review requested successfully.';
+        $successMessage = 'Reviewer action saved successfully.';
+        if ($ok && $decision === 'accept') {
+            $updated = $this->editor_model->getManuscript((int)$manuscriptId);
+            if ($updated && $updated->status === 'revision_required') {
+                $successMessage = 'Reviewer comments accepted. Major/minor revision sent to author notification page.';
+            } else {
+                $successMessage = 'Reviewer comments accepted. Manuscript moved to payment gateway queue.';
+            }
+        } elseif ($ok && $decision === 'rereview') {
+            $successMessage = 'Re-review requested successfully.';
+        }
+
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $successMessage : 'Failed to save reviewer result action.');
         redirect('editor/assignments/view/' . (int)$manuscriptId);
     }

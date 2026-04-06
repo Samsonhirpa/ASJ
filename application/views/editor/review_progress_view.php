@@ -40,6 +40,10 @@
 
                 <hr>
                 <h4>Reviewer Result Action</h4>
+                <div class="alert alert-info">
+                    Editor can perform only one action: <strong>Accept Reviewer Comment</strong> or <strong>To Re-Review</strong>.<br>
+                    If accepted recommendations include <em>major/minor review</em>, author gets revision notification instead of direct acceptance.
+                </div>
                 <form method="post" action="<?= base_url('editor/assignments/decision/' . (int)$manuscript->manuscriptId) ?>" id="reviewerResultActionForm">
                     <div class="form-group">
                         <label>Approval reason</label>
