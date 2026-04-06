@@ -205,6 +205,7 @@ class Reviewer_model extends CI_Model
         $this->db->where('assignmentId', $assignmentId);
         $this->db->where('reviewerId', $reviewerId);
         $this->db->where('status', 'accepted');
+        $this->db->where('recommendationDecision IS NULL', null, false);
         return $this->db->update($this->table, $update);
     }
 

@@ -90,7 +90,11 @@ class Assignment extends BaseController
     {
         $assignment = $this->reviewer_model->getAssignmentForReviewer($assignmentId, $this->vendorId);
 
-        if (!$assignment || $assignment->status !== 'accepted') {
+        if (
+            !$assignment
+            || $assignment->status !== 'accepted'
+            || !empty($assignment->recommendationDecision)
+        ) {
             $this->session->set_flashdata('error', 'This review cannot be submitted in its current state.');
             redirect('reviewer/assignments');
         }
@@ -132,6 +136,13 @@ class Assignment extends BaseController
         }
 
         redirect('reviewer/completed');
+    }
+
+    public function guidelines()
+    {
+        $this->global['pageTitle'] = 'Reviewer Guidelines - OJAS';
+        $this->global['activeMenu'] = 'reviewGuidelines';
+        $this->loadViews('reviewer/guidelines', $this->global, [], NULL);
     }
 
     public function downloadManuscript($assignmentId)

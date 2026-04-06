@@ -122,7 +122,35 @@
                                     Author Guidelines
                                 </a>
                             </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="<?= base_url('author/manuscript/revision-notifications') ?>" class="btn btn-block btn-lg" style="background: #fd7e14; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                                    <i class="fa fa-bell fa-2x"></i><br>
+                                    Revision Alerts
+                                </a>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box" style="border-radius: 12px;">
+                    <div class="box-header with-border"><h3 class="box-title"><i class="fa fa-bell"></i> Notifications</h3></div>
+                    <div class="box-body">
+                        <?php if (!empty($notifications)): ?>
+                            <ul class="list-group">
+                                <?php foreach($notifications as $n): ?>
+                                    <li class="list-group-item">
+                                        <strong><?= html_escape($n->subject) ?></strong><br>
+                                        <span class="text-muted"><?= html_escape($n->message) ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p class="text-muted">No new notifications.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

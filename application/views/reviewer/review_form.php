@@ -25,7 +25,7 @@
                                 Download is enabled only after you accept this assignment.
                             </div>
                         <?php endif; ?>
-                        <a href="<?= base_url('journal/reviewer-guidelines') ?>" class="btn btn-sm btn-default"><i class="fa fa-book"></i> Review Guidelines</a>
+                        <a href="<?= base_url('reviewer/guidelines') ?>" class="btn btn-sm btn-default"><i class="fa fa-book"></i> Review Guidelines</a>
                     </div>
                 </div>
             </div>
@@ -73,8 +73,10 @@
                             </div>
                         </div>
                         <div class="box-footer">
-                            <?php if ($assignment->status === 'accepted'): ?>
+                            <?php if ($assignment->status === 'accepted' && empty($assignment->recommendationDecision)): ?>
                                 <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Submit Review</button>
+                            <?php elseif (!empty($assignment->recommendationDecision)): ?>
+                                <div class="alert alert-info" style="margin-bottom: 0;">You already submitted recommendation. You can comment again only when editor requests re-review.</div>
                             <?php else: ?>
                                 <div class="alert alert-warning" style="margin-bottom: 0;">Please accept the invitation before submitting your review.</div>
                             <?php endif; ?>

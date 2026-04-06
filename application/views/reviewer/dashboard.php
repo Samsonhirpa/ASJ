@@ -55,8 +55,30 @@
                         <p><strong>Average Turnaround:</strong> <?= $performance['averageTurnaroundDays'] ?> days</p>
                         <p><strong>On-time Rate:</strong> <?= $performance['onTimeRate'] ?>%</p>
                         <hr>
-                        <a href="<?= base_url('journal/reviewer-guidelines') ?>" class="btn btn-block btn-default"><i class="fa fa-book"></i> Review Guidelines</a>
+                        <a href="<?= base_url('reviewer/guidelines') ?>" class="btn btn-block btn-default"><i class="fa fa-book"></i> Review Guidelines</a>
                         <a href="<?= base_url('reviewer/dashboard/reminders') ?>" class="btn btn-block btn-warning"><i class="fa fa-bell"></i> Send Pending Review Reminders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header with-border"><h3 class="box-title"><i class="fa fa-bell"></i> Latest Notifications</h3></div>
+                    <div class="box-body">
+                        <?php if (!empty($notifications)): ?>
+                            <ul class="list-group">
+                                <?php foreach ($notifications as $n): ?>
+                                    <li class="list-group-item">
+                                        <strong><?= html_escape($n->subject) ?></strong><br>
+                                        <span class="text-muted"><?= html_escape($n->message) ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <div class="text-muted">No new notifications.</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

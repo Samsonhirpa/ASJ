@@ -6,12 +6,13 @@
         <div class="box">
             <div class="box-body table-responsive">
                 <table class="table table-bordered table-hover">
-                    <thead><tr><th>Manuscript #</th><th>Title</th><th>Due Date</th><th>Invitation</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Manuscript #</th><th>Title</th><th>Manuscript Status</th><th>Due Date</th><th>Invitation</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <?php if (!empty($assignments)): foreach ($assignments as $item): ?>
                             <tr>
                                 <td><?= $item->manuscriptNumber ?></td>
                                 <td><?= html_escape(strlen($item->title) > 80 ? substr($item->title,0,80).'...' : $item->title) ?></td>
+                                <td><span class="label label-info"><?= html_escape(ucfirst(str_replace('_', ' ', $item->manuscriptStatus))) ?></span></td>
                                 <td><?= $item->reviewDueDate ? date('d M Y', strtotime($item->reviewDueDate)) : '-' ?></td>
                                 <td>
                                     <span class="label label-<?= $item->responseStatus === 'accepted' ? 'success' : ($item->responseStatus === 'declined' ? 'danger' : 'warning') ?>"><?= ucfirst($item->responseStatus) ?></span>
@@ -35,7 +36,7 @@
                                 </td>
                             </tr>
                         <?php endforeach; else: ?>
-                            <tr><td colspan="6" class="text-center text-muted">No review assignments available.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted">No review assignments available.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

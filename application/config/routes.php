@@ -146,6 +146,8 @@ $route['author/manuscript/submitStep1'] = 'author/manuscript/submitStep1';
 $route['author/manuscript/submitStep2'] = 'author/manuscript/submitStep2';
 $route['author/manuscript/finalSubmit'] = 'author/manuscript/finalSubmit';
 $route['author/manuscript/view/(:num)'] = 'author/manuscript/view/$1';
+$route['author/manuscript/revision-notifications'] = 'author/manuscript/revisionNotifications';
+$route['author/manuscript/resubmit-revision/(:num)'] = 'author/manuscript/resubmitRevision/$1';
 $route['author/manuscript/payment'] = 'author/manuscript/payment';
 $route['author/manuscript/payment/submit/(:num)'] = 'author/manuscript/submitPayment/$1';
 
@@ -167,6 +169,7 @@ $route['reviewer/assignment/download/(:num)'] = 'reviewer/assignment/downloadMan
 $route['reviewer/assignment/accept/(:num)'] = 'reviewer/assignment/accept/$1';
 $route['reviewer/assignment/decline/(:num)'] = 'reviewer/assignment/decline/$1';
 $route['reviewer/assignment/submit/(:num)'] = 'reviewer/assignment/submitReview/$1';
+$route['reviewer/guidelines'] = 'reviewer/assignment/guidelines';
 
 // Editor Module Routes (Coming Soon)
 $route['editor/dashboard'] = 'editor/dashboard/index';
