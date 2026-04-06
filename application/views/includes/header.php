@@ -604,7 +604,7 @@
             </li>
                <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/payment') ?>">
-                    <i class="fa fa-money"></i> <span>Payment Menu</span>
+                    <i class="fa fa-money"></i> <span>Payment Gateway</span>
                 </a>
             </li>
 
@@ -636,113 +636,8 @@
             <?php endif; ?>
             <?php endif; ?>
             
-            <!-- ========== JOURNAL MANAGEMENT (Common for all) ========== -->
-            <li class="header">JOURNAL</li>
-            
-            <li class="<?php echo (uri_string() == 'journal/current-issue') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>journal/current-issue">
-                <i class="fa fa-book"></i> 
-                <span>Current Issue</span>
-              </a>
-            </li>
-            
-            <li class="<?php echo (uri_string() == 'journal/archive') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>journal/archive">
-                <i class="fa fa-archive"></i> 
-                <span>All Issues</span>
-              </a>
-            </li>
-            
-            <li class="treeview <?php echo (uri_string() == 'journal/about' || uri_string() == 'journal/aims-scope' || uri_string() == 'journal/editorial-board') ? 'active' : ''; ?>">
-              <a href="#">
-                <i class="fa fa-info-circle"></i> 
-                <span>About Journal</span>
-                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
-              </a>
-              <ul class="treeview-menu">
-                <li><a href="<?php echo base_url(); ?>journal/about"><i class="fa fa-info"></i> About OJAS</a></li>
-                <li><a href="<?php echo base_url(); ?>journal/aims-scope"><i class="fa fa-bullseye"></i> Aims & Scope</a></li>
-                <li><a href="<?php echo base_url(); ?>journal/editorial-board"><i class="fa fa-users"></i> Editorial Board</a></li>
-                <li><a href="<?php echo base_url(); ?>journal/author-guidelines"><i class="fa fa-pencil"></i> Author Guidelines</a></li>
-                <li><a href="<?php echo base_url(); ?>journal/reviewer-guidelines"><i class="fa fa-eye"></i> Reviewer Guidelines</a></li>
-              </ul>
-            </li>
-            
-            <!-- ========== BOOKING & TASKS (If access) ========== -->
-            <?php if($is_admin == 1 || (isset($access_info['Booking']) && ($access_info['Booking']['list'] == 1 || $access_info['Booking']['total_access'] == 1))): ?>
-            <li class="<?php echo (uri_string() == 'booking') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>booking">
-                <i class="fa fa-calendar"></i> 
-                <span>Booking</span>
-              </a>
-            </li>
-            <?php endif; ?>
-            
-            <?php if($is_admin == 1 || (isset($access_info['Task']) && ($access_info['Task']['list'] == 1 || $access_info['Task']['total_access'] == 1))): ?>
-            <li class="<?php echo (uri_string() == 'task') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>task">
-                <i class="fa fa-tasks"></i> 
-                <span>Tasks</span>
-              </a>
-            </li>
-            <?php endif; ?>
-            
-            <!-- ========== REPORTS SECTION ========== -->
-            <li class="header">REPORTS</li>
-            
-            <li class="treeview">
-              <a href="#">
-                <i class="fa fa-bar-chart"></i> 
-                <span>Analytics</span>
-                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
-              </a>
-              <ul class="treeview-menu">
-                <li><a href="#"><i class="fa fa-file-pdf-o"></i> Annual Report</a></li>
-                <li><a href="#"><i class="fa fa-file-excel-o"></i> Export Data</a></li>
-                <li><a href="#"><i class="fa fa-line-chart"></i> Statistics</a></li>
-              </ul>
-            </li>
-            
-            <!-- ========== USER SETTINGS ========== -->
-            <li class="header">USER</li>
-            
-            <li class="<?php echo (uri_string() == 'profile') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>profile">
-                <i class="fa fa-user-circle"></i> 
-                <span>My Profile</span>
-              </a>
-            </li>
-            
-            <li class="<?php echo (uri_string() == 'changePassword') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>changePassword">
-                <i class="fa fa-key"></i> 
-                <span>Change Password</span>
-              </a>
-            </li>
-            
-            <li>
-              <a href="<?php echo base_url(); ?>logout">
-                <i class="fa fa-sign-out"></i> 
-                <span>Logout</span>
-              </a>
-            </li>
-            
-            <!-- Help & Support -->
-            <li class="header">SUPPORT</li>
-            
-            <li>
-              <a href="<?php echo base_url(); ?>journal/contact">
-                <i class="fa fa-envelope"></i> 
-                <span>Contact Us</span>
-              </a>
-            </li>
-            
-            <li>
-              <a href="<?php echo base_url(); ?>faq">
-                <i class="fa fa-question-circle"></i> 
-                <span>FAQ</span>
-              </a>
-            </li>
+           
+     
           </ul>
         </section>
         <!-- /.sidebar -->
