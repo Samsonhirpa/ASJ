@@ -283,4 +283,214 @@ class Manuscript extends BaseController
 
         redirect('editor/assignments/view/' . (int)$manuscriptId);
     }
+    public function eicScopeDecision($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $this->form_validation->set_rules('decision', 'Decision', 'required|in_list[accept,reject]');
+        $this->form_validation->set_rules('notes', 'Decision Notes', 'trim|required|min_length[5]');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/manuscript/' . (int)$manuscriptId);
+        }
+
+        $ok = $this->editor_model->saveEicScopeDecision(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $this->input->post('decision', true),
+            $this->input->post('notes', true)
+        );
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'EIC technical and scope decision saved.' : 'Failed to save EIC decision.');
+        redirect('editor/manuscript/' . (int)$manuscriptId);
+    }
+
+    public function managingEditorQueue()
+    {
+        $editorId = ((int)$this->role === self::ROLE_MANAGING_EDITOR) ? (int)$this->vendorId : null;
+        $data['manuscripts'] = $this->editor_model->getManagingEditorQueue($editorId);
+        $this->global['pageTitle'] = 'Managing Editor Screening - OJAS';
+        $this->global['activeMenu'] = 'managingeditor';
+        $this->loadViews('editor/managing_editor_queue', $this->global, $data, NULL);
+    }
+
+    public function saveManagingEditorResult($manuscriptId)
+    {
+        if ((int)$this->role !== self::ROLE_MANAGING_EDITOR && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $this->setScoreRules([
+            'formattingScore' => 'Formatting',
+            'completenessScore' => 'Completeness',
+            'qualityScore' => 'Quality',
+            'templateScore' => 'Template check'
+        ]);
+        $this->form_validation->set_rules('recommendation', 'Recommendation', 'required|in_list[accept,revision,reject]');
+        $this->form_validation->set_rules('comments', 'Comments', 'trim');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/managing-editor');
+        }
+
+        $resultFile = $this->uploadWorkflowResultFile('resultFile', 'managing_editor_results');
+        $scores = [
+            'formattingScore' => (float)$this->input->post('formattingScore'),
+            'completenessScore' => (float)$this->input->post('completenessScore'),
+            'qualityScore' => (float)$this->input->post('qualityScore'),
+            'templateScore' => (float)$this->input->post('templateScore')
+        ];
+
+        $ok = $this->editor_model->saveManagingEditorScreening(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $scores,
+            $this->input->post('recommendation', true),
+            $this->input->post('comments', true),
+            $resultFile
+        );
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Managing Editor screening result registered for EIC review.' : 'Failed to save Managing Editor result.');
+        redirect('editor/managing-editor');
+    }
+
+    public function managingEditorResults()
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $data['results'] = $this->editor_model->getManagingEditorResults();
+        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors();
+        $this->global['pageTitle'] = 'Managing Editor Results - OJAS';
+        $this->global['activeMenu'] = 'managingresults';
+        $this->loadViews('editor/managing_editor_results', $this->global, $data, NULL);
+    }
+
+    public function managingEditorResultAction($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $decision = $this->input->post('decision', true);
+        $this->form_validation->set_rules('decision', 'Decision', 'required|in_list[accept,revision,reject]');
+        $this->form_validation->set_rules('reason', 'Reason', 'trim|required|min_length[5]');
+        if ($decision === 'accept') {
+            $this->form_validation->set_rules('associateEditorId', 'Associate Editor', 'required|integer');
+        }
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/managing-editor-results');
+        }
+
+        $ok = $this->editor_model->applyManagingEditorResultDecision(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $decision,
+            $this->input->post('reason', true),
+            $this->input->post('associateEditorId', true)
+        );
+
+        $message = $decision === 'accept'
+            ? 'Managing Editor result accepted and manuscript assigned to Associate Editor for pre-review.'
+            : 'Managing Editor result action saved.';
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $message : 'Failed to save Managing Editor result action.');
+        redirect('editor/managing-editor-results');
+    }
+
+    public function associateEditorAssignments()
+    {
+        $editorId = ((int)$this->role === self::ROLE_ASSOCIATE_EDITOR) ? (int)$this->vendorId : null;
+        $data['manuscripts'] = $this->editor_model->getAssociateEditorAssignments($editorId);
+        $this->global['pageTitle'] = 'Associate Editor Pre-Review - OJAS';
+        $this->global['activeMenu'] = 'associatepre';
+        $this->loadViews('editor/associate_editor_assignments', $this->global, $data, NULL);
+    }
+
+    public function saveAssociateEditorAssessment($manuscriptId)
+    {
+        if ((int)$this->role !== self::ROLE_ASSOCIATE_EDITOR && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $this->setScoreRules([
+            'scientificRelevanceScore' => 'Scientific relevance',
+            'noveltyRigorScore' => 'Novelty and rigor',
+            'ethicalComplianceScore' => 'Ethical compliance',
+            'plagiarismScore' => 'Plagiarism iThenticate'
+        ]);
+        $this->form_validation->set_rules('recommendation', 'Recommendation', 'required|in_list[accept,revision,reject]');
+        $this->form_validation->set_rules('comments', 'Comments', 'trim|required|min_length[5]');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/associate-editor');
+        }
+
+        $scores = [
+            'scientificRelevanceScore' => (float)$this->input->post('scientificRelevanceScore'),
+            'noveltyRigorScore' => (float)$this->input->post('noveltyRigorScore'),
+            'ethicalComplianceScore' => (float)$this->input->post('ethicalComplianceScore'),
+            'plagiarismScore' => (float)$this->input->post('plagiarismScore')
+        ];
+
+        $ok = $this->editor_model->saveAssociateEditorAssessment(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $scores,
+            $this->input->post('recommendation', true),
+            $this->input->post('comments', true)
+        );
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Associate Editor pre-review assessment saved.' : 'Failed to save pre-review assessment.');
+        redirect('editor/associate-editor');
+    }
+
+    private function setScoreRules($fields)
+    {
+        foreach ($fields as $field => $label) {
+            $this->form_validation->set_rules($field, $label, 'required|numeric|greater_than_equal_to[0]|less_than_equal_to[25]');
+        }
+    }
+
+    private function uploadWorkflowResultFile($fieldName, $folder)
+    {
+        if (empty($_FILES[$fieldName]['name'])) {
+            return null;
+        }
+
+        $uploadPath = FCPATH . 'uploads/' . $folder . '/';
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+
+        $this->load->library('upload');
+        $config = [
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'pdf|doc|docx|jpg|jpeg|png',
+            'max_size' => 5120,
+            'encrypt_name' => true
+        ];
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload($fieldName)) {
+            $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
+            return null;
+        }
+
+        $data = $this->upload->data();
+        return 'uploads/' . $folder . '/' . $data['file_name'];
+    }
+
 }
