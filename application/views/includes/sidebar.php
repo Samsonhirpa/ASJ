@@ -146,8 +146,18 @@
             </li>
             <?php endif; ?>
             
+            <!-- ========== MANAGING EDITOR MENU (roleId = 15) ========== -->
+            <?php if($role == 15): ?>
+            <li class="header">MANAGING EDITOR ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'mePending') ? 'active' : '' ?>">
+                <a href="<?= base_url('managing-editor/pending') ?>">
+                    <i class="fa fa-clipboard"></i> <span>Pending Manuscripts</span>
+                </a>
+            </li>
+            <?php endif; ?>
+            
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,15,16,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,16,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?= (isset($activeMenu) && $activeMenu == 'pending') ? 'active' : '' ?>">
