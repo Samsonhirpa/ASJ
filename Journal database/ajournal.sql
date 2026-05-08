@@ -288,8 +288,20 @@ CREATE TABLE `tbl_manuscripts` (
   `correspondingAuthorId` int(11) NOT NULL,
   `coAuthorsJson` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`coAuthorsJson`)),
   `status` enum('draft','submitted','under_review','revision_required','accepted','rejected','published') DEFAULT 'draft',
+  `workflowStage` varchar(80) DEFAULT 'author_submitted',
   `plagiarismScore` decimal(5,2) DEFAULT NULL,
+  `screeningStatus` enum('pending','passed','failed') DEFAULT 'pending',
+  `screeningNotes` text DEFAULT NULL,
+  `eicScopeStatus` enum('pending','accepted','rejected') DEFAULT 'pending',
+  `eicScopeNotes` text DEFAULT NULL,
+  `preReviewStatus` enum('pending','accepted','revision_required','rejected') DEFAULT 'pending',
+  `preReviewNotes` text DEFAULT NULL,
   `coverLetter` text DEFAULT NULL,
+  `decisionLetter` text DEFAULT NULL,
+  `revisionRequestSource` varchar(80) DEFAULT NULL,
+  `assignedEditorId` int(11) DEFAULT NULL,
+  `managingEditorId` int(11) DEFAULT NULL,
+  `associateEditorId` int(11) DEFAULT NULL,
   `isDeleted` tinyint(4) NOT NULL DEFAULT 0,
   `createdBy` int(11) NOT NULL,
   `createdDtm` datetime NOT NULL,
@@ -398,6 +410,50 @@ CREATE TABLE `tbl_manuscript_keywords` (
   `manuscriptId` int(11) NOT NULL,
   `keywordId` int(11) NOT NULL,
   `createdDtm` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_managing_editor_screenings`
+--
+
+CREATE TABLE `tbl_managing_editor_screenings` (
+  `screeningId` int(11) NOT NULL,
+  `manuscriptId` int(11) NOT NULL,
+  `managingEditorId` int(11) NOT NULL,
+  `formattingScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `completenessScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `qualityScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `templateScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `totalScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `recommendation` enum('accept','revision','reject') DEFAULT 'accept',
+  `comments` text DEFAULT NULL,
+  `resultFile` varchar(255) DEFAULT NULL,
+  `createdDtm` datetime NOT NULL,
+  `updatedDtm` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_associate_editor_assessments`
+--
+
+CREATE TABLE `tbl_associate_editor_assessments` (
+  `assessmentId` int(11) NOT NULL,
+  `manuscriptId` int(11) NOT NULL,
+  `associateEditorId` int(11) NOT NULL,
+  `scientificRelevanceScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `noveltyRigorScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `ethicalComplianceScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `plagiarismScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `totalScore` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `recommendation` enum('accept','revision','reject') DEFAULT 'accept',
+  `comments` text DEFAULT NULL,
+  `createdDtm` datetime NOT NULL,
+  `updatedDtm` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 -- --------------------------------------------------------
@@ -898,6 +954,23 @@ ALTER TABLE `tbl_task`
 ALTER TABLE `tbl_users`
   ADD PRIMARY KEY (`userId`);
 
+
+--
+-- Indexes for table `tbl_managing_editor_screenings`
+--
+ALTER TABLE `tbl_managing_editor_screenings`
+  ADD PRIMARY KEY (`screeningId`),
+  ADD UNIQUE KEY `uq_me_screening_manuscript` (`manuscriptId`),
+  ADD KEY `idx_me_screening_editor` (`managingEditorId`);
+
+--
+-- Indexes for table `tbl_associate_editor_assessments`
+--
+ALTER TABLE `tbl_associate_editor_assessments`
+  ADD PRIMARY KEY (`assessmentId`),
+  ADD UNIQUE KEY `uq_ae_assessment_manuscript` (`manuscriptId`),
+  ADD KEY `idx_ae_assessment_editor` (`associateEditorId`);
+
 --
 -- AUTO_INCREMENT for dumped tables
 --
@@ -1164,6 +1237,19 @@ ALTER TABLE `tbl_special_issues`
 ALTER TABLE `tbl_special_issue_submissions`
   ADD CONSTRAINT `fk_special_submission_issue` FOREIGN KEY (`specialIssueId`) REFERENCES `tbl_special_issues` (`specialIssueId`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_special_submission_manuscript` FOREIGN KEY (`manuscriptId`) REFERENCES `tbl_manuscripts` (`manuscriptId`) ON DELETE CASCADE;
+
+--
+-- AUTO_INCREMENT for table `tbl_managing_editor_screenings`
+--
+ALTER TABLE `tbl_managing_editor_screenings`
+  MODIFY `screeningId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tbl_associate_editor_assessments`
+--
+ALTER TABLE `tbl_associate_editor_assessments`
+  MODIFY `assessmentId` int(11) NOT NULL AUTO_INCREMENT;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
