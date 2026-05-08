@@ -1,6 +1,6 @@
 <div class="content-wrapper">
     <section class="content-header">
-        <h1>Editorial Workflow <small><?= html_escape($manuscript->manuscriptNumber) ?></small></h1>
+        <h1>Technical and Scope Screening <small><?= html_escape($manuscript->manuscriptNumber) ?></small></h1>
     </section>
     <section class="content">
         <div class="row">
@@ -87,7 +87,7 @@
                         <div class="box-footer"><button class="btn btn-danger">Send Decision</button></div>
                     </form>
                 </div>
-            </div>
+            </form>
         </div>
     </section>
 </div>

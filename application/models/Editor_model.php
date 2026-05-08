@@ -231,7 +231,8 @@ class Editor_model extends CI_Model
     {
         $this->db->from('tbl_manuscripts');
         $this->db->where('isDeleted', 0);
-        $this->db->where_in('status', ['submitted', 'revision_required']);
+        $this->db->where('status', 'submitted');
+        $this->db->where('COALESCE(eicScopeStatus, "pending") = "pending"', null, false);
         $this->db->order_by('createdDtm', 'ASC');
         return $this->db->get()->result();
     }

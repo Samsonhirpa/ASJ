@@ -150,8 +150,8 @@
             <?php if(in_array($role, [13,14,15,16,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'pending') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/pending') ?>">
+            <li class="<?= (isset($activeMenu) && in_array($activeMenu, ['pending', 'managingeditor'])) ? 'active' : '' ?>">
+                <a href="<?= base_url($role == 15 ? 'editor/managing-editor' : 'editor/pending') ?>">
                     <i class="fa fa-clock-o"></i> <span>Pending Manuscripts</span>
                     <?php
                     // You can add pending count
