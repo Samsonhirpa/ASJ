@@ -283,6 +283,7 @@ CREATE TABLE `tbl_manuscripts` (
   `abstract` text DEFAULT NULL,
   `keywords` text DEFAULT NULL,
   `articleType` enum('research','review','short_communication','case_study','technical_note') NOT NULL,
+  `thematicArea` varchar(100) DEFAULT NULL,
   `wordCount` int(11) DEFAULT NULL,
   `submittedBy` int(11) NOT NULL,
   `correspondingAuthorId` int(11) NOT NULL,
@@ -301,9 +302,9 @@ CREATE TABLE `tbl_manuscripts` (
 -- Dumping data for table `tbl_manuscripts`
 --
 
-INSERT INTO `tbl_manuscripts` (`manuscriptId`, `manuscriptNumber`, `title`, `abstract`, `keywords`, `articleType`, `wordCount`, `submittedBy`, `correspondingAuthorId`, `coAuthorsJson`, `status`, `plagiarismScore`, `coverLetter`, `isDeleted`, `createdBy`, `createdDtm`, `updatedBy`, `updatedDtm`) VALUES
-(1, 'OJAS-2026-0001', 'dd', 'dd', 'dd', 'review', NULL, 15, 15, NULL, 'submitted', NULL, 'dd', 0, 15, '2026-03-07 14:40:59', NULL, NULL),
-(2, 'OJAS-2026-0002', 'vghbh', 'hbj', 'bv fv', 'short_communication', NULL, 15, 15, NULL, 'submitted', NULL, 'cgcv bn', 0, 15, '2026-03-08 10:25:23', NULL, NULL);
+INSERT INTO `tbl_manuscripts` (`manuscriptId`, `manuscriptNumber`, `title`, `abstract`, `keywords`, `articleType`, `thematicArea`, `wordCount`, `submittedBy`, `correspondingAuthorId`, `coAuthorsJson`, `status`, `plagiarismScore`, `coverLetter`, `isDeleted`, `createdBy`, `createdDtm`, `updatedBy`, `updatedDtm`) VALUES
+(1, 'OJAS-2026-0001', 'dd', 'dd', 'dd', 'review', NULL, NULL, 15, 15, NULL, 'submitted', NULL, 'dd', 0, 15, '2026-03-07 14:40:59', NULL, NULL),
+(2, 'OJAS-2026-0002', 'vghbh', 'hbj', 'bv fv', 'short_communication', NULL, NULL, 15, 15, NULL, 'submitted', NULL, 'cgcv bn', 0, 15, '2026-03-08 10:25:23', NULL, NULL);
 
 -- --------------------------------------------------------
 
