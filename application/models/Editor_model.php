@@ -31,6 +31,26 @@ class Editor_model extends CI_Model
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN assignedEditorId INT(11) DEFAULT NULL AFTER correspondingAuthorId");
         }
 
+        if (!in_array('technicalScreeningNotes', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN technicalScreeningNotes TEXT DEFAULT NULL AFTER screeningNotes");
+        }
+
+        if (!in_array('scopeScreeningNotes', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN scopeScreeningNotes TEXT DEFAULT NULL AFTER technicalScreeningNotes");
+        }
+
+        if (!in_array('eicScreeningDecision', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN eicScreeningDecision ENUM('pending','accepted','rejected') DEFAULT 'pending' AFTER scopeScreeningNotes");
+        }
+
+        if (!in_array('eicScreenedBy', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN eicScreenedBy INT(11) DEFAULT NULL AFTER eicScreeningDecision");
+        }
+
+        if (!in_array('eicScreenedDtm', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN eicScreenedDtm DATETIME DEFAULT NULL AFTER eicScreenedBy");
+        }
+
         if (!in_array('editorReviewApprovalStatus', $assignmentFields)) {
             $this->db->query("ALTER TABLE tbl_reviewer_assignments ADD COLUMN editorReviewApprovalStatus ENUM('pending','approved','rejected') DEFAULT 'pending' AFTER reviewSubmittedDate");
         }
@@ -254,6 +274,69 @@ class Editor_model extends CI_Model
 
         $this->db->where('manuscriptId', $manuscriptId);
         return $this->db->update('tbl_manuscripts', $data);
+    }
+
+    public function getManuscriptFiles($manuscriptId)
+    {
+        $this->db->from('tbl_manuscript_files');
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('isDeleted', 0);
+        $this->db->order_by('fileType', 'ASC');
+        $this->db->order_by('createdDtm', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function runTechnicalScopeScreening($manuscriptId, $editorId, $decision, $technicalNotes, $scopeNotes)
+    {
+        if (!in_array($decision, ['accept', 'reject'], true)) {
+            return false;
+        }
+
+        $manuscript = $this->getManuscript($manuscriptId);
+        if (!$manuscript) {
+            return false;
+        }
+
+        $screeningStatus = $decision === 'accept' ? 'passed' : 'failed';
+        $eicDecision = $decision === 'accept' ? 'accepted' : 'rejected';
+        $status = $decision === 'accept' ? 'under_review' : 'rejected';
+        $label = $decision === 'accept' ? 'Accepted at technical and scope screening' : 'Rejected at technical and scope screening';
+        $notes = "Technical Screening:
+" . trim($technicalNotes) . "
+
+Scope Screening:
+" . trim($scopeNotes);
+
+        $this->db->trans_start();
+
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('isDeleted', 0);
+        $this->db->update('tbl_manuscripts', [
+            'status' => $status,
+            'screeningStatus' => $screeningStatus,
+            'screeningNotes' => $notes,
+            'technicalScreeningNotes' => $technicalNotes,
+            'scopeScreeningNotes' => $scopeNotes,
+            'eicScreeningDecision' => $eicDecision,
+            'eicScreenedBy' => $editorId,
+            'eicScreenedDtm' => date('Y-m-d H:i:s'),
+            'assignedEditorId' => $editorId,
+            'updatedBy' => $editorId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->db->insert('tbl_notifications', [
+            'userId' => $manuscript->submittedBy,
+            'type' => 'technical_scope_screening',
+            'subject' => 'Technical and scope screening for manuscript ' . $manuscript->manuscriptNumber,
+            'message' => $label . '. ' . $notes,
+            'referenceId' => $manuscriptId,
+            'referenceType' => 'manuscript',
+            'createdDtm' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->db->trans_complete();
+        return $this->db->trans_status();
     }
 
     public function savePlagiarismScore($manuscriptId, $editorId, $score)

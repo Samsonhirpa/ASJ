@@ -12,7 +12,7 @@
                             <td><?= html_escape($m->title) ?></td>
                             <td><?= html_escape($m->status) ?></td>
                             <td><?= date('d M Y', strtotime($m->createdDtm)) ?></td>
-                            <td><a class="btn btn-xs btn-primary" href="<?= base_url('editor/manuscript/'.$m->manuscriptId) ?>">Screen</a></td>
+                            <td><a class="btn btn-xs btn-primary" href="<?= base_url('editor/pending/screen/'.$m->manuscriptId) ?>"><i class="fa fa-search"></i> Screen</a></td>
                         </tr>
                     <?php endforeach; else: ?>
                         <tr><td colspan="5" class="text-center">No pending manuscripts.</td></tr>

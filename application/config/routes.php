@@ -174,6 +174,8 @@ $route['reviewer/guidelines'] = 'reviewer/assignment/guidelines';
 // Editor Module Routes (Coming Soon)
 $route['editor/dashboard'] = 'editor/dashboard/index';
 $route['editor/pending'] = 'editor/manuscript/pending';
+$route['editor/pending/screen/(:num)'] = 'editor/manuscript/pendingScreen/$1';
+$route['editor/technical-scope-screening/(:num)'] = 'editor/manuscript/technicalScopeScreening/$1';
 $route['editor/manuscript/(:num)'] = 'editor/manuscript/view/$1';
 $route['editor/assign-reviewers/(:num)'] = 'editor/manuscript/assignReviewers/$1';
 $route['editor/decision/(:num)'] = 'editor/manuscript/makeDecision/$1';
