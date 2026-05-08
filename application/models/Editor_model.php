@@ -115,6 +115,46 @@ class Editor_model extends CI_Model
                 KEY idx_payment_manuscript (manuscriptId)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
         }
+
+        if (!in_array('managingEditorScreeningStatus', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN managingEditorScreeningStatus ENUM('pending','passed','failed') DEFAULT 'pending' AFTER eicScreenedDtm");
+        }
+
+        if (!in_array('managingEditorScreeningScore', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN managingEditorScreeningScore INT(3) DEFAULT NULL AFTER managingEditorScreeningStatus");
+        }
+
+        if (!in_array('managingEditorScreenedBy', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN managingEditorScreenedBy INT(11) DEFAULT NULL AFTER managingEditorScreeningScore");
+        }
+
+        if (!in_array('managingEditorScreenedDtm', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN managingEditorScreenedDtm DATETIME DEFAULT NULL AFTER managingEditorScreenedBy");
+        }
+
+        if (!$this->db->table_exists('tbl_managing_editor_screenings')) {
+            $this->db->query("CREATE TABLE tbl_managing_editor_screenings (
+                screeningId INT(11) NOT NULL AUTO_INCREMENT,
+                manuscriptId INT(11) NOT NULL,
+                managingEditorId INT(11) NOT NULL,
+                formattingScore TINYINT(3) NOT NULL DEFAULT 0,
+                completenessScore TINYINT(3) NOT NULL DEFAULT 0,
+                qualityScore TINYINT(3) NOT NULL DEFAULT 0,
+                templateScore TINYINT(3) NOT NULL DEFAULT 0,
+                totalScore TINYINT(3) NOT NULL DEFAULT 0,
+                comments TEXT NOT NULL,
+                resultFilePath VARCHAR(255) DEFAULT NULL,
+                resultStatus ENUM('passed','failed') NOT NULL,
+                screenedDtm DATETIME NOT NULL,
+                createdBy INT(11) NOT NULL,
+                createdDtm DATETIME NOT NULL,
+                updatedBy INT(11) DEFAULT NULL,
+                updatedDtm DATETIME DEFAULT NULL,
+                PRIMARY KEY (screeningId),
+                UNIQUE KEY unique_me_screening_manuscript (manuscriptId),
+                KEY idx_me_result_status (resultStatus)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+        }
     }
 
     public function getDashboardStats()
@@ -300,7 +340,7 @@ class Editor_model extends CI_Model
         $screeningStatus = $decision === 'accept' ? 'passed' : 'failed';
         $eicDecision = $decision === 'accept' ? 'accepted' : 'rejected';
         $status = $decision === 'accept' ? 'under_review' : 'rejected';
-        $label = $decision === 'accept' ? 'Accepted at technical and scope screening' : 'Rejected at technical and scope screening';
+        $label = $decision === 'accept' ? 'Accepted by EIC and sent to Managing Editor screening' : 'Rejected at technical and scope screening';
         $notes = "Technical Screening:
 " . trim($technicalNotes) . "
 
@@ -333,6 +373,144 @@ Scope Screening:
             'referenceId' => $manuscriptId,
             'referenceType' => 'manuscript',
             'createdDtm' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->db->trans_complete();
+        return $this->db->trans_status();
+    }
+
+
+    public function getManagingEditorDashboardStats()
+    {
+        $base = function () {
+            $this->db->from('tbl_manuscripts m');
+            $this->db->where('m.isDeleted', 0);
+            $this->db->where('m.eicScreeningDecision', 'accepted');
+        };
+
+        $base();
+        $totalAcceptedByEic = $this->db->count_all_results();
+
+        $base();
+        $this->db->where('(m.managingEditorScreeningStatus IS NULL OR m.managingEditorScreeningStatus = "pending")', null, false);
+        $pending = $this->db->count_all_results();
+
+        $base();
+        $this->db->where('m.managingEditorScreeningStatus', 'passed');
+        $passed = $this->db->count_all_results();
+
+        $base();
+        $this->db->where('m.managingEditorScreeningStatus', 'failed');
+        $failed = $this->db->count_all_results();
+
+        return [
+            'totalAcceptedByEic' => $totalAcceptedByEic,
+            'pending' => $pending,
+            'passed' => $passed,
+            'failed' => $failed
+        ];
+    }
+
+    public function getManagingEditorPendingManuscripts($filters = [])
+    {
+        $this->db->select('m.*, u.name as authorName, u.email as authorEmail, mes.totalScore, mes.resultStatus as meResultStatus, mes.screenedDtm');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_users u', 'u.userId = m.submittedBy', 'left');
+        $this->db->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'left');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.eicScreeningDecision', 'accepted');
+
+        $status = isset($filters['status']) ? $filters['status'] : 'pending';
+        if ($status === 'pending') {
+            $this->db->where('(m.managingEditorScreeningStatus IS NULL OR m.managingEditorScreeningStatus = "pending")', null, false);
+        } elseif (in_array($status, ['passed', 'failed'], true)) {
+            $this->db->where('m.managingEditorScreeningStatus', $status);
+        }
+
+        if (!empty($filters['q'])) {
+            $this->db->group_start();
+            $this->db->like('m.title', $filters['q']);
+            $this->db->or_like('m.manuscriptNumber', $filters['q']);
+            $this->db->or_like('u.name', $filters['q']);
+            $this->db->group_end();
+        }
+
+        if (!empty($filters['articleType'])) {
+            $this->db->where('m.articleType', $filters['articleType']);
+        }
+
+        $this->db->order_by('m.eicScreenedDtm', 'ASC');
+        $this->db->order_by('m.createdDtm', 'ASC');
+        return $this->db->get()->result();
+    }
+
+    public function getManagingEditorScreening($manuscriptId)
+    {
+        return $this->db->get_where('tbl_managing_editor_screenings', ['manuscriptId' => $manuscriptId])->row();
+    }
+
+    public function saveManagingEditorScreening($manuscriptId, $editorId, $scores, $comments, $resultFilePath = null)
+    {
+        $manuscript = $this->getManuscript($manuscriptId);
+        if (!$manuscript || $manuscript->eicScreeningDecision !== 'accepted') {
+            return false;
+        }
+
+        $totalScore = (int)$scores['formattingScore'] + (int)$scores['completenessScore'] + (int)$scores['qualityScore'] + (int)$scores['templateScore'];
+        $resultStatus = $totalScore >= 70 ? 'passed' : 'failed';
+        $now = date('Y-m-d H:i:s');
+
+        $data = [
+            'manuscriptId' => $manuscriptId,
+            'managingEditorId' => $editorId,
+            'formattingScore' => (int)$scores['formattingScore'],
+            'completenessScore' => (int)$scores['completenessScore'],
+            'qualityScore' => (int)$scores['qualityScore'],
+            'templateScore' => (int)$scores['templateScore'],
+            'totalScore' => $totalScore,
+            'comments' => $comments,
+            'resultStatus' => $resultStatus,
+            'screenedDtm' => $now,
+            'updatedBy' => $editorId,
+            'updatedDtm' => $now
+        ];
+
+        if (!empty($resultFilePath)) {
+            $data['resultFilePath'] = $resultFilePath;
+        }
+
+        $existing = $this->getManagingEditorScreening($manuscriptId);
+
+        $this->db->trans_start();
+        if ($existing) {
+            $this->db->where('screeningId', $existing->screeningId);
+            $this->db->update('tbl_managing_editor_screenings', $data);
+        } else {
+            $data['createdBy'] = $editorId;
+            $data['createdDtm'] = $now;
+            $this->db->insert('tbl_managing_editor_screenings', $data);
+        }
+
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('isDeleted', 0);
+        $this->db->update('tbl_manuscripts', [
+            'managingEditorScreeningStatus' => $resultStatus,
+            'managingEditorScreeningScore' => $totalScore,
+            'managingEditorScreenedBy' => $editorId,
+            'managingEditorScreenedDtm' => $now,
+            'status' => $resultStatus === 'passed' ? 'under_review' : 'rejected',
+            'updatedBy' => $editorId,
+            'updatedDtm' => $now
+        ]);
+
+        $this->db->insert('tbl_notifications', [
+            'userId' => $manuscript->submittedBy,
+            'type' => 'managing_editor_screening',
+            'subject' => 'Managing Editor screening for manuscript ' . $manuscript->manuscriptNumber,
+            'message' => 'Managing Editor screening ' . $resultStatus . ' with a score of ' . $totalScore . '/100. ' . $comments,
+            'referenceId' => $manuscriptId,
+            'referenceType' => 'manuscript',
+            'createdDtm' => $now
         ]);
 
         $this->db->trans_complete();

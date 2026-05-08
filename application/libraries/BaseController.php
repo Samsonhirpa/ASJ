@@ -160,6 +160,14 @@ class BaseController extends CI_Controller {
     protected function isEditorInChief() {
         return ($this->role == self::ROLE_EDITOR_IN_CHIEF);
     }
+
+    /**
+     * Check if user is Managing Editor (roleId = 15)
+     * @return boolean
+     */
+    protected function isManagingEditor() {
+        return ($this->role == self::ROLE_MANAGING_EDITOR);
+    }
     
     /**
      * Get dashboard URL based on user role
@@ -171,9 +179,11 @@ class BaseController extends CI_Controller {
         }
         
         switch($this->role) {
+            case self::ROLE_MANAGING_EDITOR:
+                return 'managing-editor/dashboard';
+
             case self::ROLE_EDITOR_IN_CHIEF:
             case self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF:
-            case self::ROLE_MANAGING_EDITOR:
             case self::ROLE_ASSOCIATE_EDITOR:
             case self::ROLE_SPECIALTY_CHIEF_EDITOR:
             case self::ROLE_EDITORIAL_ADVISORY_BOARD:
@@ -229,7 +239,14 @@ class BaseController extends CI_Controller {
             ];
         }
         
-        if($this->isEditor()) {
+        if($this->isManagingEditor()) {
+            $menu[] = [
+                'header' => 'MANAGING EDITOR ZONE',
+                'items' => [
+                    ['url' => 'managing-editor/pending', 'icon' => 'fa-clipboard-check', 'text' => 'Pending Manuscripts']
+                ]
+            ];
+        } elseif($this->isEditor()) {
             $menu[] = [
                 'header' => 'EDITORIAL ZONE',
                 'items' => [

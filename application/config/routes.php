@@ -158,6 +158,10 @@ $route['reviewer/assignments'] = 'reviewer/assignment/index';
 // Editor Routes (add these later)
 $route['editor/dashboard'] = 'editor/dashboard/index';
 $route['editor/pending'] = 'editor/manuscript/pending';
+$route['managing-editor/dashboard'] = 'managing_editor/dashboard/index';
+$route['managing-editor/pending'] = 'managing_editor/manuscript/pending';
+$route['managing-editor/pending/screen/(:num)'] = 'managing_editor/manuscript/screen/$1';
+$route['managing-editor/pending/save/(:num)'] = 'managing_editor/manuscript/saveScreening/$1';
 
 // Reviewer Module Routes (Coming Soon)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';

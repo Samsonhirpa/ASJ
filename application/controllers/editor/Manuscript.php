@@ -80,7 +80,7 @@ class Manuscript extends BaseController
         );
 
         $message = $decision === 'accept'
-            ? 'Manuscript accepted at technical and scope screening and moved forward for review workflow.'
+            ? 'Manuscript accepted by EIC and moved to the Managing Editor pending manuscript queue.'
             : 'Manuscript rejected at technical and scope screening.';
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $message : 'Failed to save technical and scope screening decision.');
         redirect('editor/pending');
