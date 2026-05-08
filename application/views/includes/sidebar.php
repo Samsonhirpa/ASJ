@@ -150,8 +150,8 @@
             <?php if(in_array($role, [13,14,15,16,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'pending') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/pending') ?>">
+            <li class="<?= (isset($activeMenu) && in_array($activeMenu, ['pending', 'managingeditor'])) ? 'active' : '' ?>">
+                <a href="<?= base_url($role == 15 ? 'editor/managing-editor' : 'editor/pending') ?>">
                     <i class="fa fa-clock-o"></i> <span>Pending Manuscripts</span>
                     <?php
                     // You can add pending count
@@ -171,6 +171,22 @@
                 </a>
             </li>
             
+            <?php if($role == 13): // Editor-in-Chief ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'managingresults') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/managing-editor-results') ?>">
+                    <i class="fa fa-table"></i> <span>Managing Editor Result</span>
+                </a>
+            </li>
+            <?php endif; ?>
+
+            <?php if($role == 16): // Associate Editor ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'associatepre') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/associate-editor') ?>">
+                    <i class="fa fa-flask"></i> <span>Associate Pre-Review</span>
+                </a>
+            </li>
+            <?php endif; ?>
+
             <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewprogress') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/assignments') ?>">
                     <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
