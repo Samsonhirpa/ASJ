@@ -35,6 +35,57 @@ class Manuscript extends BaseController
         $this->loadViews('editor/pending', $this->global, $data, NULL);
     }
 
+    public function pendingScreen($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
+        if (!$data['manuscript']) {
+            $this->session->set_flashdata('error', 'Manuscript not found.');
+            redirect('editor/pending');
+        }
+
+        $data['files'] = $this->editor_model->getManuscriptFiles((int)$manuscriptId);
+        $this->global['pageTitle'] = 'Technical and Scope Screening - OJAS';
+        $this->global['activeMenu'] = 'pending';
+        $this->loadViews('editor/technical_scope_screening', $this->global, $data, NULL);
+    }
+
+    public function technicalScopeScreening($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $this->form_validation->set_rules('decision', 'Screening Decision', 'required|in_list[accept,reject]');
+        $this->form_validation->set_rules('technicalNotes', 'Technical Screening Notes', 'trim|required|min_length[5]');
+        $this->form_validation->set_rules('scopeNotes', 'Scope Screening Notes', 'trim|required|min_length[5]');
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('editor/pending/screen/' . (int)$manuscriptId);
+        }
+
+        $decision = $this->input->post('decision', true);
+        $ok = $this->editor_model->runTechnicalScopeScreening(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $decision,
+            $this->input->post('technicalNotes', true),
+            $this->input->post('scopeNotes', true)
+        );
+
+        $message = $decision === 'accept'
+            ? 'Manuscript accepted at technical and scope screening and moved forward for review workflow.'
+            : 'Manuscript rejected at technical and scope screening.';
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $message : 'Failed to save technical and scope screening decision.');
+        redirect('editor/pending');
+    }
+
     public function view($manuscriptId)
     {
         $data['manuscript'] = $this->editor_model->getManuscript($manuscriptId);
