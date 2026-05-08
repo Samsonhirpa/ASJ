@@ -34,6 +34,12 @@
                         <div style="margin-bottom: 20px;">
                             <strong>Article Type:</strong> <?= ucfirst(str_replace('_', ' ', $manuscript->articleType)) ?>
                         </div>
+
+                        <?php if(!empty($manuscript->thematicArea)): ?>
+                        <div style="margin-bottom: 20px;">
+                            <strong>Thematic Area (Section):</strong> <?= ucwords(str_replace('_', ' ', $manuscript->thematicArea)) ?>
+                        </div>
+                        <?php endif; ?>
                         
                         <div style="margin-bottom: 20px;">
                             <strong>Submitted:</strong> <?= date('F d, Y \a\t h:i A', strtotime($manuscript->createdDtm)) ?>

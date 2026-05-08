@@ -36,6 +36,45 @@ class Manuscript extends BaseController
             mkdir($path, 0777, true);
         }
     }
+
+    /**
+     * Article types available during manuscript submission.
+     */
+    private function getArticleTypes()
+    {
+        return array(
+            'research' => 'Research Article',
+            'review' => 'Review Article',
+            'short_communication' => 'Short Communication',
+            'case_study' => 'Case Study',
+            'technical_note' => 'Technical Note'
+        );
+    }
+
+    /**
+     * Thematic areas/sections available during manuscript submission.
+     */
+    private function getThematicAreas()
+    {
+        return array(
+            'agricultural_biotechnology' => 'Agricultural Biotechnology',
+            'agricultural_economics_extension' => 'Agricultural Economics and Extension',
+            'agricultural_engineering' => 'Agricultural Engineering',
+            'animal_sciences' => 'Animal Sciences',
+            'apiculture' => 'Apiculture',
+            'climate_change_adaptation' => 'Climate Change Adaptation',
+            'crop_sciences' => 'Crop Sciences',
+            'digital_agriculture' => 'Digital Agriculture',
+            'fisheries_aquatic_life' => 'Fisheries and Aquatic Life',
+            'food_science' => 'Food Science',
+            'precision_farming' => 'Precision Farming',
+            'soil_science' => 'Soil Science',
+            'water_conservation' => 'Water Conservation',
+            'agroecology' => 'Agroecology',
+            'biodiversity_conservation' => 'Biodiversity Conservation',
+            'land_use_policy' => 'Land Use Policy'
+        );
+    }
     
     /**
      * List all manuscripts of the author
@@ -85,13 +124,8 @@ class Manuscript extends BaseController
      */
     public function submit()
     {
-        $data['articleTypes'] = array(
-            'research' => 'Research Article',
-            'review' => 'Review Article',
-            'short_communication' => 'Short Communication',
-            'case_study' => 'Case Study',
-            'technical_note' => 'Technical Note'
-        );
+        $data['articleTypes'] = $this->getArticleTypes();
+        $data['thematicAreas'] = $this->getThematicAreas();
         
         $this->global['pageTitle'] = 'Submit Manuscript - OJAS';
         $data['step'] = 1;
@@ -108,16 +142,12 @@ class Manuscript extends BaseController
         $this->form_validation->set_rules('abstract', 'Abstract', 'trim|required');
         $this->form_validation->set_rules('keywords', 'Keywords', 'trim|required');
         $this->form_validation->set_rules('articleType', 'Article Type', 'required');
+        $this->form_validation->set_rules('thematicArea', 'Thematic Area (Section)', 'required');
         
         if($this->form_validation->run() == FALSE) {
             // Reload step 1 with validation errors
-            $data['articleTypes'] = array(
-                'research' => 'Research Article',
-                'review' => 'Review Article',
-                'short_communication' => 'Short Communication',
-                'case_study' => 'Case Study',
-                'technical_note' => 'Technical Note'
-            );
+            $data['articleTypes'] = $this->getArticleTypes();
+            $data['thematicAreas'] = $this->getThematicAreas();
             $this->global['pageTitle'] = 'Submit Manuscript - OJAS';
             $data['step'] = 1;
             $this->loadViews("author/submit_step1", $this->global, $data, NULL);
@@ -128,6 +158,7 @@ class Manuscript extends BaseController
                 'submission_abstract' => $this->input->post('abstract'),
                 'submission_keywords' => $this->input->post('keywords'),
                 'submission_articleType' => $this->input->post('articleType'),
+                'submission_thematicArea' => $this->input->post('thematicArea'),
                 'submission_coverLetter' => $this->input->post('coverLetter')
             );
             $this->session->set_userdata($sessionData);
@@ -289,6 +320,7 @@ class Manuscript extends BaseController
             'abstract' => $this->session->userdata('submission_abstract'),
             'keywords' => $this->session->userdata('submission_keywords'),
             'articleType' => $this->session->userdata('submission_articleType'),
+            'thematicArea' => $this->session->userdata('submission_thematicArea'),
             'coverLetter' => $this->session->userdata('submission_coverLetter'),
             'submittedBy' => $this->vendorId,
             'correspondingAuthorId' => $this->vendorId
@@ -357,7 +389,7 @@ class Manuscript extends BaseController
             // Clear session
             $this->session->unset_userdata([
                 'submission_title', 'submission_abstract', 'submission_keywords',
-                'submission_articleType', 'submission_coverLetter', 'submission_authors'
+                'submission_articleType', 'submission_thematicArea', 'submission_coverLetter', 'submission_authors'
             ]);
             
             $this->session->set_flashdata('success', 'Manuscript submitted successfully! Manuscript Number: ' . $manuscript->manuscriptNumber);

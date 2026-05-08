@@ -54,6 +54,19 @@
                                 <small class="text-muted"><i class="fa fa-info-circle"></i> Select the type of article you are submitting</small>
                             </div>
 
+                            <!-- Thematic Area / Section -->
+                            <div class="form-group">
+                                <label for="thematicArea" style="font-weight: 600;">Thematic Area (Section) <span style="color: #dc3545;">*</span></label>
+                                <select class="form-control" id="thematicArea" name="thematicArea" required style="border-radius: 8px; padding: 10px;">
+                                    <option value="">-- Select Thematic Area / Section --</option>
+                                    <?php foreach($thematicAreas as $key => $value): ?>
+                                    <option value="<?= $key ?>" <?= set_value('thematicArea') == $key ? 'selected' : '' ?>><?= $value ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?= form_error('thematicArea', '<div class="text-danger">', '</div>') ?>
+                                <small class="text-muted"><i class="fa fa-info-circle"></i> Choose the journal section that best matches your manuscript.</small>
+                            </div>
+
                             <!-- Title -->
                             <div class="form-group">
                                 <label for="title" style="font-weight: 600;">Manuscript Title <span style="color: #dc3545;">*</span></label>
@@ -132,6 +145,11 @@
                         <div style="margin-bottom: 20px;">
                             <h4 style="font-size: 1.1em; font-weight: 600; margin-bottom: 10px;">Abstract Requirements</h4>
                             <p style="color: #6c757d;">Should include: Objective, Methods, Results, Conclusion. Structured format preferred.</p>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="font-size: 1.1em; font-weight: 600; margin-bottom: 10px;">Thematic Area</h4>
+                            <p style="color: #6c757d;">Select the subject section that best fits your submission to help route it for editorial screening.</p>
                         </div>
 
                         <div>

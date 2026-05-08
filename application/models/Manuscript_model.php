@@ -9,7 +9,21 @@ class Manuscript_model extends CI_Model
     {
         parent::__construct();
         $this->load->database();
+        $this->ensureManuscriptSchema();
         $this->ensurePaymentSchema();
+    }
+
+    private function ensureManuscriptSchema()
+    {
+        if (!$this->db->table_exists($this->table)) {
+            return;
+        }
+
+        $fields = $this->db->list_fields($this->table);
+
+        if (!in_array('thematicArea', $fields)) {
+            $this->db->query("ALTER TABLE {$this->table} ADD COLUMN thematicArea VARCHAR(100) DEFAULT NULL AFTER articleType");
+        }
     }
 
     private function ensurePaymentSchema()
