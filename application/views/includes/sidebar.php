@@ -171,6 +171,14 @@
                 </a>
             </li>
             
+            <?php if($role == 15): // Managing Editor ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'managingeditor') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/managing-editor') ?>">
+                    <i class="fa fa-check-square-o"></i> <span>Managing Editor Screening</span>
+                </a>
+            </li>
+            <?php endif; ?>
+
             <?php if($role == 13): // Editor-in-Chief ?>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'managingresults') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/managing-editor-results') ?>">

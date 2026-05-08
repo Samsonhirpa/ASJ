@@ -318,24 +318,6 @@ class Manuscript extends BaseController
         $this->loadViews('editor/managing_editor_queue', $this->global, $data, NULL);
     }
 
-    public function managingEditorScreen($manuscriptId)
-    {
-        if ((int)$this->role !== self::ROLE_MANAGING_EDITOR && !$this->isAdmin()) {
-            $this->loadThis();
-            return;
-        }
-
-        $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
-        if (!$data['manuscript'] || $data['manuscript']->eicScopeStatus !== 'accepted' || $data['manuscript']->workflowStage !== 'managing_editor_screening') {
-            $this->session->set_flashdata('error', 'Manuscript is not available for Managing Editor screening.');
-            redirect('editor/managing-editor');
-        }
-
-        $this->global['pageTitle'] = 'Managing Editor Screening - OJAS';
-        $this->global['activeMenu'] = 'managingeditor';
-        $this->loadViews('editor/managing_editor_screen', $this->global, $data, NULL);
-    }
-
     public function saveManagingEditorResult($manuscriptId)
     {
         if ((int)$this->role !== self::ROLE_MANAGING_EDITOR && !$this->isAdmin()) {

@@ -186,7 +186,6 @@ $route['editor/assignments/decision/(:num)'] = 'editor/manuscript/reviewProgress
 $route['editor/eic-scope/(:num)'] = 'editor/manuscript/eicScopeDecision/$1';
 $route['editor/managing-editor'] = 'editor/manuscript/managingEditorQueue';
 $route['editor/managing-editor/save/(:num)'] = 'editor/manuscript/saveManagingEditorResult/$1';
-$route['editor/managing-editor/screen/(:num)'] = 'editor/manuscript/managingEditorScreen/$1';
 $route['editor/managing-editor-results'] = 'editor/manuscript/managingEditorResults';
 $route['editor/managing-editor-results/action/(:num)'] = 'editor/manuscript/managingEditorResultAction/$1';
 $route['editor/associate-editor'] = 'editor/manuscript/associateEditorAssignments';
