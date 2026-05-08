@@ -1,6 +1,6 @@
 <div class="content-wrapper">
     <section class="content-header">
-        <h1>Technical and Scope Screening <small><?= html_escape($manuscript->manuscriptNumber) ?></small></h1>
+        <h1>Editorial Workflow <small><?= html_escape($manuscript->manuscriptNumber) ?></small></h1>
     </section>
     <section class="content">
         <div class="row">
@@ -9,7 +9,7 @@
                     <div class="box-header with-border"><h3 class="box-title"><?= html_escape($manuscript->title) ?></h3></div>
                     <div class="box-body">
                         <p><strong>Author:</strong> <?= html_escape($manuscript->authorName) ?> (<?= html_escape($manuscript->authorEmail) ?>)</p>
-                        <p><strong>Status:</strong> <?= html_escape($manuscript->status) ?> | <strong>Workflow:</strong> <?= html_escape($manuscript->workflowStage ?: 'author_submitted') ?> | <strong>EIC Scope:</strong> <?= html_escape($manuscript->eicScopeStatus ?: 'pending') ?> | <strong>Pre-review:</strong> <?= html_escape($manuscript->preReviewStatus ?: 'pending') ?> | <strong>Plagiarism:</strong> <?= $manuscript->plagiarismScore !== null ? number_format($manuscript->plagiarismScore, 2).'%' : 'N/A' ?></p>
+                        <p><strong>Status:</strong> <?= html_escape($manuscript->status) ?> | <strong>Screening:</strong> <?= html_escape($manuscript->screeningStatus ?: 'pending') ?> | <strong>Plagiarism:</strong> <?= $manuscript->plagiarismScore !== null ? number_format($manuscript->plagiarismScore, 2).'%' : 'N/A' ?></p>
                     </div>
                 </div>
             </div>
@@ -18,32 +18,29 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="box box-info">
-                    <div class="box-header with-border"><h3 class="box-title">2) EIC Technical & Scope Screening</h3></div>
-                    <form method="post" action="<?= base_url('editor/eic-scope/'.$manuscript->manuscriptId) ?>">
+                    <div class="box-header with-border"><h3 class="box-title">1) Initial Screening</h3></div>
+                    <form method="post" action="<?= base_url('editor/screening/'.$manuscript->manuscriptId) ?>">
                         <div class="box-body">
-                            <p class="help-block">Editor-in-Chief eyebird-view technical and scope screening. Reject ends the workflow; accept proceeds to Managing Editor screening.</p>
-                            <select name="decision" class="form-control" required>
-                                <option value="accept">Accept → Managing Editor</option>
-                                <option value="reject">Reject → End</option>
+                            <select name="screeningStatus" class="form-control" required>
+                                <option value="pending">Pending</option><option value="passed">Passed</option><option value="failed">Failed</option>
                             </select>
-                            <textarea name="notes" class="form-control" rows="5" style="margin-top:10px" placeholder="EIC technical and scope notes" required><?= html_escape($manuscript->eicScopeNotes) ?></textarea>
+                            <textarea name="screeningNotes" class="form-control" rows="4" style="margin-top:10px" placeholder="Screening notes" required><?= html_escape($manuscript->screeningNotes) ?></textarea>
                         </div>
-                        <div class="box-footer"><button class="btn btn-info">Save EIC Decision</button></div>
+                        <div class="box-footer"><button class="btn btn-info">Save Screening</button></div>
                     </form>
                 </div>
                 <div class="box box-warning">
-                    <div class="box-header with-border"><h3 class="box-title">3) Managing Editor Screening</h3></div>
-                    <div class="box-body">
-                        <p>Formatting, completeness, quality, and template checks are registered by the Managing Editor out of 100%.</p>
-                        <a class="btn btn-warning" href="<?= base_url('editor/managing-editor') ?>">Open Managing Editor Queue</a>
-                    </div>
+                    <div class="box-header with-border"><h3 class="box-title">2) Plagiarism Check Integration</h3></div>
+                    <form method="post" action="<?= base_url('editor/plagiarism/'.$manuscript->manuscriptId) ?>">
+                        <div class="box-body"><input type="number" min="0" max="100" step="0.01" name="plagiarismScore" class="form-control" placeholder="Score %" required></div>
+                        <div class="box-footer"><button class="btn btn-warning">Update Score</button></div>
+                    </form>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="box box-success">
-                    <div class="box-header with-border"><h3 class="box-title">5) Assign Reviewers (2-3)</h3></div>
-                    <?php if ($manuscript->workflowStage === 'reviewer_assignment' || $manuscript->preReviewStatus === 'accepted'): ?>
+                    <div class="box-header with-border"><h3 class="box-title">3) Assign Reviewers (2-3)</h3></div>
                     <form method="post" action="<?= base_url('editor/assign-reviewers/'.$manuscript->manuscriptId) ?>">
                         <div class="box-body">
                             <select name="reviewerIds[]" class="form-control" multiple required style="height:160px;">
@@ -55,13 +52,10 @@
                         </div>
                         <div class="box-footer"><button class="btn btn-success">Assign</button></div>
                     </form>
-                    <?php else: ?>
-                        <div class="box-body"><p class="text-muted">Reviewer assignment opens after Associate Editor pre-review is accepted.</p></div>
-                    <?php endif; ?>
                 </div>
 
                 <div class="box box-default">
-                    <div class="box-header with-border"><h3 class="box-title">6) Track Review Progress</h3></div>
+                    <div class="box-header with-border"><h3 class="box-title">4) Track Review Progress</h3></div>
                     <div class="box-body">
                         <p>Track reviewer status, recommendations, and editor approval from the dedicated progress page.</p>
                         <a class="btn btn-default" href="<?= base_url('editor/assignments') ?>">
@@ -73,7 +67,7 @@
 
             <div class="col-md-4">
                 <div class="box box-danger">
-                    <div class="box-header with-border"><h3 class="box-title">EIC Decision & Letters</h3></div>
+                    <div class="box-header with-border"><h3 class="box-title">5-8) Editorial Decision & Letters</h3></div>
                     <form method="post" action="<?= base_url('editor/decision/'.$manuscript->manuscriptId) ?>">
                         <div class="box-body">
                             <select name="decision" class="form-control" required>
@@ -87,7 +81,7 @@
                         <div class="box-footer"><button class="btn btn-danger">Send Decision</button></div>
                     </form>
                 </div>
-            </form>
+            </div>
         </div>
     </section>
 </div>
