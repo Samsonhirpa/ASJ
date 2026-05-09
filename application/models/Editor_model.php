@@ -132,6 +132,15 @@ class Editor_model extends CI_Model
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN managingEditorScreenedDtm DATETIME DEFAULT NULL AFTER managingEditorScreenedBy");
         }
 
+
+        if (!in_array('eicMeDecision', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN eicMeDecision ENUM('pending','approved','rejected') DEFAULT 'pending' AFTER managingEditorScreenedDtm");
+        }
+
+        if (!in_array('aeAssignmentResponse', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN aeAssignmentResponse ENUM('pending','accepted','declined') DEFAULT 'pending' AFTER eicMeDecision");
+        }
+
         if (!$this->db->table_exists('tbl_managing_editor_screenings')) {
             $this->db->query("CREATE TABLE tbl_managing_editor_screenings (
                 screeningId INT(11) NOT NULL AUTO_INCREMENT,
@@ -626,6 +635,7 @@ Scope Screening:
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->update('tbl_manuscripts', [
                 'status' => 'under_review',
+            'aeAssignmentResponse' => 'pending',
                 'assignedEditorId' => $editorId,
                 'updatedBy' => $editorId,
                 'updatedDtm' => date('Y-m-d H:i:s')
