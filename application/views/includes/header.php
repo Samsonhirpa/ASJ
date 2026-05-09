@@ -497,7 +497,8 @@
                 if($role == 21) echo base_url('author/dashboard');
                 elseif($role == 19) echo base_url('reviewer/dashboard');
                 elseif($role == 15) echo base_url('managing-editor/dashboard');
-                elseif(in_array($role, [13,14,16,17,18,20])) echo base_url('editor/dashboard');
+                elseif($role == 16) echo base_url('managing-editor/dashboard');
+                elseif(in_array($role, [13,14,17,18,20])) echo base_url('editor/dashboard');
                 else echo base_url('dashboard');
               ?>">
                 <i class="fa fa-dashboard"></i> 
@@ -589,9 +590,18 @@
                 <a href="<?= base_url('managing-editor/screened') ?>"><i class="fa fa-check-square"></i> <span>Screened Manuscripts</span></a>
             </li>
             <?php endif; ?>
+
+                <?php if($role == 16): ?>
+            <li class="header">ASSOCIATE EDITOR ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeAssignments') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-assignments') ?>">
+                    <i class="fa fa-tasks"></i> <span>My Assignments</span>
+                </a>
+            </li>
+            <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,16,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?php echo (uri_string() == 'editor/pending') ? 'active' : ''; ?>">
@@ -605,11 +615,7 @@
                 <a href="<?= base_url('editor/me-results') ?>"><i class="fa fa-list-alt"></i> <span>Managing Editor Results</span></a>
             </li>
 
-            <?php if($role == 16): ?>
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeAssignments') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/ae-assignments') ?>"><i class="fa fa-user-md"></i> <span>Associate Editor Assignments</span></a>
-            </li>
-            <?php endif; ?>
+          
             
             <li class="<?php echo (uri_string() == 'editor/all') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/all">
