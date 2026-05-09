@@ -567,7 +567,7 @@
               </a>
             </li>
             
-            <li>
+            <li class="<?php echo (uri_string() == 'reviewer/guidelines') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>reviewer/guidelines">
                 <i class="fa fa-book"></i> 
                 <span>Review Guidelines</span>
@@ -604,6 +604,12 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'meResults') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/me-results') ?>"><i class="fa fa-list-alt"></i> <span>Managing Editor Results</span></a>
             </li>
+
+            <?php if($role == 16): ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeAssignments') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-assignments') ?>"><i class="fa fa-user-md"></i> <span>Associate Editor Assignments</span></a>
+            </li>
+            <?php endif; ?>
             
             <li class="<?php echo (uri_string() == 'editor/all') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/all">
@@ -633,7 +639,7 @@
                 <span>Editorial Board</span>
               </a>
             </li>
-            <li>
+            <li class="<?php echo (uri_string() == 'editor/ethics') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/ethics">
                 <i class="fa fa-gavel"></i> 
                 <span>Ethics Cases</span>
