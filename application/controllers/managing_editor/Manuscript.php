@@ -47,6 +47,10 @@ class Manuscript extends BaseController
 
         $data['files'] = $this->editor_model->getManuscriptFiles($manuscriptId);
         $data['screening'] = $this->editor_model->getManagingEditorScreening($manuscriptId);
+        if (!empty($data['screening'])) {
+            $this->session->set_flashdata('error', 'Screening result is already registered for this manuscript and cannot be submitted again.');
+            redirect('managing-editor/pending');
+        }
         $this->global['pageTitle'] = 'Managing Editor Screening - OJAS';
         $this->global['activeMenu'] = 'mePending';
         $this->loadViews('managing_editor/screen', $this->global, $data, NULL);
@@ -55,6 +59,12 @@ class Manuscript extends BaseController
     public function saveScreening($manuscriptId)
     {
         $manuscriptId = (int)$manuscriptId;
+        $existing = $this->editor_model->getManagingEditorScreening($manuscriptId);
+        if (!empty($existing)) {
+            $this->session->set_flashdata('error', 'Screening result is already registered for this manuscript and cannot be submitted again.');
+            redirect('managing-editor/pending');
+        }
+
         $scoreRules = 'required|integer|greater_than_equal_to[0]|less_than_equal_to[25]';
         $this->form_validation->set_rules('formattingScore', 'Formatting Score', $scoreRules);
         $this->form_validation->set_rules('completenessScore', 'Completeness Score', $scoreRules);
