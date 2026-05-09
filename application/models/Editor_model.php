@@ -688,11 +688,11 @@ Scope Screening:
 
     public function getAvailableReviewersForManuscript($manuscriptId)
     {
-        return $this->db->select('u.userId,u.name,u.email,u.mobile,u.institution,u.department,u.expertise_area')
+        return $this->db->select('u.userId,u.name,u.email,u.mobile,u.institution,u.department,u.expertise_area,ra.assignmentId,ra.status as assignmentStatus,ra.responseStatus')
             ->from('tbl_users u')
+            ->join('tbl_reviewer_assignments ra', 'ra.reviewerId = u.userId AND ra.manuscriptId = ' . (int)$manuscriptId . ' AND ra.isDeleted = 0', 'left')
             ->where('u.roleId', 19)
             ->where('u.isDeleted', 0)
-            ->where('u.userId NOT IN (SELECT reviewerId FROM tbl_reviewer_assignments WHERE manuscriptId = ' . (int)$manuscriptId . ' AND isDeleted = 0)', null, false)
             ->order_by('u.name', 'ASC')
             ->get()->result();
     }
