@@ -10,7 +10,6 @@
             <div class="box-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Subject:</strong> <?= html_escape($manuscript->subject ?: '-') ?></p>
                         <p><strong>Thematic Area:</strong> <?= html_escape($manuscript->thematicArea ?: '-') ?></p>
                         <p><strong>Keywords:</strong> <?= html_escape($manuscript->keywords ?: '-') ?></p>
                         <p><strong>Abstract:</strong><br><?= nl2br(html_escape($manuscript->abstract ?: '-')) ?></p>

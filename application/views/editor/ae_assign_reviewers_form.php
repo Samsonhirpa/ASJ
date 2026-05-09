@@ -1,3 +1,4 @@
+
 <div class="content-wrapper"><section class="content-header"><h1>Assign Reviewers: <?= html_escape($manuscript->manuscriptNumber) ?></h1></section>
 <section class="content">
 <div class="box box-success"><div class="box-header with-border"><h3 class="box-title">Assigned Reviewers</h3></div><div class="box-body table-responsive">

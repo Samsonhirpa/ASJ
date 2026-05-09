@@ -200,7 +200,7 @@ class Manuscript extends BaseController
             redirect('editor/ae-assignments');
         }
         $this->global['pageTitle'] = 'Assigned Manuscript Details - OJAS';
-        $this->global['activeMenu'] = 'aeAssignments';
+           $this->global['activeMenu'] = 'aeAssignments';
         $this->loadViews('editor/ae_assignment_view', $this->global, $data, NULL);
     }
 
@@ -238,7 +238,6 @@ class Manuscript extends BaseController
         $this->session->set_flashdata($assigned > 0 ? 'success' : 'error', $assigned > 0 ? 'Reviewer assigned successfully.' : 'Reviewer already assigned or assignment failed.');
         redirect('editor/ae-assign-reviewers/' . (int)$manuscriptId);
     }
-
     public function reviewProgress()
     {
         $data['assignments'] = $this->editor_model->getReviewProgressList();

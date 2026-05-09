@@ -635,7 +635,7 @@ Scope Screening:
 
     public function getAeAssignments($associateEditorId)
     {
-        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.subject,m.thematicArea,m.keywords,m.status,m.aeAssignmentResponse,m.updatedDtm')
+          return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.thematicArea,m.keywords,m.status,m.aeAssignmentResponse,m.updatedDtm')
             ->from('tbl_manuscripts m')
             ->where('m.isDeleted', 0)
             ->where('m.assignedEditorId', (int)$associateEditorId)
@@ -663,9 +663,9 @@ Scope Screening:
             ->get()->row();
     }
 
-    public function getAcceptedAeManuscripts($associateEditorId)
+     public function getAcceptedAeManuscripts($associateEditorId)
     {
-        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.subject,m.thematicArea,m.keywords,m.updatedDtm')
+        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.thematicArea,m.keywords,m.updatedDtm')
             ->from('tbl_manuscripts m')
             ->where('m.isDeleted', 0)
             ->where('m.assignedEditorId', (int)$associateEditorId)
