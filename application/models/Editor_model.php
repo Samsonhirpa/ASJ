@@ -529,10 +529,9 @@ Scope Screening:
 
     public function getManagingEditorScreenedManuscripts($status = 'all')
     {
-        $this->db->select('m.*, mes.totalScore, mes.resultStatus as meResultStatus, mes.comments as meComments, mes.screenedDtm, mes.resultFilePath, meUser.name as managingEditorName');
+        $this->db->select('m.*, mes.totalScore, mes.resultStatus as meResultStatus, mes.comments as meComments, mes.screenedDtm, mes.resultFilePath');
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'inner');
-        $this->db->join('tbl_users meUser', 'meUser.userId = mes.managingEditorId', 'left');
         $this->db->where('m.isDeleted', 0);
         if (in_array($status, ['passed','failed'], true)) {
             $this->db->where('mes.resultStatus', $status);
@@ -541,7 +540,7 @@ Scope Screening:
         return $this->db->get()->result();
     }
 
-    public function updateManagingEditorResultStatus($manuscriptId, $eicId, $decision, $reason = null)
+    public function updateManagingEditorResultStatus($manuscriptId, $eicId, $decision)
     {
         $allowed = ['approved', 'rejected'];
         if (!in_array($decision, $allowed, true)) {
@@ -550,30 +549,12 @@ Scope Screening:
         $status = $decision === 'approved' ? 'under_review' : 'rejected';
         $this->db->where('manuscriptId', (int)$manuscriptId);
         $this->db->where('isDeleted', 0);
-        $ok = $this->db->update('tbl_manuscripts', [
+        return $this->db->update('tbl_manuscripts', [
             'status' => $status,
-            'eicMeDecision' => $decision,
             'assignedEditorId' => (int)$eicId,
             'updatedBy' => (int)$eicId,
             'updatedDtm' => date('Y-m-d H:i:s')
         ]);
-
-        if ($ok && $decision === 'rejected') {
-            $m = $this->getManuscript((int)$manuscriptId);
-            if ($m) {
-                $this->db->insert('tbl_notifications', [
-                    'userId' => $m->submittedBy,
-                    'type' => 'eic_me_result_rejected',
-                    'subject' => 'Manuscript rejected after Managing Editor evaluation',
-                    'message' => 'Your manuscript ' . $m->manuscriptNumber . ' was rejected by Editor-in-Chief after Managing Editor evaluation.' . (!empty($reason) ? (' Reason: ' . $reason) : ''),
-                    'referenceId' => (int)$manuscriptId,
-                    'referenceType' => 'manuscript',
-                    'createdDtm' => date('Y-m-d H:i:s')
-                ]);
-            }
-        }
-
-        return $ok;
     }
 
     public function getAvailableAssociateEditors($expertise = null)
@@ -593,39 +574,10 @@ Scope Screening:
     {
         $this->db->where('manuscriptId', (int)$manuscriptId);
         $this->db->where('isDeleted', 0);
-        $ok = $this->db->update('tbl_manuscripts', [
+        return $this->db->update('tbl_manuscripts', [
             'assignedEditorId' => (int)$associateEditorId,
             'status' => 'under_review',
-            'aeAssignmentResponse' => 'pending',
             'updatedBy' => (int)$eicId,
-            'updatedDtm' => date('Y-m-d H:i:s')
-        ]);
-        if ($ok) {
-            $m = $this->getManuscript((int)$manuscriptId);
-            if ($m) {
-                $this->db->insert('tbl_notifications', [
-                    'userId' => (int)$associateEditorId,
-                    'type' => 'associate_editor_assignment',
-                    'subject' => 'New manuscript assignment request',
-                    'message' => 'You have been assigned manuscript ' . $m->manuscriptNumber . '. Please accept or decline this request.',
-                    'referenceId' => (int)$manuscriptId,
-                    'referenceType' => 'manuscript',
-                    'createdDtm' => date('Y-m-d H:i:s')
-                ]);
-            }
-        }
-        return $ok;
-    }
-
-    public function respondAssociateEditorAssignment($manuscriptId, $associateEditorId, $response)
-    {
-        if (!in_array($response, ['accepted','declined'], true)) { return false; }
-        $this->db->where('manuscriptId', (int)$manuscriptId);
-        $this->db->where('assignedEditorId', (int)$associateEditorId);
-        $this->db->where('isDeleted', 0);
-        return $this->db->update('tbl_manuscripts', [
-            'aeAssignmentResponse' => $response,
-            'updatedBy' => (int)$associateEditorId,
             'updatedDtm' => date('Y-m-d H:i:s')
         ]);
     }

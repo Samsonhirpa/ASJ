@@ -496,7 +496,8 @@
                 // Role-based dashboard URL
                 if($role == 21) echo base_url('author/dashboard');
                 elseif($role == 19) echo base_url('reviewer/dashboard');
-                elseif(in_array($role, [13,14,15,16,17,18,20])) echo base_url('editor/dashboard');
+                elseif($role == 15) echo base_url('managing-editor/dashboard');
+                elseif(in_array($role, [13,14,16,17,18,20])) echo base_url('editor/dashboard');
                 else echo base_url('dashboard');
               ?>">
                 <i class="fa fa-dashboard"></i> 
@@ -527,11 +528,7 @@
               </ul>
             </li>
             
-            <li>
-              <a href="<?php echo base_url(); ?>admin/settings">
-                <i class="fa fa-cogs"></i> <span>System Settings</span>
-              </a>
-            </li>
+         
             <?php endif; ?>
             
             <!-- ========== AUTHOR MENU (role == 21) ========== -->
@@ -577,9 +574,24 @@
               </a>
             </li>
             <?php endif; ?>
+
+
+
+             <!-- ========== MANAGING EDITOR MENU (roleId = 15) ========== -->
+            <?php if($role == 15): ?>
+            <li class="header">MANAGING EDITOR ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'mePending') ? 'active' : '' ?>">
+                <a href="<?= base_url('managing-editor/pending') ?>">
+                    <i class="fa fa-clipboard"></i> <span>Pending Manuscripts</span>
+                </a>
+            </li>
+             <li class="<?= (isset($activeMenu) && $activeMenu == 'meScreened') ? 'active' : '' ?>">
+                <a href="<?= base_url('managing-editor/screened') ?>"><i class="fa fa-check-square"></i> <span>Screened Manuscripts</span></a>
+            </li>
+            <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,15,16,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,16,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?php echo (uri_string() == 'editor/pending') ? 'active' : ''; ?>">
@@ -587,6 +599,10 @@
                 <i class="fa fa-clock-o"></i> 
                 <span>Pending Manuscripts</span>
               </a>
+            </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'meResults') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/me-results') ?>"><i class="fa fa-list-alt"></i> <span>Managing Editor Results</span></a>
             </li>
             
             <li class="<?php echo (uri_string() == 'editor/all') ? 'active' : ''; ?>">
@@ -604,7 +620,7 @@
             </li>
                <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/payment') ?>">
-                    <i class="fa fa-money"></i> <span>Payment Gateway</span>
+                    <i class="fa fa-money"></i> <span>Payment </span>
                 </a>
             </li>
 
@@ -636,8 +652,80 @@
             <?php endif; ?>
             <?php endif; ?>
             
-           
-     
+            <!-- ========== JOURNAL MANAGEMENT (Common for all) ========== -->
+            <li class="header">JOURNAL</li>
+            
+            <li class="<?php echo (uri_string() == 'journal/current-issue') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>journal/current-issue">
+                <i class="fa fa-book"></i> 
+                <span>Current Issue</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'journal/archive') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>journal/archive">
+                <i class="fa fa-archive"></i> 
+                <span>All Issues</span>
+              </a>
+            </li>
+        
+            
+            <!-- ========== REPORTS SECTION ========== -->
+            <li class="header">REPORTS</li>
+            
+            <li class="treeview">
+              <a href="#">
+                <i class="fa fa-bar-chart"></i> 
+                <span>Analytics</span>
+                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+              </a>
+              <ul class="treeview-menu">
+                <li><a href="#"><i class="fa fa-file-pdf-o"></i> Annual Report</a></li>
+                <li><a href="#"><i class="fa fa-file-excel-o"></i> Export Data</a></li>
+                <li><a href="#"><i class="fa fa-line-chart"></i> Statistics</a></li>
+              </ul>
+            </li>
+            
+            <!-- ========== USER SETTINGS ========== -->
+            <li class="header">USER</li>
+            
+            <li class="<?php echo (uri_string() == 'profile') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>profile">
+                <i class="fa fa-user-circle"></i> 
+                <span>My Profile</span>
+              </a>
+            </li>
+            
+            <li class="<?php echo (uri_string() == 'changePassword') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>changePassword">
+                <i class="fa fa-key"></i> 
+                <span>Change Password</span>
+              </a>
+            </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>logout">
+                <i class="fa fa-sign-out"></i> 
+                <span>Logout</span>
+              </a>
+            </li>
+            
+            <!-- Help & Support -->
+            <li class="header">SUPPORT</li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>journal/contact">
+                <i class="fa fa-envelope"></i> 
+                <span>Contact Us</span>
+              </a>
+            </li>
+            
+            <li>
+              <a href="<?php echo base_url(); ?>faq">
+                <i class="fa fa-question-circle"></i> 
+                <span>FAQ</span>
+              </a>
+            </li>
           </ul>
         </section>
         <!-- /.sidebar -->
