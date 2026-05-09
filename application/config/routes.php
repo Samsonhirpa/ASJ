@@ -220,3 +220,6 @@ $route['editor/me-results/assign/(:num)'] = 'editor/manuscript/assignAssociateEd
 $route['editor/ae-assignments'] = 'editor/manuscript/aeAssignments';
 $route['editor/ae-assignments/respond/(:num)/(:any)'] = 'editor/manuscript/aeRespond/$1/$2';
 $route['editor/ae-assignments/view/(:num)'] = 'editor/manuscript/aeAssignmentView/$1';
+$route['editor/ae-assign-reviewers'] = 'editor/manuscript/aeAssignReviewers';
+$route['editor/ae-assign-reviewers/(:num)'] = 'editor/manuscript/aeAssignReviewersForm/$1';
+$route['editor/ae-assign-reviewers/(:num)/assign/(:num)'] = 'editor/manuscript/aeAssignReviewer/$1/$2';
