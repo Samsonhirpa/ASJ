@@ -124,8 +124,7 @@ class Manuscript extends BaseController
     {
         if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
         $decision = $this->input->post('decision', true);
-        $reason = $this->input->post('reason', true);
-        $ok = $this->editor_model->updateManagingEditorResultStatus((int)$manuscriptId, (int)$this->vendorId, $decision, $reason);
+        $ok = $this->editor_model->updateManagingEditorResultStatus((int)$manuscriptId, (int)$this->vendorId, $decision);
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Decision saved.' : 'Failed to save decision.');
         redirect('editor/me-results');
     }
@@ -149,31 +148,10 @@ class Manuscript extends BaseController
         }
 
         $data['manuscript'] = $manuscript;
-        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors();
+        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors($manuscript->thematicArea);
         $this->global['pageTitle'] = 'Assign Associate Editor - OJAS';
         $this->global['activeMenu'] = 'meResults';
         $this->loadViews('editor/assign_associate_editor', $this->global, $data, NULL);
-    }
-
-
-    public function respondAssociateAssignment($manuscriptId)
-    {
-        if (!in_array((int)$this->role, [16]) && !$this->isAdmin()) { $this->loadThis(); return; }
-        $response = $this->input->post('response', true);
-        $ok = $this->editor_model->respondAssociateEditorAssignment((int)$manuscriptId, (int)$this->vendorId, $response);
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Response saved.' : 'Failed to save response.');
-        redirect('editor/me-results');
-    }
-
-    public function meResultDetail($manuscriptId)
-    {
-        if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
-        $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
-        $data['files'] = $this->editor_model->getManuscriptFiles((int)$manuscriptId);
-        $data['screening'] = $this->editor_model->getManagingEditorScreening((int)$manuscriptId);
-        $this->global['pageTitle'] = 'Manuscript Screening Details - OJAS';
-        $this->global['activeMenu'] = 'meResults';
-        $this->loadViews('editor/me_result_detail', $this->global, $data, NULL);
     }
 
     public function reviewProgress()
