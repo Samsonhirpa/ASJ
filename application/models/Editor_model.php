@@ -483,13 +483,13 @@ Scope Screening:
 
         $this->db->trans_start();
         if ($existing) {
-            $this->db->where('screeningId', $existing->screeningId);
-            $this->db->update('tbl_managing_editor_screenings', $data);
-        } else {
-            $data['createdBy'] = $editorId;
-            $data['createdDtm'] = $now;
-            $this->db->insert('tbl_managing_editor_screenings', $data);
+            $this->db->trans_complete();
+            return false;
         }
+
+        $data['createdBy'] = $editorId;
+        $data['createdDtm'] = $now;
+        $this->db->insert('tbl_managing_editor_screenings', $data);
 
         $this->db->where('manuscriptId', $manuscriptId);
         $this->db->where('isDeleted', 0);
