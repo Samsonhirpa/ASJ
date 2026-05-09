@@ -11,7 +11,7 @@
 <button class="btn btn-primary">Filter</button>
 </form></div></div>
 <div class="box box-warning"><div class="box-body table-responsive">
-<table class="table table-striped"><thead><tr><th>#</th><th>Title</th><th>ME Total</th><th>Managing Editor</th><th>ME Result</th><th>Actions</th></tr></thead><tbody>
+<table class="table table-striped"><thead><tr><th>#</th><th>Title</th><th>ME Total</th><th>Managing Editor</th><th>ME Result</th><th>Assign Status</th><th>AE Status</th><th>Actions</th></tr></thead><tbody>
 <?php if(!empty($manuscripts)): foreach($manuscripts as $m): ?>
 <tr>
 <td><?= html_escape($m->manuscriptNumber) ?></td>
@@ -19,6 +19,15 @@
 <td><?= (int)$m->totalScore ?>/100</td>
 <td><?= html_escape($m->managingEditorName ?: '-') ?></td>
 <td><span class="label label-<?= $m->meResultStatus==='passed'?'success':'danger' ?>"><?= html_escape($m->meResultStatus) ?></span></td>
+<?php $isAssigned = !empty($m->assignedAssociateEditorName); ?>
+<td>
+<?php if ($isAssigned): ?>
+<span class="label label-success">Assigned: <?= html_escape($m->assignedAssociateEditorName) ?></span>
+<?php else: ?>
+<span class="label label-default">Not assigned</span>
+<?php endif; ?>
+</td>
+<td><span class="label label-<?= ($m->aeAssignmentResponse ?? 'pending') === 'accepted' ? 'success' : (($m->aeAssignmentResponse ?? 'pending') === 'declined' ? 'danger' : 'warning') ?>"><?= html_escape(ucfirst($m->aeAssignmentResponse ?? 'pending')) ?></span></td>
 <td>
 <?php $isRejected = isset($m->eicMeDecision) && $m->eicMeDecision === 'rejected'; ?>
 <?php $isApproved = isset($m->eicMeDecision) && $m->eicMeDecision === 'approved'; ?>
@@ -29,9 +38,10 @@
 <?php if($m->meResultStatus==='passed' && $isApproved && !$isRejected): ?>
 <a class="btn btn-xs btn-primary" href="<?= base_url('editor/me-results/assign/'.$m->manuscriptId) ?>">Assign</a>
 <?php endif; ?>
+<a class="btn btn-xs btn-info" href="<?= base_url('editor/me-results/view/'.$m->manuscriptId) ?>">View</a>
 </td>
 </tr>
-<?php endforeach; else: ?><tr><td colspan="6">No records found.</td></tr><?php endif; ?>
+<?php endforeach; else: ?><tr><td colspan="8">No records found.</td></tr><?php endif; ?>
 </tbody></table>
 </div></div>
 </section></div>

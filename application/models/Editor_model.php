@@ -529,16 +529,29 @@ Scope Screening:
 
     public function getManagingEditorScreenedManuscripts($status = 'all')
     {
-        $this->db->select('m.*, mes.totalScore, mes.resultStatus as meResultStatus, mes.comments as meComments, mes.screenedDtm, mes.resultFilePath, meUser.name as managingEditorName');
+        $this->db->select('m.*, mes.totalScore, mes.resultStatus as meResultStatus, mes.comments as meComments, mes.screenedDtm, mes.resultFilePath, meUser.name as managingEditorName, assignedUser.name as assignedAssociateEditorName');
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'inner');
         $this->db->join('tbl_users meUser', 'meUser.userId = mes.managingEditorId', 'left');
+        $this->db->join('tbl_users assignedUser', 'assignedUser.userId = m.assignedEditorId AND assignedUser.roleId = 16', 'left');
         $this->db->where('m.isDeleted', 0);
         if (in_array($status, ['passed','failed'], true)) {
             $this->db->where('mes.resultStatus', $status);
         }
         $this->db->order_by('mes.screenedDtm', 'DESC');
         return $this->db->get()->result();
+    }
+
+    public function getMeResultDetail($manuscriptId)
+    {
+        return $this->db->select('m.*, mes.totalScore, mes.comments as meComments, mes.resultStatus as meResultStatus, mes.screenedDtm, mes.resultFilePath, meUser.name as managingEditorName, assignedUser.name as assignedAssociateEditorName')
+            ->from('tbl_manuscripts m')
+            ->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'left')
+            ->join('tbl_users meUser', 'meUser.userId = mes.managingEditorId', 'left')
+            ->join('tbl_users assignedUser', 'assignedUser.userId = m.assignedEditorId AND assignedUser.roleId = 16', 'left')
+            ->where('m.manuscriptId', (int)$manuscriptId)
+            ->where('m.isDeleted', 0)
+            ->get()->row();
     }
 
     public function updateManagingEditorResultStatus($manuscriptId, $eicId, $decision)

@@ -163,7 +163,7 @@
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,16,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?= (isset($activeMenu) && $activeMenu == 'pending') ? 'active' : '' ?>">
@@ -218,6 +218,14 @@
             <li>
                 <a href="<?= base_url('editor/ethics') ?>">
                     <i class="fa fa-gavel"></i> <span>Ethics Cases</span>
+                </a>
+            </li>
+            <?php endif; ?>
+            <?php if($role == 16): ?>
+            <li class="header">ASSOCIATE EDITOR ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeAssignments') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-assignments') ?>">
+                    <i class="fa fa-tasks"></i> <span>My Assignments</span>
                 </a>
             </li>
             <?php endif; ?>
