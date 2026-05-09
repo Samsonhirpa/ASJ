@@ -49,6 +49,8 @@ class Manuscript extends BaseController
         }
 
         $data['files'] = $this->editor_model->getManuscriptFiles((int)$manuscriptId);
+        $data['manuscript']->authorName = 'Blind Review';
+        $data['manuscript']->authorEmail = 'Hidden during screening';
         $this->global['pageTitle'] = 'Technical and Scope Screening - OJAS';
         $this->global['activeMenu'] = 'pending';
         $this->loadViews('editor/technical_scope_screening', $this->global, $data, NULL);
@@ -100,6 +102,56 @@ class Manuscript extends BaseController
         $this->global['pageTitle'] = 'Manuscript Details - OJAS';
         $this->global['activeMenu'] = 'allmanuscripts';
         $this->loadViews('editor/manuscript_view', $this->global, $data, NULL);
+    }
+
+
+    public function managingEditorResults()
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $status = $this->input->get('status', true) ?: 'all';
+        $data['status'] = $status;
+        $data['manuscripts'] = $this->editor_model->getManagingEditorScreenedManuscripts($status);
+        $this->global['pageTitle'] = 'Managing Editor Results - OJAS';
+        $this->global['activeMenu'] = 'meResults';
+        $this->loadViews('editor/managing_editor_results', $this->global, $data, NULL);
+    }
+
+    public function meResultDecision($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
+        $decision = $this->input->post('decision', true);
+        $ok = $this->editor_model->updateManagingEditorResultStatus((int)$manuscriptId, (int)$this->vendorId, $decision);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Decision saved.' : 'Failed to save decision.');
+        redirect('editor/me-results');
+    }
+
+    public function assignAssociateEditor($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
+        $manuscript = $this->editor_model->getManuscript((int)$manuscriptId);
+        if (!$manuscript || $manuscript->managingEditorScreeningStatus !== 'passed') {
+            $this->session->set_flashdata('error', 'Only passed manuscripts can be assigned.');
+            redirect('editor/me-results');
+        }
+
+        if ($this->input->method() === 'post') {
+            $this->form_validation->set_rules('associateEditorId', 'Associate Editor', 'required|integer');
+            if ($this->form_validation->run() !== false) {
+                $ok = $this->editor_model->assignAssociateEditor((int)$manuscriptId, (int)$this->vendorId, (int)$this->input->post('associateEditorId'));
+                $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Associate Editor assigned.' : 'Failed to assign Associate Editor.');
+                redirect('editor/me-results');
+            }
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors($manuscript->thematicArea);
+        $this->global['pageTitle'] = 'Assign Associate Editor - OJAS';
+        $this->global['activeMenu'] = 'meResults';
+        $this->loadViews('editor/assign_associate_editor', $this->global, $data, NULL);
     }
 
     public function reviewProgress()

@@ -517,6 +517,62 @@ Scope Screening:
         return $this->db->trans_status();
     }
 
+
+    public function getManagingEditorScreenedManuscripts($status = 'all')
+    {
+        $this->db->select('m.*, mes.totalScore, mes.resultStatus as meResultStatus, mes.comments as meComments, mes.screenedDtm, mes.resultFilePath');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'inner');
+        $this->db->where('m.isDeleted', 0);
+        if (in_array($status, ['passed','failed'], true)) {
+            $this->db->where('mes.resultStatus', $status);
+        }
+        $this->db->order_by('mes.screenedDtm', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function updateManagingEditorResultStatus($manuscriptId, $eicId, $decision)
+    {
+        $allowed = ['approved', 'rejected'];
+        if (!in_array($decision, $allowed, true)) {
+            return false;
+        }
+        $status = $decision === 'approved' ? 'under_review' : 'rejected';
+        $this->db->where('manuscriptId', (int)$manuscriptId);
+        $this->db->where('isDeleted', 0);
+        return $this->db->update('tbl_manuscripts', [
+            'status' => $status,
+            'assignedEditorId' => (int)$eicId,
+            'updatedBy' => (int)$eicId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+    }
+
+    public function getAvailableAssociateEditors($expertise = null)
+    {
+        $this->db->select('userId, name, email, expertise_area');
+        $this->db->from('tbl_users');
+        $this->db->where('roleId', 16);
+        $this->db->where('isDeleted', 0);
+        if (!empty($expertise)) {
+            $this->db->like('expertise_area', $expertise);
+        }
+        $this->db->order_by('name', 'ASC');
+        return $this->db->get()->result();
+    }
+
+    public function assignAssociateEditor($manuscriptId, $eicId, $associateEditorId)
+    {
+        $this->db->where('manuscriptId', (int)$manuscriptId);
+        $this->db->where('isDeleted', 0);
+        return $this->db->update('tbl_manuscripts', [
+            'assignedEditorId' => (int)$associateEditorId,
+            'status' => 'under_review',
+            'updatedBy' => (int)$eicId,
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+    }
+
     public function savePlagiarismScore($manuscriptId, $editorId, $score)
     {
         $this->db->where('manuscriptId', $manuscriptId);
