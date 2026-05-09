@@ -133,6 +133,19 @@ class Manuscript extends BaseController
         redirect('editor/me-results');
     }
 
+    public function meResultView($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
+        $data['manuscript'] = $this->editor_model->getMeResultDetail((int)$manuscriptId);
+        if (!$data['manuscript']) {
+            $this->session->set_flashdata('error', 'Manuscript not found.');
+            redirect('editor/me-results');
+        }
+        $this->global['pageTitle'] = 'Managing Editor Result Detail - OJAS';
+        $this->global['activeMenu'] = 'meResults';
+        $this->loadViews('editor/me_result_detail', $this->global, $data, NULL);
+    }
+
     public function assignAssociateEditor($manuscriptId)
     {
         if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
@@ -166,6 +179,7 @@ class Manuscript extends BaseController
         if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
         $data['assignments'] = $this->editor_model->getAeAssignments((int)$this->vendorId);
         $this->global['pageTitle'] = 'Associate Editor Assignments - OJAS';
+        $this->global['activeMenu'] = 'aeAssignments';
         $this->loadViews('editor/ae_assignments', $this->global, $data, NULL);
     }
 
