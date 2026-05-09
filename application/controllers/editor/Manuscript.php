@@ -124,6 +124,10 @@ class Manuscript extends BaseController
     {
         if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
         $decision = $this->input->post('decision', true);
+        if (!in_array($decision, ['approved', 'rejected'], true)) {
+            $this->session->set_flashdata('error', 'Invalid decision.');
+            redirect('editor/me-results');
+        }
         $ok = $this->editor_model->updateManagingEditorResultStatus((int)$manuscriptId, (int)$this->vendorId, $decision);
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Decision saved.' : 'Failed to save decision.');
         redirect('editor/me-results');
@@ -142,6 +146,9 @@ class Manuscript extends BaseController
             $this->form_validation->set_rules('associateEditorId', 'Associate Editor', 'required|integer');
             if ($this->form_validation->run() !== false) {
                 $ok = $this->editor_model->assignAssociateEditor((int)$manuscriptId, (int)$this->vendorId, (int)$this->input->post('associateEditorId'));
+                if ($ok) {
+                    $this->editor_model->notifyAssociateEditorAssignment((int)$manuscriptId, (int)$this->input->post('associateEditorId'));
+                }
                 $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Associate Editor assigned.' : 'Failed to assign Associate Editor.');
                 redirect('editor/me-results');
             }
@@ -152,6 +159,34 @@ class Manuscript extends BaseController
         $this->global['pageTitle'] = 'Assign Associate Editor - OJAS';
         $this->global['activeMenu'] = 'meResults';
         $this->loadViews('editor/assign_associate_editor', $this->global, $data, NULL);
+    }
+
+    public function aeAssignments()
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $data['assignments'] = $this->editor_model->getAeAssignments((int)$this->vendorId);
+        $this->global['pageTitle'] = 'Associate Editor Assignments - OJAS';
+        $this->loadViews('editor/ae_assignments', $this->global, $data, NULL);
+    }
+
+    public function aeRespond($manuscriptId, $decision)
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $ok = $this->editor_model->respondAeAssignment((int)$manuscriptId, (int)$this->vendorId, $decision);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Response saved.' : 'Unable to update assignment response.');
+        redirect('editor/ae-assignments');
+    }
+
+    public function aeAssignmentView($manuscriptId)
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $data['manuscript'] = $this->editor_model->getAeAssignmentDetail((int)$manuscriptId, (int)$this->vendorId);
+        if (!$data['manuscript']) {
+            $this->session->set_flashdata('error', 'Assignment not found or not yet accepted.');
+            redirect('editor/ae-assignments');
+        }
+        $this->global['pageTitle'] = 'Assigned Manuscript Details - OJAS';
+        $this->loadViews('editor/ae_assignment_view', $this->global, $data, NULL);
     }
 
     public function reviewProgress()
