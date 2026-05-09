@@ -216,3 +216,6 @@ $route['managing-editor/screened'] = 'managing_editor/manuscript/screened';
 $route['editor/me-results'] = 'editor/manuscript/managingEditorResults';
 $route['editor/me-results/decision/(:num)'] = 'editor/manuscript/meResultDecision/$1';
 $route['editor/me-results/assign/(:num)'] = 'editor/manuscript/assignAssociateEditor/$1';
+$route['editor/ae-assignments'] = 'editor/manuscript/aeAssignments';
+$route['editor/ae-assignments/respond/(:num)/(:any)'] = 'editor/manuscript/aeRespond/$1/$2';
+$route['editor/ae-assignments/view/(:num)'] = 'editor/manuscript/aeAssignmentView/$1';
