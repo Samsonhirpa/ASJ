@@ -200,7 +200,43 @@ class Manuscript extends BaseController
             redirect('editor/ae-assignments');
         }
         $this->global['pageTitle'] = 'Assigned Manuscript Details - OJAS';
+        $this->global['activeMenu'] = 'aeAssignments';
         $this->loadViews('editor/ae_assignment_view', $this->global, $data, NULL);
+    }
+
+    public function aeAssignReviewers()
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $data['manuscripts'] = $this->editor_model->getAcceptedAeManuscripts((int)$this->vendorId);
+        $this->global['pageTitle'] = 'Assign Reviewers - OJAS';
+        $this->global['activeMenu'] = 'aeAssignReviewers';
+        $this->loadViews('editor/ae_assign_reviewers', $this->global, $data, NULL);
+    }
+
+    public function aeAssignReviewersForm($manuscriptId)
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $manuscript = $this->editor_model->getAeAssignmentDetail((int)$manuscriptId, (int)$this->vendorId);
+        if (!$manuscript) {
+            $this->session->set_flashdata('error', 'Accepted manuscript not found.');
+            redirect('editor/ae-assign-reviewers');
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['assignedReviewers'] = $this->editor_model->getAssignedReviewersForManuscript((int)$manuscriptId);
+        $data['reviewers'] = $this->editor_model->getAvailableReviewersForManuscript((int)$manuscriptId);
+        $this->global['pageTitle'] = 'Assign Reviewers to Manuscript - OJAS';
+        $this->global['activeMenu'] = 'aeAssignReviewers';
+        $this->loadViews('editor/ae_assign_reviewers_form', $this->global, $data, NULL);
+    }
+
+    public function aeAssignReviewer($manuscriptId, $reviewerId)
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $dueDate = date('Y-m-d', strtotime('+14 days'));
+        $assigned = $this->editor_model->assignReviewers((int)$manuscriptId, (int)$this->vendorId, [(int)$reviewerId], $dueDate);
+        $this->session->set_flashdata($assigned > 0 ? 'success' : 'error', $assigned > 0 ? 'Reviewer assigned successfully.' : 'Reviewer already assigned or assignment failed.');
+        redirect('editor/ae-assign-reviewers/' . (int)$manuscriptId);
     }
 
     public function reviewProgress()

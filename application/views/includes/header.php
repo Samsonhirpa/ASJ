@@ -598,6 +598,11 @@
                     <i class="fa fa-tasks"></i> <span>My Assignments</span>
                 </a>
             </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeAssignReviewers') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-assign-reviewers') ?>">
+                    <i class="fa fa-user-plus"></i> <span>Assign Reviewers</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
