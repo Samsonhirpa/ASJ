@@ -635,7 +635,7 @@ Scope Screening:
 
     public function getAeAssignments($associateEditorId)
     {
-        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.status,m.aeAssignmentResponse,m.updatedDtm')
+        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.thematicArea,m.keywords,m.status,m.aeAssignmentResponse,m.updatedDtm')
             ->from('tbl_manuscripts m')
             ->where('m.isDeleted', 0)
             ->where('m.assignedEditorId', (int)$associateEditorId)
@@ -661,6 +661,40 @@ Scope Screening:
             ->where('m.aeAssignmentResponse', 'accepted')
             ->where('m.eicMeDecision', 'approved')
             ->get()->row();
+    }
+
+    public function getAcceptedAeManuscripts($associateEditorId)
+    {
+        return $this->db->select('m.manuscriptId,m.manuscriptNumber,m.title,m.thematicArea,m.keywords,m.updatedDtm')
+            ->from('tbl_manuscripts m')
+            ->where('m.isDeleted', 0)
+            ->where('m.assignedEditorId', (int)$associateEditorId)
+            ->where('m.aeAssignmentResponse', 'accepted')
+            ->where('m.eicMeDecision', 'approved')
+            ->order_by('m.updatedDtm', 'DESC')
+            ->get()->result();
+    }
+
+    public function getAssignedReviewersForManuscript($manuscriptId)
+    {
+        return $this->db->select('ra.assignmentId,ra.reviewDueDate,ra.status,u.userId,u.name,u.email,u.mobile,u.institution,u.department,u.expertise_area')
+            ->from('tbl_reviewer_assignments ra')
+            ->join('tbl_users u', 'u.userId = ra.reviewerId', 'left')
+            ->where('ra.manuscriptId', (int)$manuscriptId)
+            ->where('ra.isDeleted', 0)
+            ->order_by('ra.assignedDate', 'DESC')
+            ->get()->result();
+    }
+
+    public function getAvailableReviewersForManuscript($manuscriptId)
+    {
+        return $this->db->select('u.userId,u.name,u.email,u.mobile,u.institution,u.department,u.expertise_area')
+            ->from('tbl_users u')
+            ->where('u.roleId', 19)
+            ->where('u.isDeleted', 0)
+            ->where('u.userId NOT IN (SELECT reviewerId FROM tbl_reviewer_assignments WHERE manuscriptId = ' . (int)$manuscriptId . ' AND isDeleted = 0)', null, false)
+            ->order_by('u.name', 'ASC')
+            ->get()->result();
     }
 
     public function savePlagiarismScore($manuscriptId, $editorId, $score)
