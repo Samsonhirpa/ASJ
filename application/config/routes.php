@@ -210,3 +210,9 @@ $route['admin/issues/delete/(:num)'] = 'admin/issue/delete/$1';
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
+
+
+$route['managing-editor/screened'] = 'managing_editor/manuscript/screened';
+$route['editor/me-results'] = 'editor/manuscript/managingEditorResults';
+$route['editor/me-results/decision/(:num)'] = 'editor/manuscript/meResultDecision/$1';
+$route['editor/me-results/assign/(:num)'] = 'editor/manuscript/assignAssociateEditor/$1';

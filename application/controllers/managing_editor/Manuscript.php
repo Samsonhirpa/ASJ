@@ -36,6 +36,17 @@ class Manuscript extends BaseController
         $this->loadViews('managing_editor/pending', $this->global, $data, NULL);
     }
 
+
+    public function screened()
+    {
+        $data['filters'] = ['status' => 'all', 'q' => '', 'articleType' => ''];
+        $data['stats'] = $this->editor_model->getManagingEditorDashboardStats();
+        $data['manuscripts'] = $this->editor_model->getManagingEditorPendingManuscripts(['status' => 'passed']);
+        $this->global['pageTitle'] = 'Screened Manuscripts - OJAS';
+        $this->global['activeMenu'] = 'meScreened';
+        $this->loadViews('managing_editor/screened', $this->global, $data, NULL);
+    }
+
     public function screen($manuscriptId)
     {
         $manuscriptId = (int)$manuscriptId;
