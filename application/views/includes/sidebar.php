@@ -74,6 +74,9 @@
                     <i class="fa fa-cogs"></i> <span>System Settings</span>
                 </a>
             </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'meScreened') ? 'active' : '' ?>">
+                <a href="<?= base_url('managing-editor/screened') ?>"><i class="fa fa-check-square"></i> <span>Screened Manuscripts</span></a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== AUTHOR MENU (roleId = 21) ========== -->
@@ -149,6 +152,9 @@
             <!-- ========== MANAGING EDITOR MENU (roleId = 15) ========== -->
             <?php if($role == 15): ?>
             <li class="header">MANAGING EDITOR ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : '' ?>">
+                <a href="<?= base_url('managing-editor/dashboard') ?>"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a>
+            </li>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'mePending') ? 'active' : '' ?>">
                 <a href="<?= base_url('managing-editor/pending') ?>">
                     <i class="fa fa-clipboard"></i> <span>Pending Manuscripts</span>
@@ -199,6 +205,9 @@
                 </a>
             </li>
             
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'meResults') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/me-results') ?>"><i class="fa fa-list-alt"></i> <span>Managing Editor Results</span></a>
+            </li>
             <?php if($role == 13): // Editor-in-Chief only ?>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'editorboard') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/board') ?>">
