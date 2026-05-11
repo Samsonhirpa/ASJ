@@ -8,6 +8,7 @@
                 <div class="box box-primary">
                     <div class="box-header with-border"><h3 class="box-title"><?= html_escape($manuscript->title) ?></h3></div>
                     <div class="box-body">
+                            <p class="text-muted"><strong>Note:</strong> Editor-in-Chief assigns the Associate Editor first. The Associate Editor then assigns reviewers as a separate assignment.</p>
                         <p><strong>Author:</strong> <?= html_escape($manuscript->authorName) ?> (<?= html_escape($manuscript->authorEmail) ?>)</p>
                         <p><strong>Status:</strong> <?= html_escape($manuscript->status) ?> | <strong>Screening:</strong> <?= html_escape($manuscript->screeningStatus ?: 'pending') ?> | <strong>Plagiarism:</strong> <?= $manuscript->plagiarismScore !== null ? number_format($manuscript->plagiarismScore, 2).'%' : 'N/A' ?></p>
                     </div>
@@ -40,7 +41,7 @@
 
             <div class="col-md-4">
                 <div class="box box-success">
-                    <div class="box-header with-border"><h3 class="box-title">3) Assign Reviewers (2-3)</h3></div>
+                    <div class="box-header with-border"><h3 class="box-title">3) Assign Reviewers (2-3) — Associate Editor Only</h3></div>
                     <form method="post" action="<?= base_url('editor/assign-reviewers/'.$manuscript->manuscriptId) ?>">
                         <div class="box-body">
                             <select name="reviewerIds[]" class="form-control" multiple required style="height:160px;">
