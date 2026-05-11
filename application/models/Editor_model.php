@@ -747,7 +747,6 @@ Scope Screening:
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->update('tbl_manuscripts', [
                 'status' => 'under_review',
-            'aeAssignmentResponse' => 'pending',
                 'assignedEditorId' => $editorId,
                 'updatedBy' => $editorId,
                 'updatedDtm' => date('Y-m-d H:i:s')
