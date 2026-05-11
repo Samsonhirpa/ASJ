@@ -507,7 +507,7 @@ Scope Screening:
             'managingEditorScreeningScore' => $totalScore,
             'managingEditorScreenedBy' => $editorId,
             'managingEditorScreenedDtm' => $now,
-            'status' => $resultStatus === 'passed' ? 'under_review' : 'rejected',
+            'eicMeDecision' => 'pending',
             'updatedBy' => $editorId,
             'updatedDtm' => $now
         ]);
@@ -589,15 +589,12 @@ Scope Screening:
         return true;
     }
 
-    public function getAvailableAssociateEditors($expertise = null)
+    public function getAvailableAssociateEditors()
     {
         $this->db->select('userId, name, email, expertise_area');
         $this->db->from('tbl_users');
         $this->db->where('roleId', 16);
         $this->db->where('isDeleted', 0);
-        if (!empty($expertise)) {
-            $this->db->like('expertise_area', $expertise);
-        }
         $this->db->order_by('name', 'ASC');
         return $this->db->get()->result();
     }
