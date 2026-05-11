@@ -603,6 +603,12 @@
                     <i class="fa fa-user-plus"></i> <span>Assign Reviewers</span>
                 </a>
             </li>
+            <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>editor/assignments">
+                <i class="fa fa-line-chart"></i>
+                <span>Track Review Progress</span>
+              </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
@@ -629,12 +635,6 @@
               </a>
             </li>
             
-            <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>editor/assignments">
-                <i class="fa fa-line-chart"></i> 
-                <span>Track Review Progress</span>
-              </a>
-            </li>
                <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/payment') ?>">
                     <i class="fa fa-money"></i> <span>Payment </span>
