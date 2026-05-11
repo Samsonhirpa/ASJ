@@ -273,7 +273,7 @@ class Editor_model extends CI_Model
             $this->db->where('ra.status', 'completed');
         }
         if ($associateEditorId !== null) {
-            $this->db->where('m.associateEditorId', (int)$associateEditorId);
+            $this->db->where('m.assignedEditorId', (int)$associateEditorId);
         }
         $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title']);
         $this->db->order_by('MAX(ra.assignedDate)', 'DESC', false);
@@ -824,7 +824,7 @@ Scope Screening:
 
     public function applyProgressDecision($manuscriptId, $editorId, $decision, $reason)
     {
-        $allowed = ['approve', 'rereview'];
+        $allowed = ['accept_present', 'minor_revision', 'major_revision', 'reject_resubmit', 'reject_serious'];
         if (!in_array($decision, $allowed, true)) {
             return false;
         }
@@ -834,8 +834,21 @@ Scope Screening:
             return false;
         }
 
-        $statusMap = ['approve' => 'accepted', 'rereview' => 'under_review'];
-        $labelMap = ['approve' => 'Accept in Present Form', 'rereview' => 'Re-review Requested'];
+        $statusMap = [
+            'accept_present' => 'accepted',
+            'minor_revision' => 'revision_required',
+            'major_revision' => 'revision_required',
+            'reject_resubmit' => 'rejected',
+            'reject_serious' => 'rejected'
+        ];
+
+        $labelMap = [
+            'accept_present' => 'Accept in Present Form',
+            'minor_revision' => 'Accept after Minor Revision (7-day revision time)',
+            'major_revision' => 'Reconsider after Major Revision (15-day revision time)',
+            'reject_resubmit' => 'Reject and Encourage Resubmission (if extensive new experiments are needed)',
+            'reject_serious' => 'Reject (Serious flaws)'
+        ];
 
         $recommendations = $this->db->select('recommendationDecision')
             ->from('tbl_reviewer_assignments')
@@ -851,33 +864,6 @@ Scope Screening:
                 break;
             }
         }
-        if ($decision === 'approve') {
-            $recommendationPriority = ['reject_serious', 'reject_resubmit', 'major_revision', 'minor_revision', 'accept_present'];
-            $finalRecommendation = 'accept_present';
-            foreach ($recommendationPriority as $priority) {
-                foreach ($recommendations as $rec) {
-                    if ($rec->recommendationDecision === $priority) {
-                        $finalRecommendation = $priority;
-                        break 2;
-                    }
-                }
-            }
-            if ($finalRecommendation === 'minor_revision') {
-                $statusMap['approve'] = 'revision_required';
-                $labelMap['approve'] = 'Accept after Minor Revision (7-day revision time)';
-                $reason .= ' Revision deadline: ' . date('d M Y', strtotime('+7 days'));
-            } elseif ($finalRecommendation === 'major_revision') {
-                $statusMap['approve'] = 'revision_required';
-                $labelMap['approve'] = 'Reconsider after Major Revision (15-day revision time)';
-                $reason .= ' Revision deadline: ' . date('d M Y', strtotime('+15 days'));
-            } elseif ($finalRecommendation === 'reject_resubmit') {
-                $statusMap['approve'] = 'rejected';
-                $labelMap['approve'] = 'Reject and Encourage Resubmission (if extensive new experiments are needed)';
-            } elseif ($finalRecommendation === 'reject_serious') {
-                $statusMap['approve'] = 'rejected';
-                $labelMap['approve'] = 'Reject (Serious flaws)';
-            }
-        }
 
         $this->db->trans_start();
 
@@ -890,7 +876,7 @@ Scope Screening:
             'updatedDtm' => date('Y-m-d H:i:s')
         ]);
 
-        if ($decision === 'approve' && $statusMap['approve'] === 'accepted') {
+        if ($decision === 'accept_present') {
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->where('isDeleted', 0);
             $this->db->where('status', 'completed');
@@ -904,7 +890,7 @@ Scope Screening:
             ]);
         }
 
-        if ($decision === 'approve' && $statusMap['approve'] === 'revision_required') {
+        if (in_array($decision, ['minor_revision', 'major_revision'], true)) {
             $this->db->where('manuscriptId', $manuscriptId);
             $this->db->where('isDeleted', 0);
             $this->db->where('status', 'completed');
@@ -919,7 +905,7 @@ Scope Screening:
         }
 
         $compiledComments = '';
-        if ($decision === 'approve' && $statusMap['approve'] === 'revision_required') {
+        if (in_array($decision, ['minor_revision', 'major_revision'], true) || ($decision === 'accept_present' && $hasRevisionRecommendation)) {
             $comments = $this->db->select('u.name as reviewerName, ra.commentsToAuthor')
                 ->from('tbl_reviewer_assignments ra')
                 ->join('tbl_users u', 'u.userId = ra.reviewerId', 'left')
@@ -943,7 +929,7 @@ Scope Screening:
             'createdDtm' => date('Y-m-d H:i:s')
         ]);
 
-        if ($decision === 'approve' && $statusMap['approve'] === 'accepted') {
+        if ($decision === 'accept_present') {
             $this->db->insert('tbl_notifications', [
                 'userId' => $manuscript->submittedBy,
                 'type' => 'payment_pending',
@@ -955,36 +941,6 @@ Scope Screening:
             ]);
         }
 
-        if ($decision === 'rereview') {
-            $this->db->where('manuscriptId', $manuscriptId);
-            $this->db->where('isDeleted', 0);
-            $this->db->update('tbl_reviewer_assignments', [
-                'status' => 'accepted',
-                'recommendationDecision' => null,
-                'commentsToAuthor' => null,
-                'commentsToEditor' => null,
-                'confidentialComments' => null,
-                'reviewSubmittedDate' => null,
-                'editorReviewApprovalStatus' => 'pending',
-                'editorReviewApprovalReason' => null,
-                'editorReviewApprovalDate' => null,
-                'paymentStatus' => 'not_ready',
-                'updatedBy' => $editorId,
-                'updatedDtm' => date('Y-m-d H:i:s')
-            ]);
-            $reviewers = $this->db->select('reviewerId')->from('tbl_reviewer_assignments')->where('manuscriptId', $manuscriptId)->where('isDeleted', 0)->get()->result();
-            foreach ($reviewers as $r) {
-                $this->db->insert('tbl_notifications', [
-                    'userId' => $r->reviewerId,
-                    'type' => 'rereview_request',
-                    'subject' => 'Re-review requested for manuscript ' . $manuscript->manuscriptNumber,
-                    'message' => 'Please review and recommend this manuscript again. Editor note: ' . $reason,
-                    'referenceId' => $manuscriptId,
-                    'referenceType' => 'manuscript',
-                    'createdDtm' => date('Y-m-d H:i:s')
-                ]);
-            }
-        }
         $this->db->trans_complete();
         return $this->db->trans_status();
     }

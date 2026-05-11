@@ -49,8 +49,11 @@
                         <textarea name="approvalReason" id="approvalReason" class="form-control" rows="3" placeholder="Add concise rationale for the first editorial decision." required></textarea>
                     </div>
                     <div class="form-group">
-                        <button name="decision" value="approve" class="btn btn-success" type="submit">Approve</button>
-                        <button name="decision" value="rereview" class="btn btn-warning" type="submit">Re-review</button>
+                        <button name="decision" value="accept_present" class="btn btn-success" type="submit">Accept in Present Form</button>
+                        <button name="decision" value="minor_revision" class="btn btn-primary" type="submit">Accept after Minor Revision (7 days)</button>
+                        <button name="decision" value="major_revision" class="btn btn-warning" type="submit">Reconsider after Major Revision (15 days)</button>
+                        <button name="decision" value="reject_resubmit" class="btn btn-default" type="submit">Reject and Encourage Resubmission</button>
+                        <button name="decision" value="reject_serious" class="btn btn-danger" type="submit">Reject (Serious flaws)</button>
                         <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
                     </div>
                     <div class="form-group" id="rereviewReasonGroup" style="display:none;">
@@ -65,17 +68,8 @@
 <script>
     (function() {
         var form = document.getElementById('reviewerResultActionForm');
-        var reReviewGroup = document.getElementById('rereviewReasonGroup');
-        var reReviewReason = document.getElementById('rereviewReason');
         form.querySelectorAll('button[name="decision"]').forEach(function(btn) {
             btn.addEventListener('click', function(event) {
-                if (btn.value === 'rereview') {
-                    reReviewGroup.style.display = 'block';
-                    reReviewReason.required = true;
-                } else {
-                    reReviewGroup.style.display = 'none';
-                    reReviewReason.required = false;
-                }
                 if (!confirm('Submit this first editorial decision?')) {
                     event.preventDefault();
                 }

@@ -272,15 +272,15 @@ class Manuscript extends BaseController
     public function reviewProgressDecision($manuscriptId)
     {
         $decision = $this->input->post('decision', true);
-        $allowed = ['approve', 'rereview'];
+        $allowed = ['accept_present', 'minor_revision', 'major_revision', 'reject_resubmit', 'reject_serious'];
         if (!in_array($decision, $allowed, true)) {
             $this->session->set_flashdata('error', 'Invalid reviewer result action selected.');
             redirect('editor/assignments/view/' . (int)$manuscriptId);
         }
 
-        $reasonField = $decision === 'rereview' ? 'rereviewReason' : 'approvalReason';
-        $label = $decision === 'rereview' ? 'Reason for re-review' : 'Approval note';
-        $minLength = $decision === 'rereview' ? 10 : 5;
+        $reasonField = 'approvalReason';
+        $label = 'Decision note';
+        $minLength = 5;
         $this->form_validation->set_rules($reasonField, $label, 'trim|required|min_length[' . $minLength . ']');
         if ($this->form_validation->run() === false) {
             $this->session->set_flashdata('error', validation_errors('', ''));
@@ -294,9 +294,7 @@ class Manuscript extends BaseController
             $this->input->post($reasonField, true)
         );
 
-        $successMessage = $decision === 'rereview'
-            ? 'Re-review requested and reviewers can review the manuscript again.'
-            : 'First editorial decision was recorded successfully.';
+        $successMessage = 'First editorial decision was recorded successfully.';
 
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $successMessage : 'Failed to save reviewer result action.');
         redirect('editor/assignments/view/' . (int)$manuscriptId);
