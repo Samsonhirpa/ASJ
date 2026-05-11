@@ -99,7 +99,7 @@ class Assignment extends BaseController
             redirect('reviewer/assignments');
         }
 
-        $this->form_validation->set_rules('recommendationDecision', 'Recommendation', 'trim|required|in_list[accept,reject,minor_review,major_review]');
+        $this->form_validation->set_rules('recommendationDecision', 'Recommendation', 'trim|required|in_list[accept_present,minor_revision,major_revision,reject_resubmit,reject_serious]');
         $this->form_validation->set_rules('commentsToAuthor', 'Comments to Author', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('commentsToEditor', 'Comments to Editor', 'trim|required|min_length[20]');
         $this->form_validation->set_rules('score', 'Score', 'required|integer|greater_than_equal_to[1]|less_than_equal_to[5]');

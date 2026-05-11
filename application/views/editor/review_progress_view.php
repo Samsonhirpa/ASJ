@@ -39,24 +39,23 @@
                 <?php endif; ?>
 
                 <hr>
-                <h4>Reviewer Result Action</h4>
+                <h4>First Editorial Decision</h4>
                 <div class="alert alert-info">
-                    Editor can perform only one action: <strong>Accept Reviewer Comment</strong> or <strong>To Re-Review</strong>.<br>
-                    If accepted recommendations include <em>major/minor review</em>, author gets revision notification instead of direct acceptance.
+                    After reviewer comments are submitted, the Associate Editor can submit a first editorial decision.
                 </div>
                 <form method="post" action="<?= base_url('editor/assignments/decision/' . (int)$manuscript->manuscriptId) ?>" id="reviewerResultActionForm">
                     <div class="form-group">
-                        <label>Approval reason</label>
-                        <textarea name="approvalReason" id="approvalReason" class="form-control" rows="3" placeholder="Optional note for approving reviewer comments.">Approved based on reviewer recommendations.</textarea>
-                    </div>
-                    <div class="form-group" id="rereviewReasonGroup" style="display:none;">
-                        <label>Why to review again</label>
-                        <textarea name="rereviewReason" id="rereviewReason" class="form-control" rows="3" placeholder="Explain why this manuscript should be reviewed again."></textarea>
+                        <label>Decision note</label>
+                        <textarea name="approvalReason" id="approvalReason" class="form-control" rows="3" placeholder="Add concise rationale for the first editorial decision." required></textarea>
                     </div>
                     <div class="form-group">
-                        <button name="decision" value="accept" class="btn btn-success" type="submit">Approve Reviewer Comment</button>
-                        <button name="decision" value="rereview" class="btn btn-warning" type="submit" id="rereviewButton">To Re-Review</button>
+                        <button name="decision" value="approve" class="btn btn-success" type="submit">Approve</button>
+                        <button name="decision" value="rereview" class="btn btn-warning" type="submit">Re-review</button>
                         <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
+                    </div>
+                    <div class="form-group" id="rereviewReasonGroup" style="display:none;">
+                        <label>Reason for re-review</label>
+                        <textarea name="rereviewReason" id="rereviewReason" class="form-control" rows="3" placeholder="Explain why reviewers should review this manuscript again."></textarea>
                     </div>
                 </form>
             </div>
@@ -68,34 +67,19 @@
         var form = document.getElementById('reviewerResultActionForm');
         var reReviewGroup = document.getElementById('rereviewReasonGroup');
         var reReviewReason = document.getElementById('rereviewReason');
-        var approvalReason = document.getElementById('approvalReason');
-        var selectedDecision = 'accept';
-
         form.querySelectorAll('button[name="decision"]').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                selectedDecision = btn.value;
-                if (selectedDecision === 'rereview') {
+            btn.addEventListener('click', function(event) {
+                if (btn.value === 'rereview') {
                     reReviewGroup.style.display = 'block';
                     reReviewReason.required = true;
-                    approvalReason.required = false;
                 } else {
                     reReviewGroup.style.display = 'none';
                     reReviewReason.required = false;
-                    approvalReason.required = true;
+                }
+                if (!confirm('Submit this first editorial decision?')) {
+                    event.preventDefault();
                 }
             });
-        });
-
-        form.addEventListener('submit', function() {
-            if (selectedDecision === 'rereview') {
-                reReviewGroup.style.display = 'block';
-                reReviewReason.required = true;
-                approvalReason.required = false;
-            } else {
-                reReviewGroup.style.display = 'none';
-                reReviewReason.required = false;
-                approvalReason.required = true;
-            }
         });
     })();
 </script>
