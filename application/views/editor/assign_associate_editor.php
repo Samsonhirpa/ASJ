@@ -4,7 +4,7 @@
 <p><strong>Thematic Area:</strong> <?= html_escape($manuscript->thematicArea ?: 'Not provided') ?></p>
 <form method="post">
 <div class="form-group">
-<label>Available Associate Editors (matched by expertise)</label>
+<label>Available Associate Editors</label>
 <select name="associateEditorId" class="form-control" required>
 <option value="">Select Associate Editor</option>
 <?php foreach($associateEditors as $ae): ?>

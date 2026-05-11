@@ -168,7 +168,7 @@ class Manuscript extends BaseController
         }
 
         $data['manuscript'] = $manuscript;
-        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors($manuscript->thematicArea);
+        $data['associateEditors'] = $this->editor_model->getAvailableAssociateEditors();
         $this->global['pageTitle'] = 'Assign Associate Editor - OJAS';
         $this->global['activeMenu'] = 'meResults';
         $this->loadViews('editor/assign_associate_editor', $this->global, $data, NULL);
