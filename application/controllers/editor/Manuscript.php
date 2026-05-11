@@ -246,6 +246,15 @@ class Manuscript extends BaseController
         $this->loadViews('editor/review_progress', $this->global, $data, NULL);
     }
 
+    public function aeCompletedReviews()
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $data['assignments'] = $this->editor_model->getReviewProgressList(true, (int)$this->vendorId);
+        $this->global['pageTitle'] = 'Completed Reviews - OJAS';
+        $this->global['activeMenu'] = 'aeCompletedReviews';
+        $this->loadViews('editor/review_progress', $this->global, $data, NULL);
+    }
+
     public function reviewProgressView($manuscriptId)
     {
         $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
@@ -263,15 +272,15 @@ class Manuscript extends BaseController
     public function reviewProgressDecision($manuscriptId)
     {
         $decision = $this->input->post('decision', true);
-        $allowed = ['accept', 'rereview'];
+        $allowed = ['accept_present', 'minor_revision', 'major_revision', 'reject_resubmit', 'reject_serious'];
         if (!in_array($decision, $allowed, true)) {
             $this->session->set_flashdata('error', 'Invalid reviewer result action selected.');
             redirect('editor/assignments/view/' . (int)$manuscriptId);
         }
 
-        $reasonField = $decision === 'rereview' ? 'rereviewReason' : 'approvalReason';
-        $label = $decision === 'rereview' ? 'Reason for re-review' : 'Approval reason';
-        $minLength = $decision === 'rereview' ? 10 : 5;
+        $reasonField = 'approvalReason';
+        $label = 'Decision note';
+        $minLength = 5;
         $this->form_validation->set_rules($reasonField, $label, 'trim|required|min_length[' . $minLength . ']');
         if ($this->form_validation->run() === false) {
             $this->session->set_flashdata('error', validation_errors('', ''));
@@ -285,17 +294,7 @@ class Manuscript extends BaseController
             $this->input->post($reasonField, true)
         );
 
-        $successMessage = 'Reviewer action saved successfully.';
-        if ($ok && $decision === 'accept') {
-            $updated = $this->editor_model->getManuscript((int)$manuscriptId);
-            if ($updated && $updated->status === 'revision_required') {
-                $successMessage = 'Reviewer comments accepted. Major/minor revision sent to author notification page.';
-            } else {
-                $successMessage = 'Reviewer comments accepted. Manuscript moved to payment gateway queue.';
-            }
-        } elseif ($ok && $decision === 'rereview') {
-            $successMessage = 'Re-review requested successfully.';
-        }
+        $successMessage = 'First editorial decision was recorded successfully.';
 
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $successMessage : 'Failed to save reviewer result action.');
         redirect('editor/assignments/view/' . (int)$manuscriptId);

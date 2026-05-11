@@ -223,3 +223,4 @@ $route['editor/ae-assignments/view/(:num)'] = 'editor/manuscript/aeAssignmentVie
 $route['editor/ae-assign-reviewers'] = 'editor/manuscript/aeAssignReviewers';
 $route['editor/ae-assign-reviewers/(:num)'] = 'editor/manuscript/aeAssignReviewersForm/$1';
 $route['editor/ae-assign-reviewers/(:num)/assign/(:num)'] = 'editor/manuscript/aeAssignReviewer/$1/$2';
+$route['editor/ae-completed-reviews'] = 'editor/manuscript/aeCompletedReviews';

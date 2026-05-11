@@ -233,6 +233,11 @@
                     <i class="fa fa-user-plus"></i> <span>Assign Reviewers</span>
                 </a>
             </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeCompletedReviews') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-completed-reviews') ?>">
+                    <i class="fa fa-check-circle"></i> <span>Completed Review</span>
+                </a>
+            </li>
             <?php endif; ?>
             
             <?php if($role == 20): // Guest Editor ?>
