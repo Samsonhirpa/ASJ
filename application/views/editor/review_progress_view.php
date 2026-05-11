@@ -56,6 +56,10 @@
                         <button name="decision" value="reject_serious" class="btn btn-danger" type="submit">Reject (Serious flaws)</button>
                         <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
                     </div>
+                    <div class="form-group" id="rereviewReasonGroup" style="display:none;">
+                        <label>Reason for re-review</label>
+                        <textarea name="rereviewReason" id="rereviewReason" class="form-control" rows="3" placeholder="Explain why reviewers should review this manuscript again."></textarea>
+                    </div>
                 </form>
             </div>
         </div>

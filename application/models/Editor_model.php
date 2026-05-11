@@ -859,7 +859,7 @@ Scope Screening:
 
         $hasRevisionRecommendation = false;
         foreach ($recommendations as $rec) {
-            if (in_array($rec->recommendationDecision, ['minor_review', 'major_review'], true)) {
+            if (in_array($rec->recommendationDecision, ['minor_revision', 'major_revision'], true)) {
                 $hasRevisionRecommendation = true;
                 break;
             }

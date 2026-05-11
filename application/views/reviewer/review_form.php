@@ -43,12 +43,13 @@
                                 <label>Recommendation</label>
                                 <select name="recommendationDecision" class="form-control" required>
                                     <option value="">Select Recommendation (Standard)</option>
-                                    <option value="accept">Accept</option>
-                                    <option value="minor_review">Minor Review</option>
-                                    <option value="major_review">Major Review</option>
-                                    <option value="reject">Reject</option>
+                                    <option value="accept_present">Accept in Present Form</option>
+                                    <option value="minor_revision">Accept after Minor Revision</option>
+                                    <option value="major_revision">Reconsider after Major Revision</option>
+                                    <option value="reject_resubmit">Reject and Encourage Resubmission (if extensive new experiments are needed)</option>
+                                    <option value="reject_serious">Reject (serious flaws)</option>
                                 </select>
-                                <p class="help-block">Use one of the standard outcomes: accept, reject, minor review, or major review.</p>
+                                <p class="help-block">Select one standard recommendation for the Associate Editor first decision workflow.</p>
                             </div>
 
                             <div class="form-group">
