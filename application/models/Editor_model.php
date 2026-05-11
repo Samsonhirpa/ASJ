@@ -273,7 +273,7 @@ class Editor_model extends CI_Model
             $this->db->where('ra.status', 'completed');
         }
         if ($associateEditorId !== null) {
-            $this->db->where('m.associateEditorId', (int)$associateEditorId);
+            $this->db->where('m.assignedEditorId', (int)$associateEditorId);
         }
         $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title']);
         $this->db->order_by('MAX(ra.assignedDate)', 'DESC', false);
