@@ -53,7 +53,7 @@
                         <button name="decision" value="minor_revision" class="btn btn-primary" type="submit">Accept after Minor Revision (7 days)</button>
                         <button name="decision" value="major_revision" class="btn btn-warning" type="submit">Reconsider after Major Revision (15 days)</button>
                         <button name="decision" value="reject_resubmit" class="btn btn-default" type="submit">Reject and Encourage Resubmission</button>
-                        <button name="decision" value="reject_serious" class="btn btn-danger" type="submit">Reject (Serious flaws)</button>
+                        <button name="decision" value="reject" class="btn btn-danger" type="submit">Reject</button>
                         <a href="<?= base_url('editor/assignments') ?>" class="btn btn-default">Back</a>
                     </div>
                     <div class="form-group" id="rereviewReasonGroup" style="display:none;">

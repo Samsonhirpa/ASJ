@@ -163,7 +163,7 @@
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,16,17,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?= (isset($activeMenu) && $activeMenu == 'pending') ? 'active' : '' ?>">
@@ -192,6 +192,14 @@
                     <i class="fa fa-line-chart"></i> <span>Track Review Progress</span>
                 </a>
             </li>
+
+            <?php if($role == 13): ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'firstEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/first-decisions') ?>">
+                    <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
+                </a>
+            </li>
+            <?php endif; ?>
 
             <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/payment') ?>">
@@ -236,6 +244,11 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'aeCompletedReviews') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/ae-completed-reviews') ?>">
                     <i class="fa fa-check-circle"></i> <span>Completed Review</span>
+                </a>
+            </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'firstEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/first-decisions') ?>">
+                    <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
                 </a>
             </li>
             <?php endif; ?>

@@ -141,6 +141,22 @@ class Editor_model extends CI_Model
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN aeAssignmentResponse ENUM('pending','accepted','declined') DEFAULT 'pending' AFTER eicMeDecision");
         }
 
+        if (!in_array('firstEditorialDecision', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN firstEditorialDecision ENUM('accept_present','reject','minor_revision','major_revision','reject_resubmit') DEFAULT NULL AFTER aeAssignmentResponse");
+        }
+
+        if (!in_array('firstEditorialDecisionBy', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN firstEditorialDecisionBy INT(11) DEFAULT NULL AFTER firstEditorialDecision");
+        }
+
+        if (!in_array('firstEditorialDecisionDtm', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN firstEditorialDecisionDtm DATETIME DEFAULT NULL AFTER firstEditorialDecisionBy");
+        }
+
+        if (!in_array('revisionDueDtm', $manuscriptFields)) {
+            $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN revisionDueDtm DATETIME DEFAULT NULL AFTER firstEditorialDecisionDtm");
+        }
+
         if (!$this->db->table_exists('tbl_managing_editor_screenings')) {
             $this->db->query("CREATE TABLE tbl_managing_editor_screenings (
                 screeningId INT(11) NOT NULL AUTO_INCREMENT,
@@ -824,7 +840,7 @@ Scope Screening:
 
     public function applyProgressDecision($manuscriptId, $editorId, $decision, $reason)
     {
-        $allowed = ['accept_present', 'minor_revision', 'major_revision', 'reject_resubmit', 'reject_serious'];
+        $allowed = ['accept_present', 'reject', 'minor_revision', 'major_revision', 'reject_resubmit'];
         if (!in_array($decision, $allowed, true)) {
             return false;
         }
@@ -839,7 +855,7 @@ Scope Screening:
             'minor_revision' => 'revision_required',
             'major_revision' => 'revision_required',
             'reject_resubmit' => 'rejected',
-            'reject_serious' => 'rejected'
+            'reject' => 'rejected'
         ];
 
         $labelMap = [
@@ -847,7 +863,7 @@ Scope Screening:
             'minor_revision' => 'Accept after Minor Revision (7-day revision time)',
             'major_revision' => 'Reconsider after Major Revision (15-day revision time)',
             'reject_resubmit' => 'Reject and Encourage Resubmission (if extensive new experiments are needed)',
-            'reject_serious' => 'Reject (Serious flaws)'
+            'reject' => 'Reject'
         ];
 
         $recommendations = $this->db->select('recommendationDecision')
@@ -865,15 +881,26 @@ Scope Screening:
             }
         }
 
+        $now = date('Y-m-d H:i:s');
+        $revisionDueDtm = null;
+        if ($decision === 'minor_revision') {
+            $revisionDueDtm = date('Y-m-d H:i:s', strtotime('+7 days', strtotime($now)));
+        } elseif ($decision === 'major_revision') {
+            $revisionDueDtm = date('Y-m-d H:i:s', strtotime('+15 days', strtotime($now)));
+        }
+
         $this->db->trans_start();
 
         $this->db->where('manuscriptId', $manuscriptId);
         $this->db->update('tbl_manuscripts', [
             'status' => $statusMap[$decision],
             'decisionLetter' => $labelMap[$decision] . ': ' . $reason,
-            'assignedEditorId' => $editorId,
+            'firstEditorialDecision' => $decision,
+            'firstEditorialDecisionBy' => $editorId,
+            'firstEditorialDecisionDtm' => $now,
+            'revisionDueDtm' => $revisionDueDtm,
             'updatedBy' => $editorId,
-            'updatedDtm' => date('Y-m-d H:i:s')
+            'updatedDtm' => $now
         ]);
 
         if ($decision === 'accept_present') {
@@ -948,6 +975,23 @@ Scope Screening:
     public function requestReReview($manuscriptId, $editorId, $reason)
     {
         return $this->applyProgressDecision($manuscriptId, $editorId, 'rereview', $reason);
+    }
+
+    public function getFirstEditorialDecisionManuscripts($viewerId, $roleId, $isAdmin = false)
+    {
+        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionBy, m.firstEditorialDecisionDtm, m.revisionDueDtm, m.decisionLetter, author.name as authorName, ae.name as associateEditorName');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_users author', 'author.userId = m.submittedBy', 'left');
+        $this->db->join('tbl_users ae', 'ae.userId = m.firstEditorialDecisionBy', 'left');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.firstEditorialDecision IS NOT NULL', null, false);
+
+        if (!$isAdmin && (int)$roleId === 16) {
+            $this->db->where('m.assignedEditorId', (int)$viewerId);
+        }
+
+        $this->db->order_by('m.firstEditorialDecisionDtm', 'DESC');
+        return $this->db->get()->result();
     }
 
     public function getPaymentQueue()
