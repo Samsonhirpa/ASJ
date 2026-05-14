@@ -269,10 +269,28 @@ class Manuscript extends BaseController
         $this->loadViews('editor/review_progress_view', $this->global, $data, NULL);
     }
 
+    public function firstEditorialDecisions()
+    {
+        if (!$this->isEditorInChief() && $this->role != 16 && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $data['manuscripts'] = $this->editor_model->getFirstEditorialDecisionManuscripts((int)$this->vendorId, (int)$this->role, $this->isAdmin());
+        $this->global['pageTitle'] = 'First Editorial Decisions - OJAS';
+        $this->global['activeMenu'] = 'firstEditorialDecisions';
+        $this->loadViews('editor/first_editorial_decisions', $this->global, $data, NULL);
+    }
+
     public function reviewProgressDecision($manuscriptId)
     {
+        if (!$this->isEditorInChief() && $this->role != 16 && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
         $decision = $this->input->post('decision', true);
-        $allowed = ['accept_present', 'minor_revision', 'major_revision', 'reject_resubmit', 'reject_serious'];
+        $allowed = ['accept_present', 'reject', 'minor_revision', 'major_revision', 'reject_resubmit'];
         if (!in_array($decision, $allowed, true)) {
             $this->session->set_flashdata('error', 'Invalid reviewer result action selected.');
             redirect('editor/assignments/view/' . (int)$manuscriptId);
@@ -294,10 +312,10 @@ class Manuscript extends BaseController
             $this->input->post($reasonField, true)
         );
 
-        $successMessage = 'First editorial decision was recorded successfully.';
+        $successMessage = 'First editorial decision was recorded successfully and the manuscript was moved to the First Editorial Decisions page.';
 
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $successMessage : 'Failed to save reviewer result action.');
-        redirect('editor/assignments/view/' . (int)$manuscriptId);
+        redirect($ok ? 'editor/first-decisions' : 'editor/assignments/view/' . (int)$manuscriptId);
     }
 
     public function payment()
