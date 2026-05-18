@@ -19,11 +19,20 @@
                 </select>
             </div>
             <div class="col-md-3 form-group">
-                <label>Article Type</label>
+                <label>Thematic Area</label>
                 <select name="type" class="form-control">
                     <option value="">All types</option>
                     <?php foreach ($article_types as $key => $label): ?>
                         <option value="<?= html_escape($key); ?>" <?= $this->input->get('type') == $key ? 'selected' : ''; ?>><?= html_escape($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3 form-group">
+                <label>Issue</label>
+                <select name="issue" class="form-control">
+                    <option value="">All issues</option>
+                    <?php foreach ($issues as $issue): ?>
+                        <option value="<?= (int)$issue->issueId; ?>" <?= $this->input->get('issue') == $issue->issueId ? 'selected' : ''; ?>>Vol <?= (int)$issue->volume; ?>, Issue <?= (int)$issue->issueNumber; ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

@@ -32,6 +32,7 @@ class Journal extends CI_Controller  // Don't extend BaseController for public p
         $data['title'] = 'Oromia Journal of Agricultural Sciences';
         $data['latest_issue'] = $this->journal_model->get_latest_issue();
         $data['recent_articles'] = $this->journal_model->get_published_articles(5);
+        $data['issues'] = $this->issue_model->get_issues(true);
         
         // No login check - public access
         $this->load->view('journal/header', $data);
@@ -164,7 +165,8 @@ class Journal extends CI_Controller  // Don't extend BaseController for public p
         if($keyword) {
             $filters = array(
                 'year' => $this->input->get('year'),
-                'articleType' => $this->input->get('type')
+                'articleType' => $this->input->get('type'),
+                'issueId' => $this->input->get('issue')
             );
             $data['results'] = $this->journal_model->search_articles($keyword, $filters);
         } else {
@@ -177,6 +179,8 @@ class Journal extends CI_Controller  // Don't extend BaseController for public p
         $this->db->where('status', 'published');
         $this->db->order_by('year', 'DESC');
         $data['years'] = $this->db->get()->result();
+
+        $data['issues'] = $this->issue_model->get_issues(true);
         
         $data['article_types'] = array(
             'research' => 'Research Articles',

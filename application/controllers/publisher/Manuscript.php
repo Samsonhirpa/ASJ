@@ -53,12 +53,16 @@ class Manuscript extends BaseController
         if (!$this->guardPublisher()) { return; }
         $issueId = (int)$this->input->post('issueId');
         $payload = [
+            'title' => trim((string)$this->input->post('title')),
             'volume' => (int)$this->input->post('volume'),
             'issueNumber' => (int)$this->input->post('issueNumber'),
             'year' => (int)$this->input->post('year'),
             'month' => trim((string)$this->input->post('month')),
-            'status' => 'draft'
+            'status' => $this->input->post('status', true) === 'published' ? 'published' : 'draft'
         ];
+        if ($payload['status'] === 'published') {
+            $payload['publishedDate'] = date('Y-m-d');
+        }
         $ok = $issueId > 0
             ? $this->issue_model->update_issue($issueId, $payload, (int)$this->vendorId)
             : $this->issue_model->create_issue($payload, (int)$this->vendorId);
@@ -82,5 +86,14 @@ class Manuscript extends BaseController
         $this->global['pageTitle'] = 'Final Publishing - OJAS';
         $this->global['activeMenu'] = 'publisherPublish';
         $this->loadViews('publisher/publish', $this->global, $data, NULL);
+    }
+
+    public function publishedContent()
+    {
+        if (!$this->guardPublisher()) { return; }
+        $data['manuscripts'] = $this->editor_model->getPublishedManuscripts();
+        $this->global['pageTitle'] = 'Manage Published Content - OJAS';
+        $this->global['activeMenu'] = 'publisherPublishedContent';
+        $this->loadViews('publisher/published_content', $this->global, $data, NULL);
     }
 }

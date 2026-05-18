@@ -165,6 +165,7 @@ $route['publisher/issues'] = 'publisher/manuscript/manageIssues';
 $route['publisher/issues/save'] = 'publisher/manuscript/saveIssue';
 $route['publisher/issues/delete/(:num)'] = 'publisher/manuscript/deleteIssue/$1';
 $route['publisher/publish'] = 'publisher/manuscript/publish';
+$route['publisher/published-content'] = 'publisher/manuscript/publishedContent';
 $route['editor/pending'] = 'editor/manuscript/pending';
 $route['managing-editor/dashboard'] = 'managing_editor/dashboard/index';
 $route['managing-editor/pending'] = 'managing_editor/manuscript/pending';

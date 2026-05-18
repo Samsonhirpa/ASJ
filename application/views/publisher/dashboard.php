@@ -13,6 +13,7 @@
         <a class="btn btn-primary" href="<?= base_url('publisher/pending-production') ?>">Pending Production</a>
         <a class="btn btn-info" href="<?= base_url('publisher/issues') ?>">Manage Issue</a>
         <a class="btn btn-success" href="<?= base_url('publisher/publish') ?>">Publish</a>
+        <a class="btn btn-warning" href="<?= base_url('publisher/published-content') ?>">Manage Published Content</a>
       </div>
     </div>
   </section>

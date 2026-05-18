@@ -523,3 +523,4 @@
         </div>
     </footer>
 </div>
+<section class="content" style="padding:30px 0;"><div class="container"><h3>Published Issues</h3><div class="row"><?php if(!empty($issues)): foreach($issues as $issue): ?><div class="col-md-4"><div class="article-card"><strong>Vol <?= (int)$issue->volume ?>, Issue <?= (int)$issue->issueNumber ?></strong><p><?= html_escape($issue->year) ?></p><a class="btn btn-outline-ojas btn-sm" href="<?= base_url('journal/issue/' . (int)$issue->issueId) ?>">View Issue</a></div></div><?php endforeach; endif; ?></div></div></section>
