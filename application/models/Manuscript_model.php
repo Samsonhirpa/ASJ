@@ -87,7 +87,8 @@ class Manuscript_model extends CI_Model
         $this->db->from($this->table . ' m');
         $this->db->where('m.submittedBy', $userId);
         $this->db->where('m.isDeleted', 0);
-        $this->db->group_by(['m.manuscriptId', 'u.userId', 'rr.roundNumber']);
+        // No joins in this query; group only by manuscript to avoid unknown alias errors
+        $this->db->group_by('m.manuscriptId');
         $this->db->order_by('m.createdDtm', 'DESC');
         
         if($limit) {
