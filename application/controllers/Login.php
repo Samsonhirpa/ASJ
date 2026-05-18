@@ -87,10 +87,13 @@ class Login extends CI_Controller
             case self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF:
             case self::ROLE_MANAGING_EDITOR:
             case self::ROLE_ASSOCIATE_EDITOR:
-            case self::ROLE_SPECIALTY_CHIEF_EDITOR:
             case self::ROLE_EDITORIAL_ADVISORY_BOARD:
             case self::ROLE_GUEST_EDITOR:
                 redirect('/editor/dashboard');
+                break;
+
+            case self::ROLE_SPECIALTY_CHIEF_EDITOR:
+                redirect('/publisher/dashboard');
                 break;
                 
             default:
