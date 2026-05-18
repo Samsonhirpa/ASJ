@@ -703,8 +703,11 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherDashboard') ? 'active' : '' ?>">
                 <a href="<?= base_url('publisher/dashboard') ?>"><i class="fa fa-dashboard"></i> <span>Publisher Dashboard</span></a>
             </li>
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPendingProduction') ? 'active' : '' ?>">
+           <!--  <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPendingProduction') ? 'active' : '' ?>">
                 <a href="<?= base_url('publisher/pending-production') ?>"><i class="fa fa-cogs"></i> <span>Pending Production</span></a>
+            </li> -->
+             <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPendingProduction') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/production-stage') ?>"><i class="fa fa-cogs"></i> <span>Pending Production</span></a>
             </li>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherManageIssues') ? 'active' : '' ?>">
                 <a href="<?= base_url('publisher/issues') ?>"><i class="fa fa-book"></i> <span>Manage Issues</span></a>
