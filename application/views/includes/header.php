@@ -575,6 +575,13 @@
                 <span>Review Guidelines</span>
               </a>
             </li>
+
+            <li class="<?php echo (uri_string() == 'reviewer/revisions') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>reviewer/revisions">
+                <i class="fa fa-refresh"></i> 
+                <span>Revision Required</span>
+              </a>
+            </li>
             <?php endif; ?>
 
 

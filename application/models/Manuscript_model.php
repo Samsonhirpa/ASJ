@@ -104,7 +104,7 @@ class Manuscript_model extends CI_Model
      */
     public function getManuscript($manuscriptId)
     {
-        $this->db->select('m.*, u.name as submitterName, u.email as submitterEmail, rr.roundNumber, MAX(ra.reviewDueDate) as reviewDueDate');
+        $this->db->select('m.*, u.name as submitterName, u.email as submitterEmail, rr.roundNumber, MAX(ra.reviewDueDate) as reviewDueDate,\n            (SELECT COUNT(*) FROM tbl_manuscript_files mf WHERE mf.manuscriptId = m.manuscriptId AND mf.fileType = "revised_main" AND mf.isDeleted = 0) as revisedSubmissionCount');
         $this->db->from($this->table . ' m');
         $this->db->join('tbl_users u', 'm.submittedBy = u.userId');
         $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = m.manuscriptId AND rr.status = "active"', 'left');
