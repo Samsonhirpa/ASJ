@@ -27,6 +27,15 @@ class Assignment extends BaseController
         $this->loadViews('reviewer/assignments', $this->global, $data, NULL);
     }
 
+
+    public function revisions()
+    {
+        $data['assignments'] = $this->reviewer_model->getRevisionRequiredManuscripts($this->vendorId);
+        $this->global['pageTitle'] = 'Revision Required Manuscripts - OJAS';
+        $this->global['activeMenu'] = 'reviewerRevisions';
+        $this->loadViews('reviewer/revisions', $this->global, $data, NULL);
+    }
+
     public function completed()
     {
         $data['completedReviews'] = $this->reviewer_model->getCompletedReviews($this->vendorId);

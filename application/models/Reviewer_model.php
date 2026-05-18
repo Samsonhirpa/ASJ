@@ -114,6 +114,21 @@ class Reviewer_model extends CI_Model
         return $this->db->get()->result();
     }
 
+
+    public function getRevisionRequiredManuscripts($reviewerId)
+    {
+        $this->db->select('ra.*, m.manuscriptNumber, m.title, m.status as manuscriptStatus, rr.roundNumber');
+        $this->db->from("{$this->table} ra");
+        $this->db->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId');
+        $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = ra.manuscriptId AND rr.status = "active"', 'left');
+        $this->db->where('ra.reviewerId', $reviewerId);
+        $this->db->where('ra.isDeleted', 0);
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'revision_required');
+        $this->db->where('ra.responseStatus', 'accepted');
+        $this->db->order_by('m.updatedDtm', 'DESC');
+        return $this->db->get()->result();
+    }
     public function getCompletedReviews($reviewerId, $limit = null)
     {
         $this->db->select('ra.*, m.manuscriptNumber, m.title, m.articleType');

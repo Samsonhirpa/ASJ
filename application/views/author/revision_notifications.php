@@ -5,7 +5,7 @@
     <section class="content">
         <div class="box box-success">
             <div class="box-header with-border">
-                <h3 class="box-title"><i class="fa fa-bell"></i> Revision Required Manuscripts</h3>
+                <h3 class="box-title"><i class="fa fa-bell"></i> Revision Required Manuscripts (<?= count($manuscripts) ?>)</h3>
             </div>
             <div class="box-body">
                 <?php if (!empty($manuscripts)): ?>
@@ -14,8 +14,13 @@
                             <div class="panel-heading">
                                 <strong><?= html_escape($item->manuscriptNumber) ?></strong> - <?= html_escape($item->title) ?>
                                 <span class="label label-warning pull-right">Revision Required</span>
+                                <div class="clearfix"></div>
                             </div>
                             <div class="panel-body">
+                                <?php $daysLeft = !empty($item->reviewerDueDate) ? (int)floor((strtotime($item->reviewerDueDate) - strtotime(date('Y-m-d'))) / 86400) : null; ?>
+                                <p><strong>Round:</strong> <?= !empty($item->roundNumber) ? (int)$item->roundNumber : 1 ?> | <strong>Revise Status:</strong> <span class="label label-warning"><?= html_escape(ucfirst($item->reviseSubmissionStatus)) ?></span></p>
+                                <p><strong>Reviewer due date:</strong> <?= !empty($item->reviewerDueDate) ? date('d M Y', strtotime($item->reviewerDueDate)) : '-' ?> | <strong>Countdown:</strong>
+                                <?php if ($daysLeft === null): ?>-<?php elseif ($daysLeft >= 0): ?><span class="label label-info"><?= $daysLeft ?> day(s) left</span><?php else: ?><span class="label label-danger">Overdue by <?= abs($daysLeft) ?> day(s)</span><?php endif; ?></p>
                                 <h4>Reviewer Comments</h4>
                                 <pre style="white-space:pre-wrap;background:#f8f9fb;border:1px solid #eee;"><?= html_escape($item->reviewerComments ?: 'No public reviewer comments found.') ?></pre>
 
