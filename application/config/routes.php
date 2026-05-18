@@ -161,7 +161,6 @@ $route['editor/dashboard'] = 'editor/dashboard/index';
 
 $route['publisher/dashboard'] = 'publisher/dashboard/index';
 $route['publisher/pending-production'] = 'publisher/manuscript/pendingProduction';
-$route['publisher/production-process/(:num)'] = 'publisher/manuscript/productionProcess/$1';
 $route['publisher/issues'] = 'publisher/manuscript/manageIssues';
 $route['publisher/issues/save'] = 'publisher/manuscript/saveIssue';
 $route['publisher/issues/delete/(:num)'] = 'publisher/manuscript/deleteIssue/$1';

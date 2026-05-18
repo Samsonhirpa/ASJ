@@ -1,25 +1,9 @@
-<div class="content-wrapper">
-  <section class="content-header"><h1>Pending Production</h1></section>
-  <section class="content">
-    <div class="box box-primary">
-      <div class="box-body table-responsive">
-        <table class="table table-bordered">
-          <thead><tr><th>ID</th><th>Manuscript</th><th>Title</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>
-          <?php if (empty($manuscripts)): ?>
-            <tr><td colspan="5" class="text-center text-muted">No pending production manuscripts.</td></tr>
-          <?php else: foreach(($manuscripts ?? []) as $m): ?>
-            <tr>
-              <td><?= (int)$m->manuscriptId ?></td>
-              <td><?= html_escape($m->manuscriptNumber) ?></td>
-              <td><?= html_escape($m->title) ?></td>
-              <td><?= html_escape($m->production_status ?: 'in_production') ?></td>
-              <td><a class="btn btn-xs btn-primary" href="<?= base_url('publisher/production-process/' . (int)$m->manuscriptId) ?>">Start</a></td>
-            </tr>
-          <?php endforeach; endif; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-</div>
+<div class="content-wrapper"><section class="content-header"><h1>Pending Production</h1></section><section class="content">
+<div class="box box-primary"><div class="box-body table-responsive"><table class="table table-bordered"><thead><tr><th>ID</th><th>Manuscript</th><th>Title</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<?php foreach(($manuscripts ?? []) as $m): ?><tr><td><?= (int)$m->manuscriptId ?></td><td><?= html_escape($m->manuscriptNumber) ?></td><td><?= html_escape($m->title) ?></td><td><?= html_escape($m->production_status ?: 'in_production') ?></td><td><button class="btn btn-xs btn-primary" data-toggle="collapse" data-target="#p<?= (int)$m->manuscriptId ?>">Start</button></td></tr>
+<tr><td colspan="5"><div id="p<?= (int)$m->manuscriptId ?>" class="collapse"><div class="row" style="padding:10px;">
+<div class="col-md-4"><h4>Copyediting</h4><form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$m->manuscriptId) ?>"><input type="hidden" name="step" value="copyediting"><textarea name="copyediting_notes" class="form-control" rows="3"></textarea><br><button class="btn btn-primary btn-sm" name="action" value="send_typesetting">Save</button></form></div>
+<div class="col-md-4"><h4>Typesetting</h4><form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$m->manuscriptId) ?>"><input type="hidden" name="step" value="typesetting"><input name="page_numbers" class="form-control" placeholder="Page numbers"><br><textarea name="layout_notes" class="form-control" rows="3"></textarea><br><button class="btn btn-warning btn-sm" name="action" value="send_proof">Save</button></form></div>
+<div class="col-md-4"><h4>Metadata Verification</h4><form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$m->manuscriptId) ?>"><input type="hidden" name="step" value="metadata"><input class="form-control" name="final_title" placeholder="Final title"><br><input class="form-control" name="final_keywords" placeholder="Keywords"><br><input class="form-control" name="corresponding_email" placeholder="Email"><br><button class="btn btn-info btn-sm" name="action" value="prepare_doi">Complete Verification</button></form></div>
+</div></div></td></tr><?php endforeach; ?>
+</tbody></table></div></div></section></div>

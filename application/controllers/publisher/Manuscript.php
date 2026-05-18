@@ -31,18 +31,12 @@ class Manuscript extends BaseController
         $this->loadViews('publisher/pending_production', $this->global, $data, NULL);
     }
 
-    public function productionProcess($manuscriptId)
+    public function saveProductionStep($manuscriptId)
     {
         if (!$this->guardPublisher()) { return; }
-        $data['manuscript'] = $this->editor_model->getManuscript((int)$manuscriptId);
-        if (empty($data['manuscript'])) {
-            $this->session->set_flashdata('error', 'Manuscript not found.');
-            redirect('publisher/pending-production');
-            return;
-        }
-        $this->global['pageTitle'] = 'Production Process - OJAS';
-        $this->global['activeMenu'] = 'publisherPendingProduction';
-        $this->loadViews('publisher/production_process', $this->global, $data, NULL);
+        $_POST['step'] = $this->input->post('step', true);
+        // Reuse existing production save logic
+        redirect('editor/production-stage/save/' . (int)$manuscriptId);
     }
 
     public function manageIssues()
