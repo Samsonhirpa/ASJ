@@ -1020,6 +1020,9 @@ Scope Screening:
             ->where('isDeleted', 0)
             ->update('tbl_manuscripts', [
                 'status' => $status,
+                'production_status' => (($decision === 'approved') ? 'in_production' : null),
+                'production_assigned_to' => (($decision === 'approved') ? $this->getFirstPublisherId() : null),
+                'production_started_at' => (($decision === 'approved') ? $now : null),
                 'updatedBy' => (int)$eicId,
                 'updatedDtm' => $now,
                 'decisionLetter' => (($decision === 'approved') ? 'Final EIC Decision: Accepted. Moved to Production Stage.' : 'Final EIC Decision: Rejected. Workflow ended.')
@@ -1043,6 +1046,30 @@ Scope Screening:
         }
 
         return true;
+    }
+
+    private function getFirstPublisherId()
+    {
+        $row = $this->db->select('userId')->from('tbl_users')->where('roleId', 17)->where('isDeleted', 0)->order_by('userId', 'ASC')->limit(1)->get()->row();
+        return $row ? (int)$row->userId : null;
+    }
+
+    public function getProductionQueue($publisherId, $isAdmin = false)
+    {
+        $this->db->select('m.*, author.name as authorName');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->join('tbl_users author', 'author.userId = m.submittedBy', 'left');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.firstEditorialDecision', 'accept_present');
+        if (!$isAdmin) {
+            $this->db->where('m.production_assigned_to', (int)$publisherId);
+        }
+        return $this->db->order_by('m.updatedDtm', 'DESC')->get()->result();
+    }
+
+    public function updateProductionStage($manuscriptId, $payload)
+    {
+        return $this->db->where('manuscriptId', (int)$manuscriptId)->where('isDeleted', 0)->update('tbl_manuscripts', $payload);
     }
 
     public function getPaymentQueue()
