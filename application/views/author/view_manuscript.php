@@ -53,7 +53,9 @@
                         <?php $daysLeft = (isset($manuscript->reviewDueDate) && !empty($manuscript->reviewDueDate)) ? (int)floor((strtotime($manuscript->reviewDueDate) - strtotime(date('Y-m-d'))) / 86400) : null; ?>
                         <div class="alert alert-warning" style="border-radius:10px;">
                             <strong>Revision Pending</strong> |
-                            <strong>Round:</strong> <?= !empty($manuscript->roundNumber) ? (int)$manuscript->roundNumber : 1 ?> |
+                            <?php $revisionCount = isset($manuscript->revisedSubmissionCount) ? (int)$manuscript->revisedSubmissionCount : 0; $dynamicRound = !empty($manuscript->roundNumber) ? (int)$manuscript->roundNumber : ($revisionCount + 1); ?>
+                            <strong>Round:</strong> <?= $dynamicRound ?> |
+                            <strong>Revised Submission(s):</strong> <?= $revisionCount ?> |
                             <strong>Countdown:</strong>
                             <?php if ($daysLeft === null): ?>-<?php elseif ($daysLeft >= 0): ?><?= $daysLeft ?> day(s) left<?php else: ?>Overdue by <?= abs($daysLeft) ?> day(s)<?php endif; ?>
                         </div>
@@ -206,6 +208,7 @@
                         <a href="<?= base_url('author/manuscript/revision-notifications') ?>" class="btn btn-warning btn-block" style="border-radius: 8px; padding: 12px;">
                             <i class="fa fa-edit"></i> Revise Manuscript Now
                         </a>
+                        <p class="text-muted" style="margin-top:10px;">Revise button remains available until revised manuscript is submitted.</p>
                     </div>
                 </div>
                 <?php endif; ?>
