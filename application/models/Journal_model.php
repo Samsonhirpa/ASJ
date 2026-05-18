@@ -139,6 +139,9 @@ class Journal_model extends CI_Model {
         if(!empty($filters['articleType'])) {
             $this->db->where('m.articleType', $filters['articleType']);
         }
+        if(!empty($filters['issueId'])) {
+            $this->db->where('ji.issueId', (int)$filters['issueId']);
+        }
         
         $this->db->group_by('pa.articleId');
         $this->db->order_by('pa.publishedDate', 'DESC');

@@ -429,8 +429,15 @@ class Manuscript extends BaseController
             $payload['full_doi'] = ($prefix && $suffix) ? ($prefix . '/' . $suffix) : null;
             if ($this->input->post('action', true) === 'save_doi') $payload['production_status'] = 'doi_prepared';
         } elseif ($step === 'publish') {
-            $payload['pub_volume'] = $this->input->post('volume', true);
-            $payload['pub_issue'] = $this->input->post('issue', true);
+            $issueId = (int)$this->input->post('issueId');
+            if ($issueId > 0) {
+                $this->load->model('Issue_model', 'issue_model');
+                $issue = $this->issue_model->get_issue($issueId);
+                if (!empty($issue)) {
+                    $payload['pub_volume'] = (int)$issue->volume;
+                    $payload['pub_issue'] = (int)$issue->issueNumber;
+                }
+            }
             $payload['publication_date'] = $this->input->post('publication_date', true);
             if ($this->input->post('action', true) === 'publish') {
                 $payload['production_status'] = 'published';
