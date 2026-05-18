@@ -86,6 +86,7 @@ class Manuscript extends BaseController
         
         $this->global['pageTitle'] = 'My Submissions - OJAS';
         $data['activeTab'] = 'submissions';
+        $this->global['activeMenu'] = 'submissions';
         
         $this->loadViews("author/manuscripts", $this->global, $data, NULL);
     }
@@ -487,6 +488,7 @@ class Manuscript extends BaseController
         
         $this->global['pageTitle'] = 'Manuscript Details - OJAS';
         $data['activeTab'] = 'submissions';
+        $this->global['activeMenu'] = 'submissions';
         
         $this->loadViews("author/view_manuscript", $this->global, $data, NULL);
     }

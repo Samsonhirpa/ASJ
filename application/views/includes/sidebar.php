@@ -81,6 +81,7 @@
             
             <!-- ========== AUTHOR MENU (roleId = 21) ========== -->
             <?php if($role == 21): ?>
+            <?php $authorRevisionCount = (int)$this->manuscript_model->countAuthorRevisionRequired($vendorId); ?>
             <li class="header">AUTHOR ZONE</li>
             
             <li class="<?= (isset($activeMenu) && $activeMenu == 'submissions') ? 'active' : '' ?>">
@@ -113,12 +114,14 @@
             <li class="<?= (isset($activeMenu) && $activeMenu == 'revisionNotifications') ? 'active' : '' ?>">
                 <a href="<?= base_url('author/manuscript/revision-notifications') ?>">
                     <i class="fa fa-bell"></i> <span>Revision Notifications</span>
+                    <?php if($authorRevisionCount > 0): ?><span class="pull-right-container"><small class="label pull-right bg-red"><?= $authorRevisionCount ?></small></span><?php endif; ?>
                 </a>
             </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (roleId = 19) ========== -->
             <?php if($role == 19): ?>
+            <?php $reviewerRevisionCount = (int)$this->db->from('tbl_reviewer_assignments ra')->join('tbl_manuscripts m','m.manuscriptId=ra.manuscriptId')->where('ra.reviewerId',$vendorId)->where('ra.isDeleted',0)->where('m.isDeleted',0)->where('m.status','revision_required')->where('ra.responseStatus','accepted')->count_all_results(); ?>
             <li class="header">REVIEWER ZONE</li>
             
             <li class="<?= (isset($activeMenu) && $activeMenu == 'assignments') ? 'active' : '' ?>">
@@ -133,6 +136,13 @@
                         <small class="label pull-right bg-yellow"><?= $pendingReviews ?></small>
                     </span> -->
                     <?php // endif; ?>
+                </a>
+            </li>
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'reviewerRevisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('reviewer/revisions') ?>">
+                    <i class="fa fa-refresh"></i> <span>Revision Required</span>
+                    <?php if($reviewerRevisionCount > 0): ?><span class="pull-right-container"><small class="label pull-right bg-orange"><?= $reviewerRevisionCount ?></small></span><?php endif; ?>
                 </a>
             </li>
             

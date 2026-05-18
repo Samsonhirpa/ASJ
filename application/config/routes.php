@@ -154,6 +154,7 @@ $route['author/manuscript/payment/submit/(:num)'] = 'author/manuscript/submitPay
 // Reviewer Routes (add these later)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';
 $route['reviewer/assignments'] = 'reviewer/assignment/index';
+$route['reviewer/revisions'] = 'reviewer/assignment/revisions';
 
 // Editor Routes (add these later)
 $route['editor/dashboard'] = 'editor/dashboard/index';
@@ -166,6 +167,7 @@ $route['managing-editor/pending/save/(:num)'] = 'managing_editor/manuscript/save
 // Reviewer Module Routes (Coming Soon)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';
 $route['reviewer/assignments'] = 'reviewer/assignment/index';
+$route['reviewer/revisions'] = 'reviewer/assignment/revisions';
 $route['reviewer/completed'] = 'reviewer/assignment/completed';
 $route['reviewer/dashboard/reminders'] = 'reviewer/dashboard/reminders';
 $route['reviewer/assignment/(:num)'] = 'reviewer/assignment/view/$1';

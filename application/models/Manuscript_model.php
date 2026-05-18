@@ -87,6 +87,7 @@ class Manuscript_model extends CI_Model
         $this->db->from($this->table . ' m');
         $this->db->where('m.submittedBy', $userId);
         $this->db->where('m.isDeleted', 0);
+        $this->db->group_by(['m.manuscriptId', 'u.userId', 'rr.roundNumber']);
         $this->db->order_by('m.createdDtm', 'DESC');
         
         if($limit) {
@@ -102,9 +103,11 @@ class Manuscript_model extends CI_Model
      */
     public function getManuscript($manuscriptId)
     {
-        $this->db->select('m.*, u.name as submitterName, u.email as submitterEmail');
+        $this->db->select('m.*, u.name as submitterName, u.email as submitterEmail, rr.roundNumber, MAX(ra.reviewDueDate) as reviewDueDate');
         $this->db->from($this->table . ' m');
         $this->db->join('tbl_users u', 'm.submittedBy = u.userId');
+        $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = m.manuscriptId AND rr.status = "active"', 'left');
+        $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
         $this->db->where('m.manuscriptId', $manuscriptId);
         $this->db->where('m.isDeleted', 0);
         $query = $this->db->get();
@@ -233,6 +236,16 @@ class Manuscript_model extends CI_Model
         return $ok;
     }
 
+
+    public function countAuthorRevisionRequired($authorId)
+    {
+        $this->db->from('tbl_manuscripts');
+        $this->db->where('submittedBy', $authorId);
+        $this->db->where('isDeleted', 0);
+        $this->db->where('status', 'revision_required');
+        return (int)$this->db->count_all_results();
+    }
+
     public function getAuthorRevisionNotifications($authorId)
     {
         $this->db->select('
@@ -241,15 +254,19 @@ class Manuscript_model extends CI_Model
             m.title,
             m.status,
             m.updatedDtm,
+            rr.roundNumber,
+            MAX(ra.reviewDueDate) as reviewerDueDate,
+            "pending" as reviseSubmissionStatus,
             GROUP_CONCAT(CONCAT(u.name, ": ", LEFT(COALESCE(ra.commentsToAuthor, ""), 220)) SEPARATOR "\n") as reviewerComments
         ', false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
         $this->db->join('tbl_users u', 'u.userId = ra.reviewerId', 'left');
+        $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = m.manuscriptId AND rr.status = "active"', 'left');
         $this->db->where('m.submittedBy', $authorId);
         $this->db->where('m.isDeleted', 0);
         $this->db->where('m.status', 'revision_required');
-        $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title', 'm.status', 'm.updatedDtm']);
+        $this->db->group_by(['m.manuscriptId', 'm.manuscriptNumber', 'm.title', 'm.status', 'm.updatedDtm', 'rr.roundNumber']);
         $this->db->order_by('m.updatedDtm', 'DESC');
         return $this->db->get()->result();
     }
