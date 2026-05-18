@@ -186,6 +186,8 @@ class BaseController extends CI_Controller {
             case self::ROLE_ASSOCIATE_EDITOR_IN_CHIEF:
             case self::ROLE_ASSOCIATE_EDITOR:
             case self::ROLE_SPECIALTY_CHIEF_EDITOR:
+                return 'publisher/dashboard';
+
             case self::ROLE_EDITORIAL_ADVISORY_BOARD:
             case self::ROLE_GUEST_EDITOR:
                 return 'editor/dashboard';
@@ -244,6 +246,15 @@ class BaseController extends CI_Controller {
                 'header' => 'MANAGING EDITOR ZONE',
                 'items' => [
                     ['url' => 'managing-editor/pending', 'icon' => 'fa-clipboard-check', 'text' => 'Pending Manuscripts']
+                ]
+            ];
+        } elseif((int)$this->role === self::ROLE_SPECIALTY_CHIEF_EDITOR) {
+            $menu[] = [
+                'header' => 'PUBLISHER ZONE',
+                'items' => [
+                    ['url' => 'publisher/dashboard', 'icon' => 'fa-dashboard', 'text' => 'Publisher Dashboard'],
+                    ['url' => 'editor/production-stage', 'icon' => 'fa-cogs', 'text' => 'Pending Production'],
+                    ['url' => 'admin/issues', 'icon' => 'fa-book', 'text' => 'Manage Issues']
                 ]
             ];
         } elseif($this->isEditor()) {

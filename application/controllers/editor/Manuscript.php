@@ -368,7 +368,9 @@ class Manuscript extends BaseController
             return;
         }
 
+        $this->load->model('Issue_model', 'issue_model');
         $data['manuscripts'] = $this->editor_model->getProductionQueue((int)$this->vendorId, $this->isAdmin());
+        $data['issues'] = $this->issue_model->get_issues(false);
         $this->global['pageTitle'] = 'Production Stage - OJAS';
         $this->global['activeMenu'] = 'productionStage';
         $this->loadViews('editor/production_stage', $this->global, $data, NULL);

@@ -158,6 +158,8 @@ $route['reviewer/revisions'] = 'reviewer/assignment/revisions';
 
 // Editor Routes (add these later)
 $route['editor/dashboard'] = 'editor/dashboard/index';
+
+$route['publisher/dashboard'] = 'publisher/dashboard/index';
 $route['editor/pending'] = 'editor/manuscript/pending';
 $route['managing-editor/dashboard'] = 'managing_editor/dashboard/index';
 $route['managing-editor/pending'] = 'managing_editor/manuscript/pending';
@@ -179,6 +181,8 @@ $route['reviewer/guidelines'] = 'reviewer/assignment/guidelines';
 
 // Editor Module Routes (Coming Soon)
 $route['editor/dashboard'] = 'editor/dashboard/index';
+
+$route['publisher/dashboard'] = 'publisher/dashboard/index';
 $route['editor/pending'] = 'editor/manuscript/pending';
 $route['editor/pending/screen/(:num)'] = 'editor/manuscript/pendingScreen/$1';
 $route['editor/technical-scope-screening/(:num)'] = 'editor/manuscript/technicalScopeScreening/$1';
