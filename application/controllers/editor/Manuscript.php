@@ -376,6 +376,26 @@ class Manuscript extends BaseController
         $this->loadViews('editor/production_stage', $this->global, $data, NULL);
     }
 
+    public function productionProcess($manuscriptId)
+    {
+        if ((int)$this->role !== 17 && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $manuscript = $this->editor_model->getManuscript((int)$manuscriptId);
+        if (empty($manuscript)) {
+            $this->session->set_flashdata('error', 'Manuscript not found.');
+            redirect('editor/production-stage');
+            return;
+        }
+
+        $data['manuscript'] = $manuscript;
+        $this->global['pageTitle'] = 'Production Process - OJAS';
+        $this->global['activeMenu'] = 'productionStage';
+        $this->loadViews('editor/production_process', $this->global, $data, NULL);
+    }
+
     public function saveProductionStep($manuscriptId)
     {
         if ((int)$this->role !== 17 && !$this->isAdmin()) { $this->loadThis(); return; }
