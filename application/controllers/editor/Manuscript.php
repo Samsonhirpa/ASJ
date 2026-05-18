@@ -368,10 +368,57 @@ class Manuscript extends BaseController
             return;
         }
 
-        $data['manuscripts'] = $this->editor_model->getAcceptedFirstDecisionManuscripts();
+        $data['manuscripts'] = $this->editor_model->getProductionQueue((int)$this->vendorId, $this->isAdmin());
         $this->global['pageTitle'] = 'Production Stage - OJAS';
         $this->global['activeMenu'] = 'productionStage';
         $this->loadViews('editor/production_stage', $this->global, $data, NULL);
+    }
+
+    public function saveProductionStep($manuscriptId)
+    {
+        if ((int)$this->role !== 17 && !$this->isAdmin()) { $this->loadThis(); return; }
+        $step = $this->input->post('step', true);
+        $payload = ['updatedBy' => (int)$this->vendorId, 'updatedDtm' => date('Y-m-d H:i:s')];
+
+        if ($step === 'copyediting') {
+            $payload['copyediting_notes'] = $this->input->post('copyediting_notes', true);
+            $payload['grammar_checked'] = $this->input->post('grammar_checked') ? 1 : 0;
+            $payload['references_checked'] = $this->input->post('references_checked') ? 1 : 0;
+            if ($this->input->post('action', true) === 'send_typesetting') $payload['production_status'] = 'copyediting_completed';
+        } elseif ($step === 'typesetting') {
+            $payload['page_numbers'] = $this->input->post('page_numbers', true);
+            $payload['layout_notes'] = $this->input->post('layout_notes', true);
+            if ($this->input->post('action', true) === 'send_proof') $payload['production_status'] = 'proof_sent';
+        } elseif ($step === 'proof') {
+            if ($this->input->post('action', true) === 'finalize') $payload['production_status'] = 'proof_approved';
+        } elseif ($step === 'metadata') {
+            $payload['final_title'] = $this->input->post('final_title', true);
+            $payload['final_abstract'] = $this->input->post('final_abstract', true);
+            $payload['final_keywords'] = $this->input->post('final_keywords', true);
+            $payload['final_authors'] = $this->input->post('final_authors', true);
+            $payload['final_orcid_ids'] = $this->input->post('final_orcid_ids', true);
+            $payload['corresponding_email'] = $this->input->post('corresponding_email', true);
+            if ($this->input->post('action', true) === 'prepare_doi') $payload['production_status'] = 'metadata_verified';
+        } elseif ($step === 'doi') {
+            $prefix = trim((string)$this->input->post('doi_prefix', true));
+            $suffix = trim((string)$this->input->post('doi_suffix', true));
+            $payload['doi_prefix'] = $prefix;
+            $payload['doi_suffix'] = $suffix;
+            $payload['full_doi'] = ($prefix && $suffix) ? ($prefix . '/' . $suffix) : null;
+            if ($this->input->post('action', true) === 'save_doi') $payload['production_status'] = 'doi_prepared';
+        } elseif ($step === 'publish') {
+            $payload['pub_volume'] = $this->input->post('volume', true);
+            $payload['pub_issue'] = $this->input->post('issue', true);
+            $payload['publication_date'] = $this->input->post('publication_date', true);
+            if ($this->input->post('action', true) === 'publish') {
+                $payload['production_status'] = 'published';
+                $payload['status'] = 'published';
+            }
+        }
+
+        $ok = $this->editor_model->updateProductionStage((int)$manuscriptId, $payload);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Production step saved.' : 'Failed to save production step.');
+        redirect('editor/production-stage');
     }
 
     public function savePayment($manuscriptId)
