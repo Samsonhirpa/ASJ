@@ -110,6 +110,7 @@ class Manuscript_model extends CI_Model
         $this->db->join('tbl_reviewer_assignments ra', 'ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0', 'left');
         $this->db->where('m.manuscriptId', $manuscriptId);
         $this->db->where('m.isDeleted', 0);
+        $this->db->group_by(['m.manuscriptId', 'u.userId', 'rr.roundNumber']);
         $query = $this->db->get();
         
         return $query->row();
