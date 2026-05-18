@@ -1095,6 +1095,19 @@ Scope Screening:
         return $this->db->get()->result();
     }
 
+    public function getProductionReadyManuscripts($publisherId, $isAdmin = false)
+    {
+        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.production_status, m.production_assigned_to');
+        $this->db->from('tbl_manuscripts m');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where_in('m.production_status', ['metadata_verified', 'doi_prepared']);
+        if (!$isAdmin) {
+            $this->db->where('m.production_assigned_to', (int)$publisherId);
+        }
+        $this->db->order_by('m.updatedDtm', 'DESC');
+        return $this->db->get()->result();
+    }
+
     public function hasPublishedIssue()
     {
         $issue = $this->db->select('issueId')
