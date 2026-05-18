@@ -457,7 +457,6 @@
       </header>
       
       <!-- Left side column - WIDER SIDEBAR with PROFILE PICTURE -->
-      <!-- Sidebar moved into header.php; sidebar.php is deprecated and removed. -->
       <aside class="main-sidebar">
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
@@ -575,13 +574,6 @@
                 <span>Review Guidelines</span>
               </a>
             </li>
-
-            <li class="<?php echo (uri_string() == 'reviewer/revisions') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>reviewer/revisions">
-                <i class="fa fa-refresh"></i> 
-                <span>Revision Required</span>
-              </a>
-            </li>
             <?php endif; ?>
 
 
@@ -611,12 +603,28 @@
                     <i class="fa fa-user-plus"></i> <span>Assign Reviewers</span>
                 </a>
             </li>
-            <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
+
+
+         
+
+
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'aeCompletedReviews') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/ae-completed-reviews') ?>">
+                    <i class="fa fa-check-circle"></i> <span>Completed Review</span>
+                </a>
+            </li>
+             <li class="<?= (isset($activeMenu) && $activeMenu == 'firstEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/first-decisions') ?>">
+                    <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
+                </a>
+            </li>
+              <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/assignments">
                 <i class="fa fa-line-chart"></i>
                 <span>Track Review Progress</span>
               </a>
             </li>
+            
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
@@ -641,6 +649,12 @@
                 <i class="fa fa-list"></i> 
                 <span>All Manuscripts</span>
               </a>
+            </li>
+
+             <li class="<?= (isset($activeMenu) && $activeMenu == 'firstEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/first-decisions') ?>">
+                    <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
+                </a>
             </li>
             
                <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
