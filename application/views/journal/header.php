@@ -198,7 +198,7 @@ $uiText = array(
         'register' => 'Register',
         'author_login' => 'Author Login',
         'submit_manuscript' => 'Submit Manuscript',
-        'motto' => '"Connecting Agriculture and Science for a Sustainable Future"',
+        'motto' => '"International, peer-reviewed and open access."',
         'language' => 'Language'
     ),
     'om' => array(
@@ -264,7 +264,7 @@ $text = isset($uiText[$currentLanguage]) ? $uiText[$currentLanguage] : $uiText['
             </button>
             <a class="navbar-brand" href="<?php echo base_url(); ?>journal">
                 <img src="<?= base_url('assets/images/logo.jpg') ?>" alt="OJAS Logo" class="navbar-logo">
-                <span>OJAS | IQQO</span>
+                <span>OJAS</span>
             </a>
         </div>
 
@@ -317,7 +317,7 @@ $text = isset($uiText[$currentLanguage]) ? $uiText[$currentLanguage] : $uiText['
 <!-- Journal Header -->
 <div class="journal-header">
     <div class="container">
-        <h1>Oromia Journal of Agricultural Sciences</h1>
+        <h1>OJAS International Journal</h1>
         <p class="motto"><?= $text['motto'] ?></p>
         <p>ISSN: XXXXX-XXXX | Open Access | Peer-Reviewed</p>
         <img src="<?= base_url('assets/images/logo.jpg') ?>" alt="OJAS Official Logo" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); margin-top: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">

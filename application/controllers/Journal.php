@@ -195,6 +195,52 @@ class Journal extends CI_Controller  // Don't extend BaseController for public p
         $this->load->view('journal/footer');
     }
     
+
+    public function search_api() {
+        $keyword = trim((string)$this->input->get('q', true));
+        $field = $this->input->get('field', true);
+        $filters = array(
+            'year' => $this->input->get('year', true),
+            'articleType' => $this->input->get('type', true),
+            'issueId' => $this->input->get('issue', true)
+        );
+
+        $results = $this->journal_model->search_articles($keyword, $filters);
+
+        if ($field && $field !== 'all' && $keyword !== '') {
+            $k = strtolower($keyword);
+            $results = array_values(array_filter($results, function($item) use ($field, $k) {
+                if ($field === 'title') {
+                    return strpos(strtolower((string)$item->title), $k) !== false;
+                }
+                if ($field === 'author') {
+                    return strpos(strtolower((string)$item->author_names), $k) !== false;
+                }
+                if ($field === 'abstract') {
+                    return strpos(strtolower(strip_tags((string)$item->abstract)), $k) !== false;
+                }
+                return true;
+            }));
+        }
+
+        $payload = array();
+        foreach (array_slice($results, 0, 20) as $r) {
+            $payload[] = array(
+                'articleId' => $r->articleId,
+                'title' => $r->title,
+                'author_names' => $r->author_names,
+                'abstract_text' => strip_tags((string)$r->abstract),
+                'volume' => $r->volume,
+                'issueNumber' => $r->issueNumber,
+                'year' => $r->year
+            );
+        }
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode(array('count' => count($payload), 'results' => $payload)));
+    }
+
     /**
      * Guidelines for Authors - PUBLIC ACCESS
      */
