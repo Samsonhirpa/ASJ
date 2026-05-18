@@ -22,7 +22,7 @@
                   <td><?= html_escape($m->manuscriptNumber) ?></td>
                   <td><?= html_escape($m->title) ?></td>
                   <td><span class="label label-info"><?= html_escape($m->production_status ?: 'in_production') ?></span></td>
-                  <td><?= html_escape($m->decision ?: '-') ?></td>
+                  <td><?= html_escape(isset($m->decision) ? ($m->decision ?: '-') : '-') ?></td>
                   <td><button type="button" class="btn btn-xs btn-primary" data-toggle="collapse" data-target="#prod-<?= (int)$m->manuscriptId ?>">Start</button></td>
                 </tr>
                 <tr>

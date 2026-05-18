@@ -498,7 +498,8 @@
                 elseif($role == 19) echo base_url('reviewer/dashboard');
                 elseif($role == 15) echo base_url('managing-editor/dashboard');
                 elseif($role == 16) echo base_url('managing-editor/dashboard');
-                elseif(in_array($role, [13,14,17,18,20])) echo base_url('editor/dashboard');
+                elseif($role == 17) echo base_url('publisher/dashboard');
+                elseif(in_array($role, [13,14,18,20])) echo base_url('editor/dashboard');
                 else echo base_url('dashboard');
               ?>">
                 <i class="fa fa-dashboard"></i> 
@@ -633,7 +634,7 @@
             <?php endif; ?>
             
             <!-- ========== EDITOR MENU (Editorial Roles) ========== -->
-            <?php if(in_array($role, [13,14,17,18,20])): ?>
+            <?php if(in_array($role, [13,14,18,20])): ?>
             <li class="header">EDITORIAL ZONE</li>
             
             <li class="<?php echo (uri_string() == 'editor/pending') ? 'active' : ''; ?>">
@@ -695,13 +696,22 @@
             </li>
             <?php endif; ?>
 
-            <?php if($role == 17): ?>
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'productionStage') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/production-stage') ?>">
-                    <i class="fa fa-cogs"></i> <span>Production Stage</span>
-                </a>
-            </li>
             <?php endif; ?>
+
+            <?php if($role == 17): ?>
+            <li class="header">PUBLISHER ZONE</li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherDashboard') ? 'active' : '' ?>">
+                <a href="<?= base_url('publisher/dashboard') ?>"><i class="fa fa-dashboard"></i> <span>Publisher Dashboard</span></a>
+            </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPendingProduction') ? 'active' : '' ?>">
+                <a href="<?= base_url('publisher/pending-production') ?>"><i class="fa fa-cogs"></i> <span>Pending Production</span></a>
+            </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherManageIssues') ? 'active' : '' ?>">
+                <a href="<?= base_url('publisher/issues') ?>"><i class="fa fa-book"></i> <span>Manage Issues</span></a>
+            </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPublish') ? 'active' : '' ?>">
+                <a href="<?= base_url('publisher/publish') ?>"><i class="fa fa-upload"></i> <span>Publish</span></a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== JOURNAL MANAGEMENT (Common for all) ========== -->
