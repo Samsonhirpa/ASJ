@@ -117,7 +117,7 @@ class Reviewer_model extends CI_Model
 
     public function getRevisionRequiredManuscripts($reviewerId)
     {
-        $this->db->select('ra.*, m.manuscriptNumber, m.title, m.status as manuscriptStatus, rr.roundNumber, m.revisionDueDtm,\n            (SELECT COUNT(*) FROM tbl_manuscript_files mf WHERE mf.manuscriptId = m.manuscriptId AND mf.fileType = "revised_main" AND mf.isDeleted = 0) as revisedSubmissionCount');
+        $this->db->select('ra.*, m.manuscriptNumber, m.title, m.status as manuscriptStatus, rr.roundNumber, m.revisionDueDtm, (SELECT COUNT(*) FROM tbl_manuscript_files mf WHERE mf.manuscriptId = m.manuscriptId AND mf.fileType = "revised_main" AND mf.isDeleted = 0) as revisedSubmissionCount');
         $this->db->from("{$this->table} ra");
         $this->db->join('tbl_manuscripts m', 'm.manuscriptId = ra.manuscriptId');
         $this->db->join('tbl_review_rounds rr', 'rr.manuscriptId = ra.manuscriptId AND rr.status = "active"', 'left');
