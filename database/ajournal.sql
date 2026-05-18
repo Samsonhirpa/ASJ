@@ -902,7 +902,7 @@ INSERT INTO `tbl_roles` (`roleId`, `role`, `status`, `isDeleted`, `createdBy`, `
 (14, 'Associate Editor-in-Chief', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
 (15, 'Managing Editor', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
 (16, 'Associate Editor', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
-(17, 'Publisher Specialty Chief Editor', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
+(17, 'Publisher', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
 (18, 'Editorial Advisory Board', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
 (19, 'Reviewer', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),
 (20, 'Guest Editor', 1, 0, 1, '2026-03-06 07:08:04', NULL, NULL),

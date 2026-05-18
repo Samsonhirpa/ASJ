@@ -618,6 +618,11 @@
                     <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
                 </a>
             </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'finalEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/final-decisions') ?>">
+                    <i class="fa fa-gavel"></i> <span>Final EiC Decision</span>
+                </a>
+            </li>
               <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/assignments">
                 <i class="fa fa-line-chart"></i>
@@ -687,6 +692,14 @@
                 <i class="fa fa-star"></i> 
                 <span>Special Issues</span>
               </a>
+            </li>
+            <?php endif; ?>
+
+            <?php if($role == 17): ?>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'productionStage') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/production-stage') ?>">
+                    <i class="fa fa-cogs"></i> <span>Production Stage</span>
+                </a>
             </li>
             <?php endif; ?>
             <?php endif; ?>
