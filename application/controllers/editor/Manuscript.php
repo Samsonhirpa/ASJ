@@ -327,12 +327,51 @@ class Manuscript extends BaseController
         $this->loadViews('editor/payment', $this->global, $data, NULL);
     }
 
+    public function finalEditorialDecisions()
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $data['manuscripts'] = $this->editor_model->getAcceptedFirstDecisionManuscripts();
+        $this->global['pageTitle'] = 'Final Editorial Decision - OJAS';
+        $this->global['activeMenu'] = 'finalEditorialDecisions';
+        $this->loadViews('editor/final_editorial_decisions', $this->global, $data, NULL);
+    }
+
+    public function applyFinalEditorialDecision($manuscriptId)
+    {
+        if (!$this->isEditorInChief() && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $decision = $this->input->post('decision', true);
+        $ok = $this->editor_model->applyFinalEicDecision((int)$manuscriptId, (int)$this->vendorId, $decision);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Final EiC decision saved.' : 'Failed to save final EiC decision.');
+        redirect('editor/final-decisions');
+    }
+
     public function published()
     {
         $data['manuscripts'] = $this->editor_model->getPublishedManuscripts();
         $this->global['pageTitle'] = 'Published Manuscripts - OJAS';
         $this->global['activeMenu'] = 'published';
         $this->loadViews('editor/published', $this->global, $data, NULL);
+    }
+
+    public function productionStage()
+    {
+        if ((int)$this->role !== 17 && !$this->isAdmin()) {
+            $this->loadThis();
+            return;
+        }
+
+        $data['manuscripts'] = $this->editor_model->getAcceptedFirstDecisionManuscripts();
+        $this->global['pageTitle'] = 'Production Stage - OJAS';
+        $this->global['activeMenu'] = 'productionStage';
+        $this->loadViews('editor/production_stage', $this->global, $data, NULL);
     }
 
     public function savePayment($manuscriptId)

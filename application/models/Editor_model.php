@@ -994,6 +994,57 @@ Scope Screening:
         return $this->db->get()->result();
     }
 
+    public function getAcceptedFirstDecisionManuscripts()
+    {
+        return $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionDtm, ae.name as associateEditorName, author.name as authorName')
+            ->from('tbl_manuscripts m')
+            ->join('tbl_users ae', 'ae.userId = m.firstEditorialDecisionBy', 'left')
+            ->join('tbl_users author', 'author.userId = m.submittedBy', 'left')
+            ->where('m.isDeleted', 0)
+            ->where('m.firstEditorialDecision', 'accept_present')
+            ->where('m.status !=', 'rejected')
+            ->order_by('m.firstEditorialDecisionDtm', 'DESC')
+            ->get()->result();
+    }
+
+    public function applyFinalEicDecision($manuscriptId, $eicId, $decision)
+    {
+        if (!in_array($decision, ['approved', 'rejected'], true)) {
+            return false;
+        }
+
+        $status = $decision === 'approved' ? 'accepted' : 'rejected';
+        $now = date('Y-m-d H:i:s');
+
+        $ok = $this->db->where('manuscriptId', (int)$manuscriptId)
+            ->where('isDeleted', 0)
+            ->update('tbl_manuscripts', [
+                'status' => $status,
+                'updatedBy' => (int)$eicId,
+                'updatedDtm' => $now,
+                'decisionLetter' => (($decision === 'approved') ? 'Final EIC Decision: Accepted. Moved to Production Stage.' : 'Final EIC Decision: Rejected. Workflow ended.')
+            ]);
+
+        if (!$ok || $decision !== 'approved') {
+            return $ok;
+        }
+
+        $publishers = $this->db->select('userId')->from('tbl_users')->where('roleId', 17)->where('isDeleted', 0)->get()->result();
+        foreach ($publishers as $publisher) {
+            $this->db->insert('tbl_notifications', [
+                'userId' => (int)$publisher->userId,
+                'type' => 'production_assignment',
+                'subject' => 'New manuscript in Production Stage',
+                'message' => 'A manuscript has been accepted by EiC and is now ready for production work.',
+                'referenceId' => (int)$manuscriptId,
+                'referenceType' => 'manuscript',
+                'createdDtm' => $now
+            ]);
+        }
+
+        return true;
+    }
+
     public function getPaymentQueue()
     {
         $this->db->select('
