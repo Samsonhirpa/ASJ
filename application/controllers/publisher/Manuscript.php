@@ -82,10 +82,109 @@ class Manuscript extends BaseController
     {
         if (!$this->guardPublisher()) { return; }
         $data['manuscripts'] = $this->editor_model->getProductionReadyManuscripts((int)$this->vendorId, $this->isAdmin());
-        $data['issues'] = $this->issue_model->get_issues(false);
         $this->global['pageTitle'] = 'Final Publishing - OJAS';
         $this->global['activeMenu'] = 'publisherPublish';
         $this->loadViews('publisher/publish', $this->global, $data, NULL);
+    }
+
+    public function publishProcess($manuscriptId)
+    {
+        if (!$this->guardPublisher()) { return; }
+        $manuscript = $this->editor_model->getManuscript((int)$manuscriptId);
+        if (empty($manuscript)) {
+            $this->session->set_flashdata('error', 'Manuscript not found.');
+            redirect('publisher/publish');
+            return;
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['issues'] = $this->issue_model->get_issues(false);
+        $data['payment'] = $this->db->select('*')->from('tbl_manuscript_payments')->where('manuscriptId', (int)$manuscriptId)->order_by('paymentId', 'DESC')->limit(1)->get()->row();
+        $this->global['pageTitle'] = 'Publishing Process - OJAS';
+        $this->global['activeMenu'] = 'publisherPublish';
+        $this->loadViews('publisher/publish_process', $this->global, $data, NULL);
+    }
+
+    public function finalizePublish($manuscriptId)
+    {
+        $this->publishProcess($manuscriptId);
+    }
+
+    public function submitFinalizePublish($manuscriptId)
+    {
+        if (!$this->guardPublisher()) { return; }
+
+        $issueId = (int)$this->input->post('issueId');
+        if ($issueId <= 0) {
+            $this->session->set_flashdata('error', 'Please select an issue.');
+            redirect('publisher/publish/process/' . (int)$manuscriptId);
+            return;
+        }
+        $feeStatus = $this->input->post('feeStatus', true) === 'need_fee' ? 'need_fee' : 'free';
+        $payload = [
+            'updatedBy' => (int)$this->vendorId,
+            'updatedDtm' => date('Y-m-d H:i:s'),
+            'publication_date' => date('Y-m-d')
+        ];
+
+        if ($issueId > 0) {
+            $issue = $this->issue_model->get_issue($issueId);
+            if (!empty($issue)) {
+                $payload['pub_volume'] = (int)$issue->volume;
+                $payload['pub_issue'] = (int)$issue->issueNumber;
+            }
+        }
+
+        $prefix = trim((string)$this->input->post('doi_prefix', true));
+        $suffix = trim((string)$this->input->post('doi_suffix', true));
+        $payload['doi_prefix'] = $prefix;
+        $payload['doi_suffix'] = $suffix;
+        $payload['full_doi'] = ($prefix && $suffix) ? ($prefix . '/' . $suffix) : null;
+        $payload['production_status'] = $feeStatus === 'free' ? 'doi_prepared' : 'metadata_verified';
+
+        $okStage = $this->editor_model->updateProductionStage((int)$manuscriptId, $payload);
+
+        $paymentOk = true;
+        if ($feeStatus === 'need_fee') {
+            $this->form_validation->set_rules('paymentMethod', 'Payment Method', 'trim|required');
+            $this->form_validation->set_rules('paymentAmount', 'Amount', 'required|numeric|greater_than_equal_to[0.01]');
+            if ($this->form_validation->run() === false) {
+                $this->session->set_flashdata('error', validation_errors('', ''));
+                redirect('publisher/publish/process/' . (int)$manuscriptId);
+                return;
+            }
+            $paymentOk = $this->editor_model->savePaymentAction(
+                (int)$manuscriptId,
+                (int)$this->vendorId,
+                $this->input->post('paymentMethod', true),
+                (float)$this->input->post('paymentAmount'),
+                $this->input->post('paymentOther', true)
+            );
+        } else {
+            $paymentOk = $this->editor_model->savePaymentAction((int)$manuscriptId, (int)$this->vendorId, 'free', 0.0, 'No publication fee required.');
+        }
+
+        $this->session->set_flashdata(($okStage && $paymentOk) ? 'success' : 'error', ($okStage && $paymentOk) ? 'Publishing process saved. You can publish once fee status is eligible.' : 'Failed to save publishing process.');
+        redirect('publisher/publish/process/' . (int)$manuscriptId);
+    }
+
+    public function doPublish($manuscriptId)
+    {
+        if (!$this->guardPublisher()) { return; }
+        $payment = $this->db->select('*')->from('tbl_manuscript_payments')->where('manuscriptId', (int)$manuscriptId)->order_by('paymentId', 'DESC')->limit(1)->get()->row();
+        if (!$payment || !in_array((string)$payment->paymentStatus, ['free', 'paid'], true)) {
+            $this->session->set_flashdata('error', 'Cannot publish yet. Payment is pending.');
+            redirect('publisher/publish/process/' . (int)$manuscriptId);
+            return;
+        }
+        if (!$this->editor_model->hasPublishedIssue()) {
+            $this->session->set_flashdata('error', 'Cannot publish yet. Please publish at least one journal issue first.');
+            redirect('publisher/publish/process/' . (int)$manuscriptId);
+            return;
+        }
+        $ok = $this->editor_model->publishFromPayment((int)$manuscriptId, (int)$this->vendorId);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Manuscript published successfully.' : 'Cannot publish yet. If payment is required, wait for author payment.');
+        redirect('publisher/publish/process/' . (int)$manuscriptId);
     }
 
     public function publishedContent()
