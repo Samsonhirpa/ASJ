@@ -49,6 +49,16 @@
                             <strong>Keywords:</strong> <?= $manuscript->keywords ?>
                         </div>
                         
+                        <?php if($manuscript->status == 'revision_required'): ?>
+                        <?php $daysLeft = (isset($manuscript->reviewDueDate) && !empty($manuscript->reviewDueDate)) ? (int)floor((strtotime($manuscript->reviewDueDate) - strtotime(date('Y-m-d'))) / 86400) : null; ?>
+                        <div class="alert alert-warning" style="border-radius:10px;">
+                            <strong>Revision Pending</strong> |
+                            <strong>Round:</strong> <?= !empty($manuscript->roundNumber) ? (int)$manuscript->roundNumber : 1 ?> |
+                            <strong>Countdown:</strong>
+                            <?php if ($daysLeft === null): ?>-<?php elseif ($daysLeft >= 0): ?><?= $daysLeft ?> day(s) left<?php else: ?>Overdue by <?= abs($daysLeft) ?> day(s)<?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+
                         <div style="margin-bottom: 30px;">
                             <h4 style="font-weight: 600;">Abstract</h4>
                             <div style="background: #f8fafc; padding: 20px; border-radius: 10px;">
@@ -194,7 +204,7 @@
                     
                     <div class="box-body" style="padding: 20px;">
                         <a href="<?= base_url('author/manuscript/revision-notifications') ?>" class="btn btn-warning btn-block" style="border-radius: 8px; padding: 12px;">
-                            <i class="fa fa-edit"></i> Open Revision Notification Page
+                            <i class="fa fa-edit"></i> Revise Manuscript Now
                         </a>
                     </div>
                 </div>
