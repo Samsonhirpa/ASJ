@@ -457,6 +457,7 @@
       </header>
       
       <!-- Left side column - WIDER SIDEBAR with PROFILE PICTURE -->
+      <!-- Sidebar moved into header.php; sidebar.php is deprecated and removed. -->
       <aside class="main-sidebar">
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
