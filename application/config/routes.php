@@ -211,6 +211,7 @@ $route['editor/payment/publish/(:num)'] = 'editor/manuscript/publishFromPayment/
 $route['editor/final-decisions'] = 'editor/manuscript/finalEditorialDecisions';
 $route['editor/final-decisions/apply/(:num)'] = 'editor/manuscript/applyFinalEditorialDecision/$1';
 $route['editor/production-stage'] = 'editor/manuscript/productionStage';
+$route['editor/production-stage/process/(:num)'] = 'editor/manuscript/productionProcess/$1';
 $route['editor/production-stage/save/(:num)'] = 'editor/manuscript/saveProductionStep/$1';
 $route['editor/board'] = 'editor/chief/board';
 $route['editor/ethics'] = 'editor/chief/ethics';
