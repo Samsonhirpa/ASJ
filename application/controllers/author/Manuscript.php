@@ -185,6 +185,7 @@ class Manuscript extends BaseController
         // Get current user data to display as first author
         $currentUser = $this->user_model->getUserInfo($this->vendorId);
         $data['currentUser'] = $currentUser;
+        $data['authorDefaults'] = $this->getAuthorDefaultsFromAccount($currentUser);
         $data['institutionSuggestions'] = $this->getInstitutionSuggestions();
         
         $this->global['pageTitle'] = 'Add Authors - OJAS';
@@ -246,8 +247,9 @@ class Manuscript extends BaseController
         // Check if this is a new author (not in system)
         $email = isset($emails[$index]) ? trim($emails[$index]) : '';
         $institution = isset($institutions[$index]) ? trim($institutions[$index]) : '';
-        if ($email === '' || $institution === '') {
-            $this->session->set_flashdata('error', 'Email and Institution are mandatory for every author.');
+        $country = isset($countries[$index]) ? trim($countries[$index]) : '';
+        if ($email === '' || $institution === '' || $country === '') {
+            $this->session->set_flashdata('error', 'Email, Institution, and Country are mandatory for every author.');
             redirect('author/manuscript/step2');
         }
 
@@ -261,7 +263,7 @@ class Manuscript extends BaseController
                 'name' => $fullName,
                 'email' => $email,
                 'institution' => $institution,
-                'country' => isset($countries[$index]) ? $countries[$index] : '',
+                'country' => $country,
                 'orcid' => isset($orcids[$index]) ? $orcids[$index] : '',
                 'title' => $title,
                 'firstName' => $first_name,
@@ -280,6 +282,7 @@ class Manuscript extends BaseController
                 'name' => $fullName,
                 'email' => $email,
                 'institution' => $institution,
+                'country' => $country,
                 'title' => $title,
                 'firstName' => $first_name,
                 'middleName' => $middle_name,
@@ -491,6 +494,43 @@ class Manuscript extends BaseController
         }, $rows)));
     }
     
+
+    private function getAuthorDefaultsFromAccount($currentUser)
+    {
+        $defaults = array(
+            'title' => 'Mr',
+            'firstName' => '',
+            'middleName' => '',
+            'lastName' => '',
+            'email' => '',
+            'country' => ''
+        );
+
+        if (!$currentUser) {
+            return $defaults;
+        }
+
+        $name = trim((string)$currentUser->name);
+        if ($name !== '') {
+            $parts = preg_split('/\s+/', $name);
+            if (count($parts) === 1) {
+                $defaults['firstName'] = $parts[0];
+            } elseif (count($parts) === 2) {
+                $defaults['firstName'] = $parts[0];
+                $defaults['lastName'] = $parts[1];
+            } else {
+                $defaults['firstName'] = array_shift($parts);
+                $defaults['lastName'] = array_pop($parts);
+                $defaults['middleName'] = implode(' ', $parts);
+            }
+        }
+
+        $defaults['email'] = isset($currentUser->email) ? (string)$currentUser->email : '';
+        $defaults['country'] = isset($currentUser->country) ? (string)$currentUser->country : '';
+
+        return $defaults;
+    }
+
     /**
      * Create author details table if not exists
      */
