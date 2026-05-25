@@ -76,12 +76,12 @@ class Manuscript extends BaseController
             redirect('managing-editor/pending');
         }
 
-        $scoreRules = 'required|integer|greater_than_equal_to[0]|less_than_equal_to[25]';
-        $this->form_validation->set_rules('formattingScore', 'Formatting Score', $scoreRules);
-        $this->form_validation->set_rules('completenessScore', 'Completeness Score', $scoreRules);
-        $this->form_validation->set_rules('qualityScore', 'Quality Score', $scoreRules);
-        $this->form_validation->set_rules('templateScore', 'Template Check Score', $scoreRules);
+        $this->form_validation->set_rules('formattingNotes', 'Formatting Notes', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('completenessNotes', 'Completeness Notes', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('qualityNotes', 'Quality Notes', 'trim|required|min_length[3]');
+        $this->form_validation->set_rules('templateNotes', 'Template Check Notes', 'trim|required|min_length[3]');
         $this->form_validation->set_rules('comments', 'Comments', 'trim|required|min_length[10]');
+        $this->form_validation->set_rules('meDecision', 'Managing Editor Decision', 'required|in_list[approved,rejected]');
 
         if ($this->form_validation->run() === false) {
             $this->session->set_flashdata('error', validation_errors('', ''));
@@ -94,23 +94,28 @@ class Manuscript extends BaseController
         }
 
         $scores = [
-            'formattingScore' => (int)$this->input->post('formattingScore'),
-            'completenessScore' => (int)$this->input->post('completenessScore'),
-            'qualityScore' => (int)$this->input->post('qualityScore'),
-            'templateScore' => (int)$this->input->post('templateScore')
+            'formattingScore' => 0,
+            'completenessScore' => 0,
+            'qualityScore' => 0,
+            'templateScore' => 0
         ];
+        $meDecision = $this->input->post('meDecision', true);
+        $compiledComments = "Formatting Notes:\n" . $this->input->post('formattingNotes', true)
+            . "\n\nCompleteness Notes:\n" . $this->input->post('completenessNotes', true)
+            . "\n\nQuality Notes:\n" . $this->input->post('qualityNotes', true)
+            . "\n\nTemplate Check Notes:\n" . $this->input->post('templateNotes', true)
+            . "\n\nGeneral Comments:\n" . $this->input->post('comments', true);
 
         $ok = $this->editor_model->saveManagingEditorScreening(
             $manuscriptId,
             (int)$this->vendorId,
             $scores,
-            $this->input->post('comments', true),
-            $uploadPath
+            $compiledComments,
+            $uploadPath,
+            $meDecision
         );
-
-        $total = array_sum($scores);
         $message = $ok
-            ? 'Managing Editor screening saved with a total score of ' . $total . '/100.'
+            ? 'Managing Editor screening saved as ' . ucfirst($meDecision) . '.'
             : 'Failed to save Managing Editor screening. Confirm the manuscript was accepted by the Editor-in-Chief.';
         $this->session->set_flashdata($ok ? 'success' : 'error', $message);
         redirect('managing-editor/pending');
