@@ -4,7 +4,7 @@
 <div class="box box-default"><div class="box-body">
 <form method="get" class="form-inline" action="<?= base_url('editor/me-results') ?>">
 <select name="status" class="form-control">
-<?php foreach (['all'=>'All','passed'=>'Passed','failed'=>'Failed'] as $k=>$v): ?>
+<?php foreach (['all'=>'All','passed'=>'Approved','failed'=>'Rejected'] as $k=>$v): ?>
 <option value="<?= $k ?>" <?= $status===$k?'selected':'' ?>><?= $v ?></option>
 <?php endforeach; ?>
 </select>
@@ -18,7 +18,7 @@
 <td><?= html_escape($m->title) ?></td>
 <td><?= (int)$m->totalScore ?>/100</td>
 <td><?= html_escape($m->managingEditorName ?: '-') ?></td>
-<td><span class="label label-<?= $m->meResultStatus==='passed'?'success':'danger' ?>"><?= html_escape($m->meResultStatus) ?></span></td>
+<td><span class="label label-<?= $m->meResultStatus==='passed'?'success':'danger' ?>"><?= html_escape($m->meResultStatus==='passed' ? 'approved' : 'rejected') ?></span></td>
 <?php $isAssigned = !empty($m->assignedAssociateEditorName); ?>
 <td>
 <?php if ($isAssigned): ?>
@@ -35,7 +35,7 @@
 <button name="decision" value="approved" class="btn btn-xs btn-success" <?= $isRejected ? 'disabled' : '' ?>>Approve</button>
 <button name="decision" value="rejected" class="btn btn-xs btn-danger" <?= $isApproved ? 'disabled' : '' ?>>Reject</button>
 </form>
-<?php if($m->meResultStatus==='passed' && $isApproved && !$isRejected): ?>
+<?php if($isApproved && !$isRejected): ?>
 <a class="btn btn-xs btn-primary" href="<?= base_url('editor/me-results/assign/'.$m->manuscriptId) ?>">Assign</a>
 <?php endif; ?>
 <a class="btn btn-xs btn-info" href="<?= base_url('editor/me-results/view/'.$m->manuscriptId) ?>">View</a>
