@@ -248,10 +248,6 @@ class Manuscript extends BaseController
         $email = isset($emails[$index]) ? trim($emails[$index]) : '';
         $institution = isset($institutions[$index]) ? trim($institutions[$index]) : '';
         $country = isset($countries[$index]) ? trim($countries[$index]) : '';
-        if ($email === '' || $institution === '' || $country === '') {
-            $this->session->set_flashdata('error', 'Email, Institution, and Country are mandatory for every author.');
-            redirect('author/manuscript/step2');
-        }
 
         $title = isset($titles[$index]) ? trim($titles[$index]) : '';
         $middle_name = isset($middle_names[$index]) ? trim($middle_names[$index]) : '';
