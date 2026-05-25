@@ -3,6 +3,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Editor_model extends CI_Model
 {
+    private function userDisplayNameSql($alias = 'u')
+    {
+        return "TRIM(CONCAT_WS(' ', NULLIF({$alias}.first_name, ''), NULLIF({$alias}.middle_name, ''), NULLIF({$alias}.last_name, '')))";
+    }
+
     public function __construct()
     {
         parent::__construct();
@@ -229,9 +234,10 @@ class Editor_model extends CI_Model
 
     public function getAllManuscripts()
     {
-        $this->db->select('m.*, u.name as authorName,
+        $authorDisplayName = $this->userDisplayNameSql('u');
+        $this->db->select("m.*, COALESCE(NULLIF({$authorDisplayName}, ''), u.name) as authorName,
             (SELECT COUNT(*) FROM tbl_reviewer_assignments ra WHERE ra.manuscriptId = m.manuscriptId AND ra.isDeleted = 0) as reviewerCount,
-            (SELECT COUNT(*) FROM tbl_reviewer_assignments ra WHERE ra.manuscriptId = m.manuscriptId AND ra.status = "completed" AND ra.isDeleted = 0) as completedReviews');
+            (SELECT COUNT(*) FROM tbl_reviewer_assignments ra WHERE ra.manuscriptId = m.manuscriptId AND ra.status = \"completed\" AND ra.isDeleted = 0) as completedReviews", false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_users u', 'u.userId = m.submittedBy', 'left');
         $this->db->where('m.isDeleted', 0);
@@ -250,7 +256,8 @@ class Editor_model extends CI_Model
 
     public function getManuscript($manuscriptId)
     {
-        $this->db->select('m.*, u.name as authorName, u.email as authorEmail');
+        $authorDisplayName = $this->userDisplayNameSql('u');
+        $this->db->select("m.*, COALESCE(NULLIF({$authorDisplayName}, ''), u.name) as authorName, u.email as authorEmail", false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_users u', 'u.userId = m.submittedBy', 'left');
         $this->db->where('m.manuscriptId', $manuscriptId);
@@ -444,7 +451,8 @@ Scope Screening:
 
     public function getManagingEditorPendingManuscripts($filters = [])
     {
-        $this->db->select('m.*, u.name as authorName, u.email as authorEmail, mes.totalScore, mes.resultStatus as meResultStatus, mes.screenedDtm');
+        $authorDisplayName = $this->userDisplayNameSql('u');
+        $this->db->select("m.*, COALESCE(NULLIF({$authorDisplayName}, ''), u.name) as authorName, u.email as authorEmail, mes.totalScore, mes.resultStatus as meResultStatus, mes.screenedDtm", false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_users u', 'u.userId = m.submittedBy', 'left');
         $this->db->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'left');
@@ -462,7 +470,7 @@ Scope Screening:
             $this->db->group_start();
             $this->db->like('m.title', $filters['q']);
             $this->db->or_like('m.manuscriptNumber', $filters['q']);
-            $this->db->or_like('u.name', $filters['q']);
+            $this->db->or_like("COALESCE(NULLIF({$authorDisplayName}, ''), u.name)", $filters['q'], 'both', false);
             $this->db->group_end();
         }
 
@@ -979,7 +987,8 @@ Scope Screening:
 
     public function getFirstEditorialDecisionManuscripts($viewerId, $roleId, $isAdmin = false)
     {
-        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionBy, m.firstEditorialDecisionDtm, m.revisionDueDtm, m.decisionLetter, author.name as authorName, ae.name as associateEditorName');
+        $authorDisplayName = $this->userDisplayNameSql('author');
+        $this->db->select("m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionBy, m.firstEditorialDecisionDtm, m.revisionDueDtm, m.decisionLetter, COALESCE(NULLIF({$authorDisplayName}, ''), author.name) as authorName, ae.name as associateEditorName", false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_users author', 'author.userId = m.submittedBy', 'left');
         $this->db->join('tbl_users ae', 'ae.userId = m.firstEditorialDecisionBy', 'left');
@@ -996,7 +1005,8 @@ Scope Screening:
 
     public function getAcceptedFirstDecisionManuscripts()
     {
-        return $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionDtm, ae.name as associateEditorName, author.name as authorName')
+        $authorDisplayName = $this->userDisplayNameSql('author');
+        return $this->db->select("m.manuscriptId, m.manuscriptNumber, m.title, m.status, m.firstEditorialDecision, m.firstEditorialDecisionDtm, ae.name as associateEditorName, COALESCE(NULLIF({$authorDisplayName}, ''), author.name) as authorName", false)
             ->from('tbl_manuscripts m')
             ->join('tbl_users ae', 'ae.userId = m.firstEditorialDecisionBy', 'left')
             ->join('tbl_users author', 'author.userId = m.submittedBy', 'left')
@@ -1056,7 +1066,8 @@ Scope Screening:
 
     public function getProductionQueue($publisherId, $isAdmin = false)
     {
-        $this->db->select('m.*, author.name as authorName');
+        $authorDisplayName = $this->userDisplayNameSql('author');
+        $this->db->select("m.*, COALESCE(NULLIF({$authorDisplayName}, ''), author.name) as authorName", false);
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_users author', 'author.userId = m.submittedBy', 'left');
         $this->db->where('m.isDeleted', 0);
