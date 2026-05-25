@@ -39,9 +39,14 @@ class Manuscript extends BaseController
 
     public function screened()
     {
-        $data['filters'] = ['status' => 'all', 'q' => '', 'articleType' => ''];
+        $status = $this->input->get('status', true) ?: 'all';
+        if (!in_array($status, ['all', 'approved', 'rejected'], true)) {
+            $status = 'all';
+        }
+        $mappedStatus = $status === 'approved' ? 'passed' : ($status === 'rejected' ? 'failed' : 'all');
+        $data['filters'] = ['status' => $status, 'q' => '', 'articleType' => ''];
         $data['stats'] = $this->editor_model->getManagingEditorDashboardStats();
-        $data['manuscripts'] = $this->editor_model->getManagingEditorPendingManuscripts(['status' => 'passed']);
+        $data['manuscripts'] = $this->editor_model->getManagingEditorPendingManuscripts(['status' => $mappedStatus]);
         $this->global['pageTitle'] = 'Screened Manuscripts - OJAS';
         $this->global['activeMenu'] = 'meScreened';
         $this->loadViews('managing_editor/screened', $this->global, $data, NULL);

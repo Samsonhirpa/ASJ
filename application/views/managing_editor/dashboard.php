@@ -6,8 +6,8 @@
         <div class="row">
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-aqua"><div class="inner"><h3><?= (int)$stats['totalAcceptedByEic'] ?></h3><p>EIC Accepted</p></div><div class="icon"><i class="fa fa-check-circle"></i></div></div></div>
             <div class="col-lg-3 col-xs-6"><div class="small-box bg-yellow"><div class="inner"><h3><?= (int)$stats['pending'] ?></h3><p>Pending ME Screening</p></div><div class="icon"><i class="fa fa-clock-o"></i></div></div></div>
-            <div class="col-lg-3 col-xs-6"><div class="small-box bg-green"><div class="inner"><h3><?= (int)$stats['passed'] ?></h3><p>Passed</p></div><div class="icon"><i class="fa fa-thumbs-up"></i></div></div></div>
-            <div class="col-lg-3 col-xs-6"><div class="small-box bg-red"><div class="inner"><h3><?= (int)$stats['failed'] ?></h3><p>Failed</p></div><div class="icon"><i class="fa fa-times-circle"></i></div></div></div>
+            <div class="col-lg-3 col-xs-6"><div class="small-box bg-green"><div class="inner"><h3><?= (int)$stats['passed'] ?></h3><p>Approved</p></div><div class="icon"><i class="fa fa-thumbs-up"></i></div></div></div>
+            <div class="col-lg-3 col-xs-6"><div class="small-box bg-red"><div class="inner"><h3><?= (int)$stats['failed'] ?></h3><p>Rejected</p></div><div class="icon"><i class="fa fa-times-circle"></i></div></div></div>
         </div>
 
         <div class="box box-warning">

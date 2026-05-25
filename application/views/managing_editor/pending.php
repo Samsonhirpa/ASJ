@@ -10,7 +10,7 @@
                     <div class="row">
                         <div class="col-md-4"><label>Search</label><input type="text" name="q" value="<?= html_escape($filters['q']) ?>" class="form-control" placeholder="Title, manuscript #, or author"></div>
                         <div class="col-md-3"><label>Status</label><select name="status" class="form-control">
-                            <?php foreach (['pending' => 'Pending', 'passed' => 'Passed', 'failed' => 'Failed', 'all' => 'All EIC Accepted'] as $value => $label): ?>
+                            <?php foreach (['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected', 'all' => 'All EIC Accepted'] as $value => $label): ?>
                                 <option value="<?= $value ?>" <?= $filters['status'] === $value ? 'selected' : '' ?>><?= $label ?></option>
                             <?php endforeach; ?>
                         </select></div>
@@ -23,8 +23,8 @@
 
         <div class="row">
             <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-yellow"><i class="fa fa-clock-o"></i></span><div class="info-box-content"><span class="info-box-text">Pending</span><span class="info-box-number"><?= (int)$stats['pending'] ?></span></div></div></div>
-            <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-green"><i class="fa fa-check"></i></span><div class="info-box-content"><span class="info-box-text">Passed</span><span class="info-box-number"><?= (int)$stats['passed'] ?></span></div></div></div>
-            <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-red"><i class="fa fa-times"></i></span><div class="info-box-content"><span class="info-box-text">Failed</span><span class="info-box-number"><?= (int)$stats['failed'] ?></span></div></div></div>
+            <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-green"><i class="fa fa-check"></i></span><div class="info-box-content"><span class="info-box-text">Approved</span><span class="info-box-number"><?= (int)$stats['passed'] ?></span></div></div></div>
+            <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-red"><i class="fa fa-times"></i></span><div class="info-box-content"><span class="info-box-text">Rejected</span><span class="info-box-number"><?= (int)$stats['failed'] ?></span></div></div></div>
             <div class="col-md-3"><div class="info-box"><span class="info-box-icon bg-aqua"><i class="fa fa-list"></i></span><div class="info-box-content"><span class="info-box-text">EIC Accepted</span><span class="info-box-number"><?= (int)$stats['totalAcceptedByEic'] ?></span></div></div></div>
         </div>
 
@@ -41,7 +41,7 @@
                             <td><?= html_escape($m->authorName ?: '-') ?></td>
                             <td><?= html_escape(ucwords(str_replace('_', ' ', $m->articleType))) ?></td>
                             <td><span class="label label-success">Accepted by EIC</span></td>
-                            <td><?php if (!empty($m->meResultStatus)): ?><span class="label label-<?= $m->meResultStatus === 'passed' ? 'success' : 'danger' ?>"><?= html_escape($m->meResultStatus) ?> (<?= (int)$m->totalScore ?>/100)</span><?php else: ?><span class="label label-warning">pending</span><?php endif; ?></td>
+                            <td><?php if (!empty($m->meResultStatus)): ?><span class="label label-<?= $m->meResultStatus === 'passed' ? 'success' : 'danger' ?>"><?= html_escape($m->meResultStatus === 'passed' ? 'approved' : 'rejected') ?></span><?php else: ?><span class="label label-warning">pending</span><?php endif; ?></td>
                             <td><?= date('d M Y', strtotime($m->createdDtm)) ?></td>
                             <td><a class="btn btn-xs btn-primary" href="<?= base_url('managing-editor/pending/screen/'.$m->manuscriptId) ?>"><i class="fa fa-search"></i> Screen</a></td>
                         </tr>

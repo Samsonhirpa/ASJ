@@ -460,6 +460,11 @@ Scope Screening:
         $this->db->where('m.eicScreeningDecision', 'accepted');
 
         $status = isset($filters['status']) ? $filters['status'] : 'pending';
+        if ($status === 'approved') {
+            $status = 'passed';
+        } elseif ($status === 'rejected') {
+            $status = 'failed';
+        }
         if ($status === 'pending') {
             $this->db->where('(m.managingEditorScreeningStatus IS NULL OR m.managingEditorScreeningStatus = "pending")', null, false);
         } elseif (in_array($status, ['passed', 'failed'], true)) {
