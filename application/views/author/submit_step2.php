@@ -185,13 +185,6 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>First Name</label>
-                                                <input type="text" class="form-control" name="first_name[]" placeholder="Enter first name"
-                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
                                                 <label>Title</label>
                                                 <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                                     <?php $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof']; foreach($titles as $title): ?>
@@ -202,8 +195,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Last Name</label>
-                                                <input type="text" class="form-control" name="last_name[]" placeholder="Enter last name"
+                                                <label>First Name</label>
+                                                <input type="text" class="form-control" name="first_name[]" placeholder="Enter first name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -220,7 +213,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email <span style="color: #dc3545;">*</span></label>
-                                                <input type="email" class="form-control" name="email[]" placeholder="email@example.com" required
+                                                <input type="email" class="form-control" name="email[]" placeholder="email@example.com"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -229,7 +222,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Institution <span style="color: #dc3545;">*</span></label>
-                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" placeholder="Institution/Organization" required
+                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" placeholder="Institution/Organization"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -316,6 +309,7 @@ $(document).ready(function() {
         
         // Update radio value
         newAuthor.find('.corresponding-radio').val('new_' + authorCount);
+        newAuthor.find('input[name="email[]"], input[name="institution[]"], select[name="country[]"]').attr('required', true);
         
         // Add to container
         $('#authorsContainer').append(newAuthor);
