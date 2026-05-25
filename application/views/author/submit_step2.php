@@ -239,7 +239,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Country <span style="color: #dc3545;">*</span></label>
-                                                <select class="form-control country-select" name="country[]" required style="border-radius: 8px; padding: 10px;">
+                                                <select class="form-control country-select" name="country[]" style="border-radius: 8px; padding: 10px;">
                                                     <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
