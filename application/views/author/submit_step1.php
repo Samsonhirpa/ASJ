@@ -44,7 +44,7 @@
                             <!-- Article Type -->
                             <div class="form-group">
                                 <label for="articleType" style="font-weight: 600;">Article Type <span style="color: #dc3545;">*</span></label>
-                                <select class="form-control" id="articleType" name="articleType" required style="border-radius: 8px; padding: 10px;">
+                                <select class="form-control" id="articleType" name="articleType" required style="border-radius: 8px;">
                                     <option value="">-- Select Article Type --</option>
                                     <?php foreach($articleTypes as $key => $value): ?>
                                     <option value="<?= $key ?>" <?= set_value('articleType') == $key ? 'selected' : '' ?>><?= $value ?></option>
@@ -57,7 +57,7 @@
                             <!-- Thematic Area / Section -->
                             <div class="form-group">
                                 <label for="thematicArea" style="font-weight: 600;">Thematic Area (Section) <span style="color: #dc3545;">*</span></label>
-                                <select class="form-control" id="thematicArea" name="thematicArea" required style="border-radius: 8px; padding: 10px;">
+                                <select class="form-control" id="thematicArea" name="thematicArea" required style="border-radius: 8px;">
                                     <option value="">-- Select Thematic Area / Section --</option>
                                     <?php foreach($thematicAreas as $key => $value): ?>
                                     <option value="<?= $key ?>" <?= set_value('thematicArea') == $key ? 'selected' : '' ?>><?= $value ?></option>
@@ -73,7 +73,7 @@
                                 <input type="text" class="form-control" id="title" name="title" 
                                        value="<?= set_value('title') ?>" required
                                        placeholder="Enter the full title of your manuscript"
-                                       style="border-radius: 8px; padding: 10px;">
+                                       style="border-radius: 8px; ">
                                 <?= form_error('title', '<div class="text-danger">', '</div>') ?>
                                 <small class="text-muted"><i class="fa fa-info-circle"></i> Maximum 500 characters</small>
                             </div>

@@ -89,40 +89,45 @@
                                     </div>
                                     
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>First Name</label>
-                                                <input type="text" class="form-control" name="first_name[]" value="<?= html_escape($authorDefaults['firstName']) ?>"
-                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;" required>
-                                            </div>
-                                        </div>
+                                      
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Title</label>
-                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da;">
                                                     <?php $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof']; foreach($titles as $title): ?>
                                                         <option value="<?= $title ?>" <?= ($authorDefaults['title'] === $title) ? 'selected' : '' ?>><?= $title ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                          <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Last Name</label>
-                                                <input type="text" class="form-control" name="last_name[]" value="<?= html_escape($authorDefaults['lastName']) ?>" placeholder="Enter last name" required
-                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                                <label>First Name</label>
+                                                <input type="text" class="form-control" name="first_name[]" value="<?= html_escape($authorDefaults['firstName']) ?>"
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;" required>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
+
+                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Middle Name</label>
                                                 <input type="text" class="form-control" name="middle_name[]" value="<?= html_escape($authorDefaults['middleName']) ?>" placeholder="Enter middle name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
+                                     
+                                   
+                                    
+                                    
+                                          <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Last Name</label>
+                                                <input type="text" class="form-control" name="last_name[]" value="<?= html_escape($authorDefaults['lastName']) ?>" placeholder="Enter last name" required
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                            </div>
+                                        </div>
+                                         </div>
+                                        <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email <span style="color: #dc3545;">*</span></label>
@@ -151,7 +156,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Country <span style="color: #dc3545;">*</span></label>
-                                                <select class="form-control country-select" name="country[]" data-selected="<?= html_escape($authorDefaults['country']) ?>" style="border-radius: 8px; padding: 10px;">
+                                                <select class="form-control country-select" name="country[]" data-selected="<?= html_escape($authorDefaults['country']) ?>" style="border-radius: 8px; required">
                                                     <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
@@ -186,7 +191,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Title</label>
-                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da;">
                                                     <?php $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof']; foreach($titles as $title): ?>
                                                         <option value="<?= $title ?>" <?= ($authorDefaults['title'] === $title) ? 'selected' : '' ?>><?= $title ?></option>
                                                     <?php endforeach; ?>
@@ -200,13 +205,19 @@
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="row">
+                                   
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Middle Name</label>
                                                 <input type="text" class="form-control" name="middle_name[]" placeholder="Enter middle name"
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                            </div>
+                                        </div>
+
+                                          <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Last Name</label>
+                                                <input type="text" class="form-control" name="last_name[]" placeholder="Enter last name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -217,8 +228,7 @@
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
+                                    
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Institution <span style="color: #dc3545;">*</span></label>
@@ -239,7 +249,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Country <span style="color: #dc3545;">*</span></label>
-                                                <select class="form-control country-select" name="country[]" style="border-radius: 8px; padding: 10px;">
+                                                <select class="form-control country-select" name="country[]" style="border-radius: 8px;">
                                                     <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
