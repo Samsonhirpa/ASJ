@@ -60,16 +60,16 @@
                                     <i class="fa fa-file-pdf-o" style="color: #dc3545;"></i> 
                                     Main Manuscript File <span style="color: #dc3545;">*</span>
                                 </label>
-                                <p class="text-muted" style="margin-bottom: 15px;">Upload your manuscript in PDF, DOC, or DOCX format (max 100MB)</p>
+                                <p class="text-muted" style="margin-bottom: 15px;">Upload your manuscript in PDF, DOC, DOCX, or ZIP format (max 100MB)</p>
                                 
                                 <!-- Hidden file input -->
-                                <input type="file" id="main_file" name="main_file" accept=".pdf,.doc,.docx" style="display: none;" required>
+                                <input type="file" id="main_file" name="main_file" accept=".pdf,.doc,.docx,.zip" style="display: none;" required>
                                 
                                 <!-- Custom upload area -->
                                 <div class="upload-area" id="mainUploadArea" style="border: 2px dashed #2c5f2d; border-radius: 10px; padding: 30px; text-align: center; background: white; cursor: pointer; transition: all 0.3s;">
                                     <i class="fa fa-cloud-upload" style="font-size: 3em; color: #2c5f2d;"></i>
                                     <h4 style="margin: 15px 0 5px;">Click to Upload Main Manuscript</h4>
-                                    <p style="color: #6c757d;">Supported formats: PDF, DOC, DOCX (Max 100MB)</p>
+                                    <p style="color: #6c757d;">Supported formats: PDF, DOC, DOCX, ZIP (Max 100MB)</p>
                                     <button type="button" class="btn btn-sm" id="mainBrowseBtn" style="background: #2c5f2d; color: white; border-radius: 20px; padding: 8px 25px; margin-top: 10px; border: none; cursor: pointer;">
                                         <i class="fa fa-folder-open"></i> Browse Files
                                     </button>
@@ -94,7 +94,7 @@
                                 <p class="text-muted" style="margin-bottom: 15px;">Upload figures, tables, or images separately (max 100MB each)</p>
                                 
                                 <!-- Hidden file input -->
-                                <input type="file" id="figures_files" name="figures_files[]" multiple accept=".jpg,.jpeg,.png,.gif,.tiff,.pdf" style="display: none;">
+                                <input type="file" id="figures_files" name="figures_files[]" multiple accept=".jpg,.jpeg,.png,.gif,.tiff,.pdf,.zip" style="display: none;">
                                 
                                 <!-- Custom upload area -->
                                 <div class="upload-area" id="figuresUploadArea" style="border: 2px dashed #17a2b8; border-radius: 10px; padding: 30px; text-align: center; background: white; cursor: pointer; transition: all 0.3s;">
@@ -142,7 +142,7 @@
                                 <div class="checkbox">
                                     <label style="font-weight: 500;">
                                         <input type="checkbox" name="declaration" required> 
-                                        I confirm that this manuscript is original, has not been published elsewhere, and all authors have approved the submission.
+                                        I agree that this manuscript is original, has not been published elsewhere, and all authors have approved the submission.
                                     </label>
                                 </div>
                             </div>
@@ -157,6 +157,12 @@
                             <button type="submit" class="btn" id="submitBtn" style="background: #2c5f2d; color: white; padding: 12px 40px; border-radius: 8px; border: none; margin-left: 10px; cursor: pointer;"
                                     onmouseover="this.style.background='#1e4b1f'" onmouseout="this.style.background='#2c5f2d'">
                                 <i class="fa fa-check"></i> Submit Manuscript
+                            </button>
+                            <a href="<?= base_url('author/manuscript/preview') ?>" class="btn" style="background: #17a2b8; color: white; padding: 12px 20px; border-radius: 8px; border: none; margin-left: 10px; text-decoration:none;">
+                                <i class="fa fa-eye"></i> Preview
+                            </a>
+                            <button type="submit" class="btn" name="save_draft" value="1" formaction="<?= base_url('author/manuscript/saveDraft') ?>" style="background: #ffc107; color: #333; padding: 12px 20px; border-radius: 8px; border: none; margin-left: 10px; cursor: pointer;">
+                                <i class="fa fa-save"></i> Save Draft
                             </button>
                         </div>
                     </form>
