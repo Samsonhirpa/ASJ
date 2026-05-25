@@ -84,8 +84,28 @@
             <div class="section-title">Basic Information</div>
             <div class="row">
                 <div class="col-sm-6 form-group">
-                    <label for="name">Full Name *</label>
-                    <input type="text" class="form-control" id="name" name="name" value="<?php echo set_value('name'); ?>" required>
+                    <label for="title">Title *</label>
+                    <select class="form-control" id="title" name="title" required>
+                        <option value="">Select title</option>
+                        <?php foreach (['Mr','Mrs','Ms','Miss','Dr','Prof'] as $t): ?>
+                            <option value="<?php echo $t; ?>" <?php echo set_select('title', $t); ?>><?php echo $t; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="first_name">First Name *</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo set_value('first_name'); ?>" required>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="middle_name">Middle Name *</label>
+                    <input type="text" class="form-control" id="middle_name" name="middle_name" value="<?php echo set_value('middle_name'); ?>" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6 form-group">
+                    <label for="last_name">Last Name *</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo set_value('last_name'); ?>" required>
                 </div>
                 <div class="col-sm-6 form-group">
                     <label for="email">Email *</label>
@@ -95,35 +115,35 @@
 
             <div class="row">
                 <div class="col-sm-6 form-group">
-                    <label for="mobile">Phone Number</label>
-                    <input type="text" class="form-control" id="mobile" name="mobile" value="<?php echo set_value('mobile'); ?>">
+                    <label for="mobile">Phone Number *</label>
+                    <input type="text" class="form-control" id="mobile" name="mobile" value="<?php echo set_value('mobile'); ?>" required>
                 </div>
                 <div class="col-sm-6 form-group">
-                    <label for="orcid_id">ORCID ID</label>
-                    <input type="text" class="form-control" id="orcid_id" name="orcid_id" value="<?php echo set_value('orcid_id'); ?>">
+                    <label for="orcid_id">ORCID ID *</label>
+                    <input type="text" class="form-control" id="orcid_id" name="orcid_id" value="<?php echo set_value('orcid_id'); ?>" required>
                 </div>
             </div>
 
             <div class="section-title">Institution Details</div>
             <div class="row">
                 <div class="col-sm-6 form-group">
-                    <label for="institution">Institution</label>
-                    <input type="text" class="form-control" id="institution" name="institution" value="<?php echo set_value('institution'); ?>">
+                    <label for="institution">Institution *</label>
+                    <input type="text" class="form-control" id="institution" name="institution" value="<?php echo set_value('institution'); ?>" required>
                 </div>
                 <div class="col-sm-6 form-group">
-                    <label for="department">Department</label>
-                    <input type="text" class="form-control" id="department" name="department" value="<?php echo set_value('department'); ?>">
+                    <label for="department">Department *</label>
+                    <input type="text" class="form-control" id="department" name="department" value="<?php echo set_value('department'); ?>" required>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-6 form-group">
-                    <label for="country">Country</label>
-                    <input type="text" class="form-control" id="country" name="country" value="<?php echo set_value('country'); ?>">
+                    <label for="country">Country *</label>
+                    <input type="text" class="form-control" id="country" name="country" value="<?php echo set_value('country'); ?>" required>
                 </div>
                 <div class="col-sm-6 form-group">
-                    <label for="city">City</label>
-                    <input type="text" class="form-control" id="city" name="city" value="<?php echo set_value('city'); ?>">
+                    <label for="city">City *</label>
+                    <input type="text" class="form-control" id="city" name="city" value="<?php echo set_value('city'); ?>" required>
                 </div>
             </div>
 
