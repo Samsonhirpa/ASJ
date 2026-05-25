@@ -1542,3 +1542,11 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- Additional schema update for author registration name components
+ALTER TABLE `tbl_users`
+  ADD COLUMN `title` varchar(20) NOT NULL DEFAULT '' AFTER `name`,
+  ADD COLUMN `first_name` varchar(64) NOT NULL DEFAULT '' AFTER `title`,
+  ADD COLUMN `middle_name` varchar(64) NOT NULL DEFAULT '' AFTER `first_name`,
+  ADD COLUMN `last_name` varchar(64) NOT NULL DEFAULT '' AFTER `middle_name`;

@@ -200,14 +200,17 @@ class Login extends CI_Controller
     {
         $this->load->library('form_validation');
 
-        $this->form_validation->set_rules('name', 'Full Name', 'trim|required|max_length[128]');
+        $this->form_validation->set_rules('title', 'Title', 'trim|required|in_list[Mr,Mrs,Ms,Miss,Dr,Prof]');
+        $this->form_validation->set_rules('first_name', 'First Name', 'trim|required|max_length[64]');
+        $this->form_validation->set_rules('middle_name', 'Middle Name', 'trim|required|max_length[64]');
+        $this->form_validation->set_rules('last_name', 'Last Name', 'trim|required|max_length[64]');
         $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|max_length[128]');
-        $this->form_validation->set_rules('mobile', 'Phone Number', 'trim|max_length[20]');
-        $this->form_validation->set_rules('institution', 'Institution', 'trim|max_length[255]');
-        $this->form_validation->set_rules('department', 'Department', 'trim|max_length[255]');
-        $this->form_validation->set_rules('country', 'Country', 'trim|max_length[100]');
-        $this->form_validation->set_rules('city', 'City', 'trim|max_length[100]');
-        $this->form_validation->set_rules('orcid_id', 'ORCID ID', 'trim|max_length[50]');
+        $this->form_validation->set_rules('mobile', 'Phone Number', 'trim|required|max_length[20]');
+        $this->form_validation->set_rules('institution', 'Institution', 'trim|required|max_length[255]');
+        $this->form_validation->set_rules('department', 'Department', 'trim|required|max_length[255]');
+        $this->form_validation->set_rules('country', 'Country', 'trim|required|max_length[100]');
+        $this->form_validation->set_rules('city', 'City', 'trim|required|max_length[100]');
+        $this->form_validation->set_rules('orcid_id', 'ORCID ID', 'trim|required|max_length[50]');
         $this->form_validation->set_rules('password', 'Password', 'required|min_length[8]|max_length[32]');
         $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'required|matches[password]');
 
@@ -226,8 +229,18 @@ class Login extends CI_Controller
             return;
         }
 
+        $title = trim($this->security->xss_clean($this->input->post('title')));
+        $firstName = trim($this->security->xss_clean($this->input->post('first_name')));
+        $middleName = trim($this->security->xss_clean($this->input->post('middle_name')));
+        $lastName = trim($this->security->xss_clean($this->input->post('last_name')));
+        $fullName = trim($title . ' ' . $firstName . ' ' . $middleName . ' ' . $lastName);
+
         $userInfo = array(
-            'name' => trim($this->security->xss_clean($this->input->post('name'))),
+            'title' => $title,
+            'first_name' => $firstName,
+            'middle_name' => $middleName,
+            'last_name' => $lastName,
+            'name' => $fullName,
             'email' => $email,
             'mobile' => trim($this->security->xss_clean($this->input->post('mobile'))),
             'institution' => trim($this->security->xss_clean($this->input->post('institution'))),
