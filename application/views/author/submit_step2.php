@@ -92,56 +92,48 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>First Name</label>
-                                                <input type="text" class="form-control" name="first_name[]" value="<?= $this->session->userdata('name') ?>" readonly
-                                                       style="background: #e9ecef; border-radius: 8px;">
+                                                <input type="text" class="form-control" name="first_name[]" value="<?= html_escape($authorDefaults['firstName']) ?>"
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Title</label>
                                                 <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
-                                                    <option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option>
+                                                    <?php $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof']; foreach($titles as $title): ?>
+                                                        <option value="<?= $title ?>" <?= ($authorDefaults['title'] === $title) ? 'selected' : '' ?>><?= $title ?></option>
+                                                    <?php endforeach; ?>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Last Name</label>
-                                                <input type="text" class="form-control" name="last_name[]" value="" placeholder="Enter last name"
+                                                <input type="text" class="form-control" name="last_name[]" value="<?= html_escape($authorDefaults['lastName']) ?>" placeholder="Enter last name" required
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Email</label>
-                                                <input type="email" class="form-control" name="email[]" value="<?= $this->session->userdata('email') ?>" readonly
-                                                       style="background: #e9ecef; border-radius: 8px;">
-                                            </div>
-                                        </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Middle Name</label>
-                                                <input type="text" class="form-control" name="middle_name[]" placeholder="Enter middle name"
+                                                <input type="text" class="form-control" name="middle_name[]" value="<?= html_escape($authorDefaults['middleName']) ?>" placeholder="Enter middle name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email <span style="color: #dc3545;">*</span></label>
-                                                <input type="email" class="form-control" name="email[]" value="<?= $this->session->userdata('email') ?>" readonly required
-                                                       style="background: #e9ecef; border-radius: 8px;">
+                                                <input type="email" class="form-control" name="email[]" value="<?= html_escape($authorDefaults['email']) ?>" required
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Institution <span style="color: #dc3545;">*</span></label>
-                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" placeholder="e.g., IQQO, Addis Ababa University" required
+                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" value="<?= isset($currentUser->institution) ? html_escape($currentUser->institution) : '' ?>" placeholder="e.g., IQQO, Addis Ababa University" required
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -158,17 +150,9 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Country <span style="color: #6c757d;">(Optional)</span></label>
-                                                <select class="form-control" name="country[]" style="border-radius: 8px; padding: 10px;">
-                                                    <option value="">Select Country</option>
-                                                    <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                                                    <option value="Kenya">🇰🇪 Kenya</option>
-                                                    <option value="Uganda">🇺🇬 Uganda</option>
-                                                    <option value="Tanzania">🇹🇿 Tanzania</option>
-                                                    <option value="Rwanda">🇷🇼 Rwanda</option>
-                                                    <option value="South Africa">🇿🇦 South Africa</option>
-                                                    <option value="Nigeria">🇳🇬 Nigeria</option>
-                                                    <option value="Other">🌍 Other</option>
+                                                <label>Country <span style="color: #dc3545;">*</span></label>
+                                                <select class="form-control country-select" name="country[]" data-selected="<?= html_escape($authorDefaults['country']) ?>" required style="border-radius: 8px; padding: 10px;">
+                                                    <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -210,7 +194,9 @@
                                             <div class="form-group">
                                                 <label>Title</label>
                                                 <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
-                                                    <option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option>
+                                                    <?php $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof']; foreach($titles as $title): ?>
+                                                        <option value="<?= $title ?>" <?= ($authorDefaults['title'] === $title) ? 'selected' : '' ?>><?= $title ?></option>
+                                                    <?php endforeach; ?>
                                                 </select>
                                             </div>
                                         </div>
@@ -226,20 +212,11 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Email</label>
-                                                <input type="email" class="form-control" name="email[]" placeholder="email@example.com"
-                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
                                                 <label>Middle Name</label>
                                                 <input type="text" class="form-control" name="middle_name[]" placeholder="Enter middle name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email <span style="color: #dc3545;">*</span></label>
@@ -247,6 +224,8 @@
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Institution <span style="color: #dc3545;">*</span></label>
@@ -266,17 +245,9 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Country <span style="color: #6c757d;">(Optional)</span></label>
-                                                <select class="form-control" name="country[]" style="border-radius: 8px; padding: 10px;">
-                                                    <option value="">Select Country</option>
-                                                    <option value="Ethiopia">🇪🇹 Ethiopia</option>
-                                                    <option value="Kenya">🇰🇪 Kenya</option>
-                                                    <option value="Uganda">🇺🇬 Uganda</option>
-                                                    <option value="Tanzania">🇹🇿 Tanzania</option>
-                                                    <option value="Rwanda">🇷🇼 Rwanda</option>
-                                                    <option value="South Africa">🇿🇦 South Africa</option>
-                                                    <option value="Nigeria">🇳🇬 Nigeria</option>
-                                                    <option value="Other">🌍 Other</option>
+                                                <label>Country <span style="color: #dc3545;">*</span></label>
+                                                <select class="form-control country-select" name="country[]" required style="border-radius: 8px; padding: 10px;">
+                                                    <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -373,6 +344,32 @@ $(document).ready(function() {
         $(this).closest('.author-item').find('h4').append(labelHtml);
     });
     
+    function populateCountryOptions() {
+        const countrySelects = $('.country-select');
+        const renderOptions = function(countries) {
+            const options = ['<option value="">Select Country</option>'].concat(
+                countries.map(function(country) { return '<option value="' + country + '">' + country + '</option>'; })
+            ).join('');
+            countrySelects.each(function() {
+                const selected = $(this).attr('data-selected') || '';
+                $(this).html(options);
+                if (selected) { $(this).val(selected); }
+            });
+        };
+
+        fetch('https://restcountries.com/v3.1/all?fields=name')
+            .then(response => response.json())
+            .then(data => {
+                const countries = data.map(item => item.name.common).sort();
+                renderOptions(countries);
+            })
+            .catch(() => {
+                renderOptions(['Ethiopia', 'Kenya', 'Nigeria', 'Rwanda', 'South Africa', 'Tanzania', 'Uganda', 'United States']);
+            });
+    }
+
+    populateCountryOptions();
+
     // Simple form submission - NO VALIDATION
     $('#step2Form').on('submit', function() {
         $('#submitBtn').html('<i class="fa fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
