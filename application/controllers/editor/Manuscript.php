@@ -148,8 +148,8 @@ class Manuscript extends BaseController
     {
         if (!$this->isEditorInChief() && !$this->isAdmin()) { $this->loadThis(); return; }
         $manuscript = $this->editor_model->getManuscript((int)$manuscriptId);
-        if (!$manuscript || $manuscript->managingEditorScreeningStatus !== 'passed') {
-            $this->session->set_flashdata('error', 'Only passed manuscripts can be assigned.');
+        if (!$manuscript || $manuscript->eicMeDecision !== 'approved') {
+            $this->session->set_flashdata('error', 'Only EiC-approved manuscripts can be assigned.');
             redirect('editor/me-results');
         }
 
