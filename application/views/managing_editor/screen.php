@@ -27,7 +27,7 @@
 
                         <h4>Author Guidelines Checklist</h4>
                         <div class="callout callout-info">
-                            <p>Score each category from 0 to 25. The total is calculated out of 100%: formatting (25%), completeness (25%), quality (25%), and template check (25%).</p>
+                            <p>Provide your qualitative notes for each checklist category, then submit your overall Managing Editor recommendation as Approved or Rejected.</p>
                             <p><a href="<?= base_url('journal/author-guidelines') ?>" target="_blank"><i class="fa fa-external-link"></i> Open Author Guidelines</a></p>
                         </div>
                     </div>
@@ -60,19 +60,19 @@
                     <div class="box-header with-border"><h3 class="box-title">Register Screening Result</h3></div>
                     <form method="post" enctype="multipart/form-data" action="<?= base_url('managing-editor/pending/save/'.$manuscript->manuscriptId) ?>">
                         <div class="box-body">
-                            <?php $existing = $screening ?: (object)['formattingScore' => '', 'completenessScore' => '', 'qualityScore' => '', 'templateScore' => '', 'comments' => '', 'resultFilePath' => '']; ?>
-                            <div class="form-group"><label>Formatting (25%)</label><input type="number" min="0" max="25" name="formattingScore" class="form-control me-score" required value="<?= html_escape($existing->formattingScore) ?>"></div>
-                            <div class="form-group"><label>Completeness (25%)</label><input type="number" min="0" max="25" name="completenessScore" class="form-control me-score" required value="<?= html_escape($existing->completenessScore) ?>"></div>
-                            <div class="form-group"><label>Quality (25%)</label><input type="number" min="0" max="25" name="qualityScore" class="form-control me-score" required value="<?= html_escape($existing->qualityScore) ?>"></div>
-                            <div class="form-group"><label>Template Check (25%)</label><input type="number" min="0" max="25" name="templateScore" class="form-control me-score" required value="<?= html_escape($existing->templateScore) ?>"></div>
-                            <div class="alert alert-info"><strong>Total:</strong> <span id="meTotal"><?= !empty($screening) ? (int)$screening->totalScore : 0 ?></span>/100</div>
+                            <?php $existing = $screening ?: (object)['comments' => '', 'resultFilePath' => '']; ?>
+                            <div class="form-group"><label>Formatting Notes</label><textarea name="formattingNotes" rows="3" class="form-control" required placeholder="Write formatting findings..."><?= set_value('formattingNotes') ?></textarea></div>
+                            <div class="form-group"><label>Completeness Notes</label><textarea name="completenessNotes" rows="3" class="form-control" required placeholder="Write completeness findings..."><?= set_value('completenessNotes') ?></textarea></div>
+                            <div class="form-group"><label>Quality Notes</label><textarea name="qualityNotes" rows="3" class="form-control" required placeholder="Write quality findings..."><?= set_value('qualityNotes') ?></textarea></div>
+                            <div class="form-group"><label>Template Check Notes</label><textarea name="templateNotes" rows="3" class="form-control" required placeholder="Write template check findings..."><?= set_value('templateNotes') ?></textarea></div>
                             <div class="form-group"><label>Comments</label><textarea name="comments" rows="5" class="form-control" required placeholder="Record guideline findings, corrections needed, or readiness for the next workflow step."><?= html_escape($existing->comments) ?></textarea></div>
                             <div class="form-group"><label>Upload Result Comment <small>(optional)</small></label><input type="file" name="resultComment" class="form-control"><p class="help-block">Allowed: PDF, Word, text, JPG, PNG. Max 5 MB.</p>
                                 <?php if (!empty($existing->resultFilePath)): ?><a href="<?= base_url($existing->resultFilePath) ?>" target="_blank"><i class="fa fa-paperclip"></i> View current result file</a><?php endif; ?>
                             </div>
                         </div>
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-success btn-block" onclick="return confirm('Register this Managing Editor screening result?');"><i class="fa fa-save"></i> Register Result</button>
+                            <button type="submit" name="meDecision" value="approved" class="btn btn-success" onclick="return confirm('Register this Managing Editor screening result as Approved?');"><i class="fa fa-check"></i> Accept</button>
+                            <button type="submit" name="meDecision" value="rejected" class="btn btn-danger" onclick="return confirm('Register this Managing Editor screening result as Rejected?');"><i class="fa fa-times"></i> Reject</button>
                         </div>
                     </form>
                 </div>
@@ -80,20 +80,3 @@
         </div>
     </section>
 </div>
-<script>
-(function () {
-    function updateTotal() {
-        var total = 0;
-        var inputs = document.querySelectorAll('.me-score');
-        for (var i = 0; i < inputs.length; i++) {
-            total += parseInt(inputs[i].value || 0, 10);
-        }
-        document.getElementById('meTotal').innerHTML = total;
-    }
-    var inputs = document.querySelectorAll('.me-score');
-    for (var i = 0; i < inputs.length; i++) {
-        inputs[i].addEventListener('input', updateTotal);
-    }
-    updateTotal();
-})();
-</script>

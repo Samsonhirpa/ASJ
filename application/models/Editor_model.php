@@ -460,6 +460,11 @@ Scope Screening:
         $this->db->where('m.eicScreeningDecision', 'accepted');
 
         $status = isset($filters['status']) ? $filters['status'] : 'pending';
+        if ($status === 'approved') {
+            $status = 'passed';
+        } elseif ($status === 'rejected') {
+            $status = 'failed';
+        }
         if ($status === 'pending') {
             $this->db->where('(m.managingEditorScreeningStatus IS NULL OR m.managingEditorScreeningStatus = "pending")', null, false);
         } elseif (in_array($status, ['passed', 'failed'], true)) {
@@ -488,7 +493,7 @@ Scope Screening:
         return $this->db->get_where('tbl_managing_editor_screenings', ['manuscriptId' => $manuscriptId])->row();
     }
 
-    public function saveManagingEditorScreening($manuscriptId, $editorId, $scores, $comments, $resultFilePath = null)
+    public function saveManagingEditorScreening($manuscriptId, $editorId, $scores, $comments, $resultFilePath = null, $meDecision = 'approved')
     {
         $manuscript = $this->getManuscript($manuscriptId);
         if (!$manuscript || $manuscript->eicScreeningDecision !== 'accepted') {
@@ -496,7 +501,7 @@ Scope Screening:
         }
 
         $totalScore = (int)$scores['formattingScore'] + (int)$scores['completenessScore'] + (int)$scores['qualityScore'] + (int)$scores['templateScore'];
-        $resultStatus = $totalScore >= 70 ? 'passed' : 'failed';
+        $resultStatus = $meDecision === 'approved' ? 'passed' : 'failed';
         $now = date('Y-m-d H:i:s');
 
         $data = [
