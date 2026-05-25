@@ -126,14 +126,14 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Email <span style="color: #dc3545;">*</span></label>
-                                                <input type="email" class="form-control" name="email[]" value="<?= html_escape($authorDefaults['email']) ?>" required
+                                                <input type="email" class="form-control" name="email[]" value="<?= html_escape($authorDefaults['email']) ?>"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Institution <span style="color: #dc3545;">*</span></label>
-                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" value="<?= isset($currentUser->institution) ? html_escape($currentUser->institution) : '' ?>" placeholder="e.g., IQQO, Addis Ababa University" required
+                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" value="<?= isset($currentUser->institution) ? html_escape($currentUser->institution) : '' ?>" placeholder="e.g., IQQO, Addis Ababa University"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -151,7 +151,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Country <span style="color: #dc3545;">*</span></label>
-                                                <select class="form-control country-select" name="country[]" data-selected="<?= html_escape($authorDefaults['country']) ?>" required style="border-radius: 8px; padding: 10px;">
+                                                <select class="form-control country-select" name="country[]" data-selected="<?= html_escape($authorDefaults['country']) ?>" style="border-radius: 8px; padding: 10px;">
                                                     <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
@@ -239,7 +239,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Country <span style="color: #dc3545;">*</span></label>
-                                                <select class="form-control country-select" name="country[]" required style="border-radius: 8px; padding: 10px;">
+                                                <select class="form-control country-select" name="country[]" style="border-radius: 8px; padding: 10px;">
                                                     <option value="">Loading countries...</option>
                                                 </select>
                                             </div>
@@ -309,7 +309,7 @@ $(document).ready(function() {
         
         // Update radio value
         newAuthor.find('.corresponding-radio').val('new_' + authorCount);
-        newAuthor.find('input[name="email[]"], input[name="institution[]"], select[name="country[]"]').attr('required', true);
+        // Removed runtime required validation for author contact fields as requested.
         
         // Add to container
         $('#authorsContainer').append(newAuthor);
