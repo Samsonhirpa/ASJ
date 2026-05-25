@@ -185,6 +185,7 @@ class Manuscript extends BaseController
         // Get current user data to display as first author
         $currentUser = $this->user_model->getUserInfo($this->vendorId);
         $data['currentUser'] = $currentUser;
+        $data['institutionSuggestions'] = $this->getInstitutionSuggestions();
         
         $this->global['pageTitle'] = 'Add Authors - OJAS';
         $data['step'] = 2;
@@ -199,7 +200,9 @@ class Manuscript extends BaseController
 {
     // Get form data
     $first_names = $this->input->post('first_name');
+    $middle_names = $this->input->post('middle_name');
     $last_names = $this->input->post('last_name');
+    $titles = $this->input->post('title');
     $emails = $this->input->post('email');
     $institutions = $this->input->post('institution');
     $orcids = $this->input->post('orcid');
@@ -241,14 +244,29 @@ class Manuscript extends BaseController
         }
         
         // Check if this is a new author (not in system)
+        $email = isset($emails[$index]) ? trim($emails[$index]) : '';
+        $institution = isset($institutions[$index]) ? trim($institutions[$index]) : '';
+        if ($email === '' || $institution === '') {
+            $this->session->set_flashdata('error', 'Email and Institution are mandatory for every author.');
+            redirect('author/manuscript/step2');
+        }
+
+        $title = isset($titles[$index]) ? trim($titles[$index]) : '';
+        $middle_name = isset($middle_names[$index]) ? trim($middle_names[$index]) : '';
+        $fullName = trim($title . ' ' . $first_name . ' ' . $middle_name . ' ' . $last_names[$index]);
+
         if(isset($user_ids[$index]) && $user_ids[$index] == 'new') {
             // For new authors, create a temporary record with provided info
             $authorData[] = array(
-                'name' => $first_name . ' ' . $last_names[$index],
-                'email' => $emails[$index],
-                'institution' => isset($institutions[$index]) ? $institutions[$index] : '',
+                'name' => $fullName,
+                'email' => $email,
+                'institution' => $institution,
                 'country' => isset($countries[$index]) ? $countries[$index] : '',
                 'orcid' => isset($orcids[$index]) ? $orcids[$index] : '',
+                'title' => $title,
+                'firstName' => $first_name,
+                'middleName' => $middle_name,
+                'lastName' => isset($last_names[$index]) ? $last_names[$index] : '',
                 'isCorresponding' => $isCorresponding,
                 'authorOrder' => $index + 1,
                 'isNew' => true
@@ -259,6 +277,13 @@ class Manuscript extends BaseController
             
             $authorData[] = array(
                 'userId' => $userId,
+                'name' => $fullName,
+                'email' => $email,
+                'institution' => $institution,
+                'title' => $title,
+                'firstName' => $first_name,
+                'middleName' => $middle_name,
+                'lastName' => isset($last_names[$index]) ? $last_names[$index] : '',
                 'isCorresponding' => $isCorresponding,
                 'authorOrder' => $index + 1
             );
@@ -296,6 +321,44 @@ class Manuscript extends BaseController
         $data['step'] = 3;
         
         $this->loadViews("author/submit_step3", $this->global, $data, NULL);
+    }
+
+    public function preview()
+    {
+        if(!$this->session->userdata('submission_title') || !$this->session->userdata('submission_authors')) {
+            $this->session->set_flashdata('error', 'Please complete submission steps before preview.');
+            redirect('author/manuscript/submit');
+        }
+        $data['authors'] = json_decode($this->session->userdata('submission_authors'), true);
+        $this->global['pageTitle'] = 'Submission Preview - OJAS';
+        $this->loadViews("author/submit_preview", $this->global, $data, NULL);
+    }
+
+    public function saveDraft()
+    {
+        if(!$this->session->userdata('submission_title') || !$this->session->userdata('submission_authors')) {
+            $this->session->set_flashdata('error', 'Please complete details and authors before saving draft.');
+            redirect('author/manuscript/submit');
+        }
+
+        $manuscriptData = array(
+            'title' => $this->session->userdata('submission_title'),
+            'abstract' => $this->session->userdata('submission_abstract'),
+            'keywords' => $this->session->userdata('submission_keywords'),
+            'articleType' => $this->session->userdata('submission_articleType'),
+            'thematicArea' => $this->session->userdata('submission_thematicArea'),
+            'coverLetter' => $this->session->userdata('submission_coverLetter'),
+            'submittedBy' => $this->vendorId,
+            'correspondingAuthorId' => $this->vendorId,
+            'status' => 'draft'
+        );
+        $manuscriptId = $this->manuscript_model->submit($manuscriptData);
+        if (!$manuscriptId) {
+            $this->session->set_flashdata('error', 'Could not save draft.');
+            redirect('author/manuscript/step3');
+        }
+        $this->session->set_flashdata('success', 'Draft saved successfully.');
+        redirect('author/manuscript/view/' . (int)$manuscriptId);
     }
     
     /**
@@ -418,6 +481,14 @@ class Manuscript extends BaseController
             
             $this->file_model->uploadFile($manuscriptId, 'single_file', $fileType);
         }
+    }
+
+    private function getInstitutionSuggestions()
+    {
+        $rows = $this->db->distinct()->select('institution')->from('tbl_users')->where("institution IS NOT NULL AND TRIM(institution) != ''", null, false)->get()->result();
+        return array_values(array_filter(array_map(function ($row) {
+            return trim($row->institution);
+        }, $rows)));
     }
     
     /**

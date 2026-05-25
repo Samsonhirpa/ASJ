@@ -63,6 +63,11 @@
                     </div>
                     
                     <form action="<?= base_url('author/manuscript/submitStep2') ?>" method="post" id="step2Form">
+                        <datalist id="institutionSuggestions">
+                            <?php if (!empty($institutionSuggestions)): foreach ($institutionSuggestions as $institution): ?>
+                                <option value="<?= html_escape($institution) ?>"></option>
+                            <?php endforeach; endif; ?>
+                        </datalist>
                         <div class="box-body" style="padding: 25px;">
                             
                             <!-- Author List -->
@@ -93,6 +98,14 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
+                                                <label>Title</label>
+                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                                    <option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
                                                 <label>Last Name</label>
                                                 <input type="text" class="form-control" name="last_name[]" value="" placeholder="Enter last name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
@@ -110,8 +123,25 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Institution <span style="color: #6c757d;">(Optional)</span></label>
-                                                <input type="text" class="form-control" name="institution[]" placeholder="e.g., IQQO, Addis Ababa University"
+                                                <label>Middle Name</label>
+                                                <input type="text" class="form-control" name="middle_name[]" placeholder="Enter middle name"
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Email <span style="color: #dc3545;">*</span></label>
+                                                <input type="email" class="form-control" name="email[]" value="<?= $this->session->userdata('email') ?>" readonly required
+                                                       style="background: #e9ecef; border-radius: 8px;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Institution <span style="color: #dc3545;">*</span></label>
+                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" placeholder="e.g., IQQO, Addis Ababa University" required
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
@@ -178,6 +208,14 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
+                                                <label>Title</label>
+                                                <select class="form-control" name="title[]" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                                    <option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
                                                 <label>Last Name</label>
                                                 <input type="text" class="form-control" name="last_name[]" placeholder="Enter last name"
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
@@ -195,8 +233,24 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Institution <span style="color: #6c757d;">(Optional)</span></label>
-                                                <input type="text" class="form-control" name="institution[]" placeholder="Institution/Organization"
+                                                <label>Middle Name</label>
+                                                <input type="text" class="form-control" name="middle_name[]" placeholder="Enter middle name"
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Email <span style="color: #dc3545;">*</span></label>
+                                                <input type="email" class="form-control" name="email[]" placeholder="email@example.com" required
+                                                       style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Institution <span style="color: #dc3545;">*</span></label>
+                                                <input list="institutionSuggestions" type="text" class="form-control" name="institution[]" placeholder="Institution/Organization" required
                                                        style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px;">
                                             </div>
                                         </div>
