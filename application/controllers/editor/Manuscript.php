@@ -49,8 +49,6 @@ class Manuscript extends BaseController
         }
 
         $data['files'] = $this->editor_model->getManuscriptFiles((int)$manuscriptId);
-        $data['manuscript']->authorName = 'Blind Review';
-        $data['manuscript']->authorEmail = 'Hidden during screening';
         $this->global['pageTitle'] = 'Technical and Scope Screening - OJAS';
         $this->global['activeMenu'] = 'pending';
         $this->loadViews('editor/technical_scope_screening', $this->global, $data, NULL);

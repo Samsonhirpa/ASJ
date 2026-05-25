@@ -23,7 +23,7 @@
                         <tr>
                             <td><?= html_escape($m->manuscriptNumber) ?></td>
                             <td><?= html_escape($m->title) ?></td>
-                            <td>Blind Review</td>
+                            <td><?= html_escape($m->authorName ?: '-') ?></td>
                             <td><?= !empty($m->eicScreenedDtm) ? date('d M Y', strtotime($m->eicScreenedDtm)) : '-' ?></td>
                             <td><a class="btn btn-xs btn-primary" href="<?= base_url('managing-editor/pending/screen/'.$m->manuscriptId) ?>"><i class="fa fa-search"></i> Screen</a></td>
                         </tr>

@@ -19,7 +19,7 @@
                             <dt>Manuscript #</dt>
                             <dd><?= html_escape($manuscript->manuscriptNumber) ?></dd>
                             <dt>Author</dt>
-                            <dd>Blind Review (Author details hidden)</dd>
+                            <dd><?= html_escape($manuscript->authorName ?: '-') ?><?= !empty($manuscript->authorEmail) ? ' (' . html_escape($manuscript->authorEmail) . ')' : '' ?></dd>
                             <dt>Article Type</dt>
                             <dd><?= html_escape(ucwords(str_replace('_', ' ', $manuscript->articleType))) ?></dd>
                             <dt>Thematic Area</dt>

@@ -38,7 +38,7 @@
                         <tr>
                             <td><?= html_escape($m->manuscriptNumber) ?></td>
                             <td><?= html_escape($m->title) ?></td>
-                            <td>Blind Review</td>
+                            <td><?= html_escape($m->authorName ?: '-') ?></td>
                             <td><?= html_escape(ucwords(str_replace('_', ' ', $m->articleType))) ?></td>
                             <td><span class="label label-success">Accepted by EIC</span></td>
                             <td><?php if (!empty($m->meResultStatus)): ?><span class="label label-<?= $m->meResultStatus === 'passed' ? 'success' : 'danger' ?>"><?= html_escape($m->meResultStatus) ?> (<?= (int)$m->totalScore ?>/100)</span><?php else: ?><span class="label label-warning">pending</span><?php endif; ?></td>
