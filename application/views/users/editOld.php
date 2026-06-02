@@ -1,5 +1,17 @@
+<?php
+$editTitle = isset($userInfo->title) ? $userInfo->title : '';
+$editFirstName = isset($userInfo->first_name) ? $userInfo->first_name : '';
+$editMiddleName = isset($userInfo->middle_name) ? $userInfo->middle_name : '';
+$editLastName = isset($userInfo->last_name) ? $userInfo->last_name : '';
+if($editFirstName === '' && $editMiddleName === '' && $editLastName === '' && !empty($userInfo->name)) {
+    $legacyNameParts = preg_split('/\s+/', trim($userInfo->name));
+    $editFirstName = isset($legacyNameParts[0]) ? $legacyNameParts[0] : '';
+    $editLastName = count($legacyNameParts) > 1 ? array_pop($legacyNameParts) : '';
+    $editMiddleName = count($legacyNameParts) > 1 ? implode(' ', array_slice($legacyNameParts, 1)) : '';
+}
+?>
 <div class="content-wrapper" style="background: #f4f6f9; min-height: 100vh; padding: 20px;">
-    
+
     <!-- Header -->
     <section class="content-header" style="margin-bottom: 25px;">
         <div class="row">
@@ -11,7 +23,7 @@
                         <small style="color: #777; font-size: 0.6em; margin-left: 15px;">Edit User</small>
                     </h1>
                     <div style="margin-top: 15px;">
-                        <a href="<?php echo base_url('userListing'); ?>" style="background: #f0f0f0; color: #555; padding: 8px 20px; border-radius: 25px; text-decoration: none; font-size: 0.9em; transition: all 0.3s; display: inline-block;" 
+                        <a href="<?php echo base_url('userListing'); ?>" style="background: #f0f0f0; color: #555; padding: 8px 20px; border-radius: 25px; text-decoration: none; font-size: 0.9em; transition: all 0.3s; display: inline-block;"
                            onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
                             <i class="fa fa-arrow-left"></i> Back to List
                         </a>
@@ -20,14 +32,14 @@
             </div>
         </div>
     </section>
-    
+
     <section class="content">
         <div class="row">
             <!-- Main Form Column -->
             <div class="col-md-8">
                 <!-- Main Card -->
                 <div style="background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e9ecef;">
-                    
+
                     <!-- Card Header -->
                     <div style="background: #f8fafc; padding: 20px 25px; border-bottom: 1px solid #e9ecef;">
                         <h3 style="color: #333; margin: 0; font-size: 1.3em; font-weight: 600;">
@@ -38,40 +50,76 @@
                             <i class="fa fa-info-circle"></i> Fields marked with <span style="color: #dc3545;">*</span> are required
                         </p>
                     </div>
-                    
+
                     <!-- Form Body -->
                     <div style="padding: 30px;">
                         <?php $this->load->helper("form"); ?>
                         <form role="form" id="editUser" action="<?php echo base_url() ?>editUser" method="post" role="form" enctype="multipart/form-data">
-                            
+
                             <!-- Basic Information Section -->
                             <div style="margin-bottom: 30px;">
                                 <h4 style="color: #333; font-size: 1.1em; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">
                                     <i class="fa fa-user-circle" style="color: #2c5f2d; margin-right: 10px;"></i>
                                     Basic Information
                                 </h4>
-                                
+
                                 <input type="hidden" name="userId" id="userId" value="<?php echo isset($userInfo->userId) ? $userInfo->userId : ''; ?>">
-                                
+
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div style="margin-bottom: 20px;">
                                             <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
-                                                Full Name <span style="color: #dc3545;">*</span>
+                                                Title <span style="color: #dc3545;">*</span>
                                             </label>
                                             <div style="position: relative;">
-                                                <i class="fa fa-user" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
-                                                <input type="text" class="form-control required" value="<?php echo isset($userInfo->name) ? $userInfo->name : ''; ?>" 
-                                                       id="fname" name="fname" maxlength="128" required
+                                                <i class="fa fa-id-badge" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
+                                                <input type="text" class="form-control required" value="<?php echo set_value('title', $editTitle); ?>" id="title" name="title" maxlength="20" required placeholder="Dr."
                                                        style="padding: 10px 15px 10px 40px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                        onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
-                                                       onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'"
-                                                       placeholder="John Doe">
+                                                       onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
                                             </div>
-                                            <?php echo form_error('fname', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
+                                            <?php echo form_error('title', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
                                         </div>
                                     </div>
-                                    
+                                    <div class="col-md-3">
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
+                                                First Name <span style="color: #dc3545;">*</span>
+                                            </label>
+                                            <input type="text" class="form-control required" value="<?php echo set_value('first_name', $editFirstName); ?>" id="first_name" name="first_name" maxlength="64" required placeholder="John"
+                                                   style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
+                                                   onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
+                                                   onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+                                            <?php echo form_error('first_name', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
+                                                Middle Name <span style="color: #dc3545;">*</span>
+                                            </label>
+                                            <input type="text" class="form-control required" value="<?php echo set_value('middle_name', $editMiddleName); ?>" id="middle_name" name="middle_name" maxlength="64" required placeholder="Michael"
+                                                   style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
+                                                   onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
+                                                   onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+                                            <?php echo form_error('middle_name', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
+                                                Last Name <span style="color: #dc3545;">*</span>
+                                            </label>
+                                            <input type="text" class="form-control required" value="<?php echo set_value('last_name', $editLastName); ?>" id="last_name" name="last_name" maxlength="64" required placeholder="Doe"
+                                                   style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
+                                                   onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
+                                                   onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+                                            <?php echo form_error('last_name', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
                                             <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
@@ -79,7 +127,7 @@
                                             </label>
                                             <div style="position: relative;">
                                                 <i class="fa fa-envelope" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
-                                                <input type="email" class="form-control required email" value="<?php echo isset($userInfo->email) ? $userInfo->email : ''; ?>" 
+                                                <input type="email" class="form-control required email" value="<?php echo isset($userInfo->email) ? $userInfo->email : ''; ?>"
                                                        id="email" name="email" maxlength="128" required
                                                        style="padding: 10px 15px 10px 40px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                        onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -90,7 +138,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
@@ -108,7 +156,7 @@
                                             <div id="passwordStrength" style="margin-top: 5px;"></div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
                                             <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
@@ -125,7 +173,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
@@ -134,7 +182,7 @@
                                             </label>
                                             <div style="position: relative;">
                                                 <i class="fa fa-phone" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
-                                                <input type="text" class="form-control required digits" value="<?php echo isset($userInfo->mobile) ? $userInfo->mobile : ''; ?>" 
+                                                <input type="text" class="form-control required digits" value="<?php echo isset($userInfo->mobile) ? $userInfo->mobile : ''; ?>"
                                                        id="mobile" name="mobile" maxlength="10" required
                                                        style="padding: 10px 15px 10px 40px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                        onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -144,7 +192,7 @@
                                             <?php echo form_error('mobile', '<div style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">', '</div>'); ?>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
                                             <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
@@ -184,7 +232,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
@@ -204,15 +252,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 20px;">
                                             <label style="display: block; margin-bottom: 8px; color: #495057; font-weight: 500;">
-                                                <i class="fa fa-id-card"></i> ORCID ID
+                                                <i class="fa fa-id-card"></i> ORCID ID <span style="color: #dc3545;">*</span>
                                             </label>
                                             <div style="position: relative;">
                                                 <i class="fa fa-qrcode" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #adb5bd;"></i>
-                                                <input type="text" class="form-control" id="orcid_id" name="orcid_id" 
+                                                <input type="text" class="form-control" id="orcid_id" name="orcid_id" required
                                                        placeholder="0000-0002-1825-0097" value="<?php echo isset($userInfo->orcid_id) ? $userInfo->orcid_id : ''; ?>"
                                                        style="padding: 10px 15px 10px 40px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                        onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -225,22 +273,22 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Profile Image Upload Section -->
                             <div style="margin-bottom: 30px;">
                                 <h4 style="color: #333; font-size: 1.1em; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef;">
                                     <i class="fa fa-camera" style="color: #2c5f2d; margin-right: 10px;"></i>
                                     Profile Picture
                                 </h4>
-                                
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
                                             <!-- Image Preview -->
                                             <div style="text-align: center;">
-                                                <?php 
-                                                $profileImage = isset($userInfo->profile_image) && !empty($userInfo->profile_image) 
-                                                    ? base_url('uploads/profile_images/'.$userInfo->profile_image) 
+                                                <?php
+                                                $profileImage = isset($userInfo->profile_image) && !empty($userInfo->profile_image)
+                                                    ? base_url('uploads/profile_images/'.$userInfo->profile_image)
                                                     : base_url('assets/dist/img/avatar-default.png');
                                                 ?>
                                                 <div id="imagePreview" style="width: 150px; height: 150px; border-radius: 50%; background: #f8f9fa; border: 3px solid <?php echo isset($userInfo->profile_image) && !empty($userInfo->profile_image) ? '#2c5f2d' : '#ced4da'; ?>; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative;">
@@ -251,7 +299,7 @@
                                                 </div>
                                                 <small style="color: #6c757d;">Current Profile Picture</small>
                                             </div>
-                                            
+
                                             <!-- Upload Controls -->
                                             <div style="flex: 1;">
                                                 <div style="margin-bottom: 15px;">
@@ -265,7 +313,7 @@
                                                         <?php echo isset($userInfo->profile_image) && !empty($userInfo->profile_image) ? $userInfo->profile_image : 'No file chosen'; ?>
                                                     </span>
                                                 </div>
-                                                
+
                                                 <?php if(isset($userInfo->profile_image) && !empty($userInfo->profile_image)): ?>
                                                 <div style="margin-top: 10px;">
                                                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -274,7 +322,7 @@
                                                     </label>
                                                 </div>
                                                 <?php endif; ?>
-                                                
+
                                                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
                                                     <p style="margin: 0 0 8px 0; color: #495057; font-weight: 500;"><i class="fa fa-info-circle" style="color: #2c5f2d;"></i> Image Requirements:</p>
                                                     <ul style="margin: 0; padding-left: 20px; color: #6c757d; font-size: 0.9em;">
@@ -289,34 +337,34 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Journal Profile Section -->
                             <div style="background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 1px solid #e9ecef;">
                                 <h4 style="color: #333; font-size: 1.1em; font-weight: 600; margin-bottom: 20px;">
                                     <i class="fa fa-university" style="color: #2c5f2d; margin-right: 10px;"></i>
                                     Journal Profile Information
                                 </h4>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
-                                                <i class="fa fa-building"></i> Institution/Organization
+                                                <i class="fa fa-building"></i> Institution/Organization <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="text" class="form-control" id="institution" name="institution" 
+                                            <input type="text" class="form-control" id="institution" name="institution" required
                                                    placeholder="e.g., IQQO, Addis Ababa University" value="<?php echo isset($userInfo->institution) ? $userInfo->institution : ''; ?>"
                                                    style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                    onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
                                                    onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
-                                                <i class="fa fa-sitemap"></i> Department
+                                                <i class="fa fa-sitemap"></i> Department <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="text" class="form-control" id="department" name="department" 
+                                            <input type="text" class="form-control" id="department" name="department" required
                                                    placeholder="e.g., Agricultural Research" value="<?php echo isset($userInfo->department) ? $userInfo->department : ''; ?>"
                                                    style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                    onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -324,15 +372,15 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
-                                                <i class="fa fa-globe"></i> Country
+                                                <i class="fa fa-globe"></i> Country <span style="color: #dc3545;">*</span>
                                             </label>
                                             <div style="position: relative;">
-                                                <select class="form-control" id="country" name="country"
+                                                <select class="form-control required" id="country" name="country" required
                                                         style="padding: 10px 30px 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; appearance: none; background: #fff; cursor: pointer; transition: all 0.2s; color: #495057;"
                                                         onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
                                                         onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
@@ -353,13 +401,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
-                                                <i class="fa fa-map-marker"></i> City
+                                                <i class="fa fa-map-marker"></i> City <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="text" class="form-control" id="city" name="city" 
+                                            <input type="text" class="form-control" id="city" name="city" required
                                                    placeholder="e.g., Finfinne, Addis Ababa" value="<?php echo isset($userInfo->city) ? $userInfo->city : ''; ?>"
                                                    style="padding: 10px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff;"
                                                    onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -367,14 +415,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
-                                                <i class="fa fa-flask"></i> Areas of Expertise
+                                                <i class="fa fa-flask"></i> Areas of Expertise <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <textarea class="form-control" id="expertise_area" name="expertise_area" 
+                                            <textarea class="form-control" id="expertise_area" name="expertise_area" required
                                                       rows="3" placeholder="e.g., Agronomy, Soil Science, Plant Breeding, Crop Protection"
                                                       style="padding: 12px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff; resize: vertical;"
                                                       onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -385,14 +433,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div style="margin-bottom: 15px;">
                                             <label style="display: block; margin-bottom: 5px; color: #495057; font-weight: 500; font-size: 0.9em;">
                                                 <i class="fa fa-address-card"></i> Biography / Bio
                                             </label>
-                                            <textarea class="form-control" id="bio" name="bio" 
+                                            <textarea class="form-control" id="bio" name="bio"
                                                       rows="4" placeholder="Short biography / professional background"
                                                       style="padding: 12px 15px; border: 1px solid #ced4da; border-radius: 8px; width: 100%; font-size: 0.95em; transition: all 0.2s; background: #fff; resize: vertical;"
                                                       onfocus="this.style.borderColor='#2c5f2d'; this.style.boxShadow='0 0 0 3px rgba(44,95,45,0.1)'"
@@ -401,7 +449,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Form Actions -->
                             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                                 <button type="reset" class="btn" style="padding: 10px 25px; border: 1px solid #ced4da; border-radius: 8px; background: #fff; color: #495057; font-weight: 500; cursor: pointer; transition: all 0.2s;"
@@ -422,7 +470,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Right Column - Alerts & Help -->
             <div class="col-md-4">
                 <!-- Alerts Section -->
@@ -436,11 +484,11 @@
                     <div style="background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; color: #721c24;">
                         <button type="button" style="float: right; background: none; border: none; color: #721c24; cursor: pointer; font-size: 1.2em;" onclick="this.parentElement.style.display='none'">×</button>
                         <i class="fa fa-exclamation-triangle" style="margin-right: 10px;"></i>
-                        <?php echo $this->session->flashdata('error'); ?>                    
+                        <?php echo $this->session->flashdata('error'); ?>
                     </div>
                     <?php } ?>
-                    
-                    <?php  
+
+                    <?php
                         $success = $this->session->flashdata('success');
                         if($success)
                         {
@@ -451,7 +499,7 @@
                         <?php echo $this->session->flashdata('success'); ?>
                     </div>
                     <?php } ?>
-                    
+
                     <?php if(validation_errors()): ?>
                     <div style="background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; color: #856404;">
                         <i class="fa fa-exclamation-circle" style="margin-right: 10px;"></i>
@@ -459,7 +507,7 @@
                     </div>
                     <?php endif; ?>
                 </div>
-                
+
                 <!-- Help Card -->
                 <div style="background: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e9ecef;">
                     <div style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e9ecef;">
@@ -477,7 +525,7 @@
                                 <p style="margin: 0; color: #6c757d; font-size: 0.85em;">Leave blank to keep current password</p>
                             </div>
                         </div>
-                        
+
                         <div style="display: flex; gap: 12px; margin-bottom: 15px;">
                             <div style="background: #e8f0e8; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                 <i class="fa fa-camera" style="color: #2c5f2d;"></i>
@@ -487,7 +535,7 @@
                                 <p style="margin: 0; color: #6c757d; font-size: 0.85em;">Upload new image or check "Remove" to delete current</p>
                             </div>
                         </div>
-                        
+
                         <div style="display: flex; gap: 12px;">
                             <div style="background: #e8f0e8; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                 <i class="fa fa-flask" style="color: #2c5f2d;"></i>
@@ -500,7 +548,7 @@
                     </div>
                 </div>
             </div>
-        </div>    
+        </div>
     </section>
 </div>
 
@@ -509,33 +557,33 @@
     .form-control:focus {
         outline: none;
     }
-    
+
     select.form-control option {
         padding: 10px;
         color: #495057;
     }
-    
+
     select.form-control option:checked {
         background: #e8f0e8 linear-gradient(0deg, #e8f0e8 0%, #e8f0e8 100%);
         color: #2c5f2d;
     }
-    
+
     select.form-control option:hover {
         background: #f0f0f0;
     }
-    
+
     select.form-control option.text-warning {
         color: #ffc107 !important;
     }
-    
+
     select.form-control option.text-warning:checked {
         background: #fff3cd;
     }
-    
+
     #imagePreview {
         transition: all 0.3s ease;
     }
-    
+
     #imagePreview:hover {
         border-color: #2c5f2d;
         transform: scale(1.02);
@@ -550,19 +598,19 @@
         window.previewImage = function(input) {
             var fileName = input.files[0] ? input.files[0].name : 'No file chosen';
             $('#fileName').text(fileName);
-            
+
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
-                
+
                 reader.onload = function(e) {
                     $('#previewImg').attr('src', e.target.result);
                     $('#imagePreview').css('border', '3px solid #2c5f2d');
                     // Uncheck remove image if user selects new image
                     $('#remove_image').prop('checked', false);
                 }
-                
+
                 reader.readAsDataURL(input.files[0]);
-                
+
                 // Check file size
                 if (input.files[0].size > 2 * 1024 * 1024) {
                     alert('File size must be less than 2MB');
@@ -579,7 +627,7 @@
                 }
             }
         }
-        
+
         // Remove image checkbox
         $('#remove_image').change(function() {
             if($(this).is(':checked')) {
@@ -597,7 +645,7 @@
                 }
             }
         });
-        
+
         // ORCID validation
         $("#orcid_id").on('blur', function(){
             var orcid = $(this).val();
@@ -614,40 +662,40 @@
                 }
             }
         });
-        
+
         // Password strength indicator
         $("#password").on('keyup', function(){
             var password = $(this).val();
             var strength = 0;
-            
+
             if(password.length >= 8) strength++;
             if(password.match(/[a-z]+/)) strength++;
             if(password.match(/[A-Z]+/)) strength++;
             if(password.match(/[0-9]+/)) strength++;
             if(password.match(/[$@#&!]+/)) strength++;
-            
+
             var colors = ['#dc3545', '#ffc107', '#ffc107', '#17a2b8', '#28a745'];
             var messages = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-            
+
             $(this).css('borderColor', colors[strength-1] || '#ced4da');
-            
+
             if($('#passwordStrength').length == 0){
                 $(this).after('<div id="passwordStrength" style="margin-top: 5px;"></div>');
             }
-            
+
             if(strength > 0){
-                $('#passwordStrength').html('<span style="color: ' + colors[strength-1] + '; font-size: 0.9em;">' + 
+                $('#passwordStrength').html('<span style="color: ' + colors[strength-1] + '; font-size: 0.9em;">' +
                                            '<i class="fa fa-info-circle"></i> Password Strength: ' + messages[strength-1] + '</span>');
             } else {
                 $('#passwordStrength').html('');
             }
         });
-        
+
         // Confirm password match
         $("#cpassword").on('keyup', function(){
             var pass1 = $("#password").val();
             var pass2 = $(this).val();
-            
+
             if(pass2.length > 0){
                 if(pass1 == pass2){
                     $(this).css('borderColor', '#28a745');
@@ -658,7 +706,7 @@
                 $(this).css('borderColor', '#ced4da');
             }
         });
-        
+
         // Hover effect for image preview
         $("#imagePreview").hover(
             function() {
