@@ -425,8 +425,8 @@ class Manuscript extends BaseController
             'coverLetter' => $this->input->post('coverLetter', true)
         ]);
 
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft details updated successfully.' : 'Unable to update draft details.');
-        redirect('author/manuscript/view/' . (int)$manuscriptId);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Step 1 saved. You can now edit co-authors.' : 'Unable to update draft details.');
+        redirect('author/manuscript/draft/' . (int)$manuscriptId . '/authors');
     }
 
     public function editDraftAuthors($manuscriptId)
@@ -459,8 +459,8 @@ class Manuscript extends BaseController
         }
 
         $ok = $this->manuscript_model->replaceDraftAuthors((int)$manuscriptId, $authorData);
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft authors updated successfully.' : 'Unable to update draft authors.');
-        redirect('author/manuscript/view/' . (int)$manuscriptId);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Step 2 saved. You can now manage uploaded files.' : 'Unable to update draft authors.');
+        redirect('author/manuscript/draft/' . (int)$manuscriptId . '/files');
     }
 
     public function editDraftFiles($manuscriptId)
@@ -901,6 +901,10 @@ class Manuscript extends BaseController
             return;
         }
         
+        if($manuscript->status === 'draft') {
+            redirect('author/manuscript/draft/' . (int)$manuscriptId . '/details');
+        }
+
         $data['manuscript'] = $manuscript;
         $data['files'] = $this->manuscript_model->getManuscriptFiles($manuscriptId);
         $data['reviewComments'] = $this->manuscript_model->getManuscriptReviewerComments($manuscriptId);
