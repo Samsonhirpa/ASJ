@@ -161,7 +161,7 @@
                             <a href="<?= base_url('author/manuscript/preview') ?>" class="btn" style="background: #17a2b8; color: white; padding: 12px 20px; border-radius: 8px; border: none; margin-left: 10px; text-decoration:none;">
                                 <i class="fa fa-eye"></i> Preview
                             </a>
-                            <button type="submit" class="btn" name="save_draft" value="1" formaction="<?= base_url('author/manuscript/saveDraft') ?>" style="background: #ffc107; color: #333; padding: 12px 20px; border-radius: 8px; border: none; margin-left: 10px; cursor: pointer;">
+                            <button type="submit" class="btn" id="saveDraftBtn" name="save_draft" value="1" formaction="<?= base_url('author/manuscript/saveDraft') ?>" formnovalidate style="background: #ffc107; color: #333; padding: 12px 20px; border-radius: 8px; border: none; margin-left: 10px; cursor: pointer;">
                                 <i class="fa fa-save"></i> Save Draft
                             </button>
                         </div>
@@ -401,15 +401,33 @@ $(document).ready(function() {
     });
     
     // ========== FORM SUBMISSION ==========
+    var submitAction = 'submit';
+
+    $('#submitBtn').on('click', function() {
+        submitAction = 'submit';
+    });
+
+    $('#saveDraftBtn').on('click', function() {
+        submitAction = 'draft';
+    });
+
     $('#step3Form').on('submit', function(e) {
-        // Check if main file is selected
+        var isDraft = submitAction === 'draft';
+
+        // Drafts should preserve whatever has been filled/uploaded without forcing final-submission requirements.
+        if(isDraft) {
+            $('#saveDraftBtn').html('<i class="fa fa-spinner fa-spin"></i> Saving Draft...').prop('disabled', true);
+            return true;
+        }
+
+        // Check if main file is selected for final submission
         if($('#main_file').val() === '') {
             e.preventDefault();
             alert('Please select the main manuscript file');
             return false;
         }
         
-        // Check declaration
+        // Check declaration for final submission
         if(!$('input[name="declaration"]').is(':checked')) {
             e.preventDefault();
             alert('Please confirm the declaration');

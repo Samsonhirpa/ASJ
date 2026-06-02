@@ -68,7 +68,9 @@ class Manuscript_model extends CI_Model
     public function submit($data)
     {
         $data['manuscriptNumber'] = $this->generateManuscriptNumber();
-        $data['status'] = 'submitted';
+        if (empty($data['status'])) {
+            $data['status'] = 'submitted';
+        }
         $data['createdBy'] = $this->session->userdata('userId');
         $data['createdDtm'] = date('Y-m-d H:i:s');
         
