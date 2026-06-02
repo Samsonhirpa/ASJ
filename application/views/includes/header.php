@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title><?php echo $pageTitle; ?> | OJAS</title>
-    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <meta content='width=device-width, initial-scale=1' name='viewport'>
     
     <!-- Bootstrap 3.3.4 -->
     <link href="<?php echo base_url(); ?>assets/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -67,15 +67,151 @@
             margin-left: var(--sidebar-width);
         }
         
-        /* Sidebar toggle for mobile */
+        .mobile-sidebar-title,
+        .mobile-sidebar-close {
+            display: none;
+        }
+
+        /* Mobile navigation drawer */
         @media (max-width: 767px) {
-            .skin-ojas .main-sidebar {
-                transform: translateX(-var(--sidebar-width));
+            .skin-ojas .main-header {
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
+                z-index: 1030;
             }
+
+            .skin-ojas .main-header .logo {
+                width: 100%;
+                height: 52px;
+                float: none;
+                text-align: left;
+                padding: 0 16px;
+            }
+
+            .skin-ojas .main-header .navbar {
+                margin-left: 0;
+                min-height: 52px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .skin-ojas .main-header .sidebar-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 42px;
+                margin: 5px 8px;
+                padding: 0 14px;
+                border-radius: 999px;
+                background: rgba(255,255,255,0.14);
+                color: #fff;
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .skin-ojas .main-header .sidebar-toggle:hover,
+            .skin-ojas .main-header .sidebar-toggle:focus {
+                background: rgba(255,255,255,0.24);
+                color: #fff;
+                outline: 2px solid rgba(255,255,255,0.35);
+                outline-offset: 2px;
+            }
+
+            .skin-ojas .main-header .sidebar-toggle:before {
+                display: none;
+            }
+
+            .skin-ojas .main-header .navbar-custom-menu {
+                margin-left: auto;
+            }
+
+            .skin-ojas .navbar-custom-menu .nav > li > a {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .skin-ojas .main-sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 1050;
+                width: min(var(--sidebar-width), 86vw);
+                max-width: 86vw;
+                padding-top: 0;
+                transform: translate3d(-100%, 0, 0);
+                transition: transform 0.25s ease;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .skin-ojas.sidebar-open .main-sidebar {
+                transform: translate3d(0, 0, 0);
+            }
+
+            .skin-ojas.sidebar-open::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 1040;
+                background: rgba(15, 23, 42, 0.55);
+            }
+
+            .skin-ojas .mobile-sidebar-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                min-height: 56px;
+                padding: 0 18px 0 22px;
+                color: #fff;
+                background: rgba(0,0,0,0.16);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                font-weight: 700;
+                letter-spacing: 0.3px;
+            }
+
+            .skin-ojas .mobile-sidebar-close {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border: 0;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.12);
+                color: #fff;
+            }
+
+            .skin-ojas .mobile-sidebar-close:hover,
+            .skin-ojas .mobile-sidebar-close:focus {
+                background: rgba(255,255,255,0.22);
+                outline: 2px solid rgba(255,255,255,0.35);
+                outline-offset: 2px;
+            }
+
             .skin-ojas .content-wrapper,
             .skin-ojas .right-side,
             .skin-ojas .main-footer {
                 margin-left: 0;
+            }
+
+            .skin-ojas .content-wrapper,
+            .skin-ojas .right-side {
+                padding-top: 104px;
+            }
+
+            .skin-ojas .user-menu .dropdown-menu,
+            .skin-ojas .tasks-menu .dropdown-menu {
+                width: calc(100vw - 24px);
+                max-width: 320px;
+                right: 8px;
+                left: auto;
             }
         }
         
@@ -358,6 +494,47 @@
     <script src="<?php echo base_url(); ?>assets/bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript">
         var baseURL = "<?php echo base_url(); ?>";
+
+        $(function () {
+            var $body = $('body');
+            var $sidebar = $('.main-sidebar');
+            var $toggle = $('.sidebar-toggle');
+
+            function syncMobileNavigationState() {
+                $toggle.attr('aria-expanded', $body.hasClass('sidebar-open') ? 'true' : 'false');
+            }
+
+            $('[data-mobile-sidebar-close]').on('click', function (event) {
+                event.preventDefault();
+                $body.removeClass('sidebar-open');
+                syncMobileNavigationState();
+            });
+
+            $toggle.on('click', function () {
+                setTimeout(syncMobileNavigationState, 0);
+            });
+
+            $(document).on('click', function (event) {
+                if ($(window).width() > 767 || !$body.hasClass('sidebar-open')) {
+                    return;
+                }
+
+                var clickedSidebar = $(event.target).closest($sidebar).length > 0;
+                var clickedToggle = $(event.target).closest($toggle).length > 0;
+
+                if (!clickedSidebar && !clickedToggle) {
+                    $body.removeClass('sidebar-open');
+                    syncMobileNavigationState();
+                }
+            });
+
+            $(window).on('resize', function () {
+                if ($(window).width() > 767) {
+                    $body.removeClass('sidebar-open');
+                }
+                syncMobileNavigationState();
+            });
+        });
     </script>
     
     <!-- HTML5 Shim and Respond.js -->
@@ -391,9 +568,10 @@
         <!-- Header Navbar -->
         <nav class="navbar navbar-static-top" role="navigation">
           <!-- Sidebar toggle button-->
-          <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+          <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button" aria-label="Open navigation menu" aria-expanded="false">
             <span class="sr-only">Toggle navigation</span>
-            <i class="fa fa-bars"></i>
+            <i class="fa fa-bars" aria-hidden="true"></i>
+            <span class="visible-xs-inline">Menu</span>
           </a>
           
           <div class="navbar-custom-menu">
@@ -457,7 +635,13 @@
       </header>
       
       <!-- Left side column - WIDER SIDEBAR with PROFILE PICTURE -->
-      <aside class="main-sidebar">
+      <aside class="main-sidebar" aria-label="Main navigation">
+        <div class="mobile-sidebar-title">
+          <span><i class="fa fa-leaf" aria-hidden="true"></i> OJAS Navigation</span>
+          <button type="button" class="mobile-sidebar-close" data-mobile-sidebar-close aria-label="Close navigation menu">
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
         <!-- sidebar: style can be found in sidebar.less -->
         <section class="sidebar">
           
