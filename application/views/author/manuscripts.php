@@ -71,6 +71,11 @@
                                             <a href="<?= base_url('author/manuscript/view/'.$m->manuscriptId) ?>" class="btn btn-xs btn-info">
                                                 <i class="fa fa-eye"></i> View
                                             </a>
+                                            <?php if($m->status == 'draft'): ?>
+                                            <a href="<?= base_url('author/manuscript/view/'.$m->manuscriptId) ?>" class="btn btn-xs btn-success">
+                                                <i class="fa fa-paper-plane"></i> Submit Draft
+                                            </a>
+                                            <?php endif; ?>
                                             <?php if($m->status == 'revision_required'): ?>
                                             <a href="<?= base_url('author/manuscript/edit/'.$m->manuscriptId) ?>" class="btn btn-xs btn-warning">
                                                 <i class="fa fa-edit"></i> Revise

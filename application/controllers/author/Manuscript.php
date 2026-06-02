@@ -340,23 +340,46 @@ class Manuscript extends BaseController
             redirect('author/manuscript/submit');
         }
 
-        $manuscriptData = array(
-            'title' => $this->session->userdata('submission_title'),
-            'abstract' => $this->session->userdata('submission_abstract'),
-            'keywords' => $this->session->userdata('submission_keywords'),
-            'articleType' => $this->session->userdata('submission_articleType'),
-            'thematicArea' => $this->session->userdata('submission_thematicArea'),
-            'coverLetter' => $this->session->userdata('submission_coverLetter'),
-            'submittedBy' => $this->vendorId,
-            'correspondingAuthorId' => $this->vendorId,
-            'status' => 'draft'
-        );
-        $manuscriptId = $this->manuscript_model->submit($manuscriptData);
+        $manuscriptId = $this->persistSubmission('draft');
         if (!$manuscriptId) {
-            $this->session->set_flashdata('error', 'Could not save draft.');
+            $this->session->set_flashdata('error', 'Could not save draft. Please check your uploaded files and try again.');
             redirect('author/manuscript/step3');
         }
-        $this->session->set_flashdata('success', 'Draft saved successfully.');
+
+        $this->clearSubmissionSession();
+        $this->session->set_flashdata('success', 'Draft saved successfully. You can submit it later from the manuscript details page.');
+        redirect('author/manuscript/view/' . (int)$manuscriptId);
+    }
+
+    public function submitDraft($manuscriptId)
+    {
+        $manuscript = $this->manuscript_model->getManuscript((int)$manuscriptId);
+
+        if(!$manuscript) {
+            $this->session->set_flashdata('error', 'Manuscript not found');
+            redirect('author/manuscript');
+        }
+
+        if($manuscript->submittedBy != $this->vendorId && $this->isAdmin != 1) {
+            $this->loadThis();
+            return;
+        }
+
+        if($manuscript->status !== 'draft') {
+            $this->session->set_flashdata('error', 'Only draft manuscripts can be submitted.');
+            redirect('author/manuscript/view/' . (int)$manuscriptId);
+        }
+
+        $this->db->where('manuscriptId', (int)$manuscriptId);
+        $this->db->where('fileType', 'main');
+        $this->db->where('isDeleted', 0);
+        if($this->db->count_all_results('tbl_manuscript_files') < 1) {
+            $this->session->set_flashdata('error', 'Please upload a main manuscript file before submitting this draft.');
+            redirect('author/manuscript/view/' . (int)$manuscriptId);
+        }
+
+        $ok = $this->manuscript_model->updateManuscript((int)$manuscriptId, array('status' => 'submitted'));
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft submitted successfully.' : 'Unable to submit draft.');
         redirect('author/manuscript/view/' . (int)$manuscriptId);
     }
     
@@ -376,7 +399,25 @@ class Manuscript extends BaseController
             $this->session->set_flashdata('error', 'You must confirm the declaration');
             redirect('author/manuscript/step3');
         }
-        
+
+        $manuscriptId = $this->persistSubmission('submitted');
+        if(!$manuscriptId) {
+            $this->session->set_flashdata('error', 'Failed to submit manuscript. Please check your uploaded files and try again.');
+            redirect('author/manuscript/step3');
+        }
+
+        // Get the manuscript number for success message
+        $manuscript = $this->manuscript_model->getManuscript($manuscriptId);
+
+        // Clear session
+        $this->clearSubmissionSession();
+
+        $this->session->set_flashdata('success', 'Manuscript submitted successfully! Manuscript Number: ' . $manuscript->manuscriptNumber);
+        redirect('author/manuscript/view/' . $manuscriptId);
+    }
+
+    private function persistSubmission($status)
+    {
         // Prepare manuscript data
         $manuscriptData = array(
             'title' => $this->session->userdata('submission_title'),
@@ -386,83 +427,105 @@ class Manuscript extends BaseController
             'thematicArea' => $this->session->userdata('submission_thematicArea'),
             'coverLetter' => $this->session->userdata('submission_coverLetter'),
             'submittedBy' => $this->vendorId,
-            'correspondingAuthorId' => $this->vendorId
+            'correspondingAuthorId' => $this->vendorId,
+            'status' => $status
         );
-        
+
+        $this->db->trans_begin();
+
         // Insert manuscript
         $manuscriptId = $this->manuscript_model->submit($manuscriptData);
-        
-        if($manuscriptId) {
-            // Upload main file
-            $mainUpload = $this->file_model->uploadFile($manuscriptId, 'main_file');
+        if(!$manuscriptId) {
+            $this->db->trans_rollback();
+            return false;
+        }
+
+        // Upload main file when provided. Drafts may be saved before a file is selected.
+        if(!empty($_FILES['main_file']['name'])) {
+            $mainUpload = $this->file_model->uploadFile($manuscriptId, 'main_file', 'main');
             if($mainUpload !== true && $mainUpload !== null) {
-                // Upload failed
-                $this->session->set_flashdata('error', 'File upload failed: ' . $mainUpload);
-                redirect('author/manuscript/step3');
+                log_message('error', 'Manuscript file upload failed while saving ' . $status . ': ' . $mainUpload);
+                $this->db->trans_rollback();
+                return false;
             }
-            
-            // Upload figures files if any
-            if(!empty($_FILES['figures_files']['name'][0])) {
-                $this->handleMultipleFileUpload($manuscriptId, 'figures_files', 'figure');
+        }
+
+        // Upload figures files if any
+        if(!empty($_FILES['figures_files']['name'][0])) {
+            $figuresUpload = $this->handleMultipleFileUpload($manuscriptId, 'figures_files', 'figure');
+            if($figuresUpload !== true) {
+                log_message('error', 'Figure upload failed while saving ' . $status . ': ' . $figuresUpload);
+                $this->db->trans_rollback();
+                return false;
             }
-            
-            // Upload supplementary files if any
-            if(!empty($_FILES['supplementary_files']['name'][0])) {
-                $this->handleMultipleFileUpload($manuscriptId, 'supplementary_files', 'supplementary');
+        }
+
+        // Upload supplementary files if any
+        if(!empty($_FILES['supplementary_files']['name'][0])) {
+            $supplementaryUpload = $this->handleMultipleFileUpload($manuscriptId, 'supplementary_files', 'supplementary');
+            if($supplementaryUpload !== true) {
+                log_message('error', 'Supplementary upload failed while saving ' . $status . ': ' . $supplementaryUpload);
+                $this->db->trans_rollback();
+                return false;
             }
-            
-            // Save authors
-            $authors = json_decode($this->session->userdata('submission_authors'), true);
-            foreach($authors as $author) {
-                if(isset($author['isNew']) && $author['isNew']) {
-                    // Check if table exists, if not create it
-                    if(!$this->db->table_exists('tbl_manuscript_author_details')) {
-                        $this->createAuthorDetailsTable();
-                    }
-                    
-                    // For new authors, store details
-                    $authorData = array(
-                        'manuscriptId' => $manuscriptId,
-                        'name' => $author['name'],
-                        'email' => $author['email'],
-                        'institution' => $author['institution'],
-                        'country' => $author['country'],
-                        'orcid' => $author['orcid'],
-                        'isCorresponding' => $author['isCorresponding'],
-                        'authorOrder' => $author['authorOrder'],
-                        'createdDtm' => date('Y-m-d H:i:s')
-                    );
-                    $this->db->insert('tbl_manuscript_author_details', $authorData);
-                } else {
-                    // Existing user
-                    $authorData = array(
-                        'manuscriptId' => $manuscriptId,
-                        'userId' => $author['userId'],
-                        'isCorresponding' => $author['isCorresponding'],
-                        'authorOrder' => $author['authorOrder'],
-                        'createdDtm' => date('Y-m-d H:i:s')
-                    );
-                    $this->db->insert('tbl_manuscript_authors', $authorData);
+        }
+
+        $this->saveSubmissionAuthors($manuscriptId);
+
+        if($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            return false;
+        }
+
+        $this->db->trans_commit();
+        return $manuscriptId;
+    }
+
+    private function saveSubmissionAuthors($manuscriptId)
+    {
+        $authors = json_decode($this->session->userdata('submission_authors'), true);
+        foreach($authors as $author) {
+            if(isset($author['isNew']) && $author['isNew']) {
+                // Check if table exists, if not create it
+                if(!$this->db->table_exists('tbl_manuscript_author_details')) {
+                    $this->createAuthorDetailsTable();
                 }
+
+                // For new authors, store details
+                $authorData = array(
+                    'manuscriptId' => $manuscriptId,
+                    'name' => $author['name'],
+                    'email' => $author['email'],
+                    'institution' => $author['institution'],
+                    'country' => $author['country'],
+                    'orcid' => $author['orcid'],
+                    'isCorresponding' => $author['isCorresponding'],
+                    'authorOrder' => $author['authorOrder'],
+                    'createdDtm' => date('Y-m-d H:i:s')
+                );
+                $this->db->insert('tbl_manuscript_author_details', $authorData);
+            } else {
+                // Existing user
+                $authorData = array(
+                    'manuscriptId' => $manuscriptId,
+                    'userId' => $author['userId'],
+                    'isCorresponding' => $author['isCorresponding'],
+                    'authorOrder' => $author['authorOrder'],
+                    'createdDtm' => date('Y-m-d H:i:s')
+                );
+                $this->db->insert('tbl_manuscript_authors', $authorData);
             }
-            
-            // Get the manuscript number for success message
-            $manuscript = $this->manuscript_model->getManuscript($manuscriptId);
-            
-            // Clear session
-            $this->session->unset_userdata([
-                'submission_title', 'submission_abstract', 'submission_keywords',
-                'submission_articleType', 'submission_thematicArea', 'submission_coverLetter', 'submission_authors'
-            ]);
-            
-            $this->session->set_flashdata('success', 'Manuscript submitted successfully! Manuscript Number: ' . $manuscript->manuscriptNumber);
-            redirect('author/manuscript/view/' . $manuscriptId);
-        } else {
-            $this->session->set_flashdata('error', 'Failed to submit manuscript');
-            redirect('author/manuscript/step3');
         }
     }
-    
+
+    private function clearSubmissionSession()
+    {
+        $this->session->unset_userdata([
+            'submission_title', 'submission_abstract', 'submission_keywords',
+            'submission_articleType', 'submission_thematicArea', 'submission_coverLetter', 'submission_authors'
+        ]);
+    }
+
     /**
      * Handle multiple file uploads
      */
@@ -472,14 +535,23 @@ class Manuscript extends BaseController
         $fileCount = count($files['name']);
         
         for($i = 0; $i < $fileCount; $i++) {
+            if(empty($files['name'][$i])) {
+                continue;
+            }
+
             $_FILES['single_file']['name'] = $files['name'][$i];
             $_FILES['single_file']['type'] = $files['type'][$i];
             $_FILES['single_file']['tmp_name'] = $files['tmp_name'][$i];
             $_FILES['single_file']['error'] = $files['error'][$i];
             $_FILES['single_file']['size'] = $files['size'][$i];
             
-            $this->file_model->uploadFile($manuscriptId, 'single_file', $fileType);
+            $upload = $this->file_model->uploadFile($manuscriptId, 'single_file', $fileType);
+            if($upload !== true && $upload !== null) {
+                return $upload;
+            }
         }
+
+        return true;
     }
 
     private function getInstitutionSuggestions()

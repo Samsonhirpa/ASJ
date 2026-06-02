@@ -195,6 +195,26 @@
                 </div>
                 
                 <!-- Actions Card -->
+                <?php if($manuscript->status == 'draft'): ?>
+                <div class="box" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 20px;">
+                    <div class="box-header" style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e9ecef;">
+                        <h3 class="box-title" style="font-weight: 600;">
+                            <i class="fa fa-save" style="color: #2c5f2d;"></i>
+                            Draft Actions
+                        </h3>
+                    </div>
+
+                    <div class="box-body" style="padding: 20px;">
+                        <form method="post" action="<?= base_url('author/manuscript/submit-draft/' . (int)$manuscript->manuscriptId) ?>" onsubmit="return confirm('Submit this draft manuscript now?');">
+                            <button type="submit" class="btn btn-success btn-block" style="border-radius: 8px; padding: 12px;">
+                                <i class="fa fa-paper-plane"></i> Submit Draft Now
+                            </button>
+                        </form>
+                        <p class="text-muted" style="margin-top:10px;">Your saved files and manuscript details will remain attached when the draft is submitted.</p>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <?php if($manuscript->status == 'revision_required'): ?>
                 <div class="box" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 20px;">
                     <div class="box-header" style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e9ecef;">
