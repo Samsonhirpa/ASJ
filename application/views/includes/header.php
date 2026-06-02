@@ -663,11 +663,7 @@
                 </a>
             </li>
             
-               <li class="<?= (isset($activeMenu) && $activeMenu == 'payment') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/payment') ?>">
-                    <i class="fa fa-money"></i> <span>Payment </span>
-                </a>
-            </li>
+           
 
             
             <!-- Editor-in-Chief only menus -->
@@ -717,39 +713,9 @@
             </li>
             <?php endif; ?>
             
-            <!-- ========== JOURNAL MANAGEMENT (Common for all) ========== -->
-            <li class="header">JOURNAL</li>
-            
-            <li class="<?php echo (uri_string() == 'journal/current-issue') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>journal/current-issue">
-                <i class="fa fa-book"></i> 
-                <span>Current Issue</span>
-              </a>
-            </li>
-            
-            <li class="<?php echo (uri_string() == 'journal/archive') ? 'active' : ''; ?>">
-              <a href="<?php echo base_url(); ?>journal/archive">
-                <i class="fa fa-archive"></i> 
-                <span>All Issues</span>
-              </a>
-            </li>
         
             
-            <!-- ========== REPORTS SECTION ========== -->
-            <li class="header">REPORTS</li>
-            
-            <li class="treeview">
-              <a href="#">
-                <i class="fa fa-bar-chart"></i> 
-                <span>Analytics</span>
-                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
-              </a>
-              <ul class="treeview-menu">
-                <li><a href="#"><i class="fa fa-file-pdf-o"></i> Annual Report</a></li>
-                <li><a href="#"><i class="fa fa-file-excel-o"></i> Export Data</a></li>
-                <li><a href="#"><i class="fa fa-line-chart"></i> Statistics</a></li>
-              </ul>
-            </li>
+        
             
             <!-- ========== USER SETTINGS ========== -->
             <li class="header">USER</li>
