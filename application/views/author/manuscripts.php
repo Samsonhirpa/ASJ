@@ -71,24 +71,6 @@
                                             <a href="<?= base_url('author/manuscript/view/'.$m->manuscriptId) ?>" class="btn btn-xs btn-info">
                                                 <i class="fa fa-eye"></i> View
                                             </a>
-                                            <?php if($m->status == 'draft'): ?>
-                                            <a href="<?= base_url('author/manuscript/draft/'.$m->manuscriptId.'/details') ?>" class="btn btn-xs btn-primary">
-                                                <i class="fa fa-edit"></i> Edit Draft
-                                            </a>
-                                            <a href="<?= base_url('author/manuscript/draft/'.$m->manuscriptId.'/delete') ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this draft permanently?');">
-                                                <i class="fa fa-trash"></i> Delete Draft
-                                            </a>
-                                            <?php endif; ?>
-                                            <?php if($m->status == 'revision_required'): ?>
-                                            <a href="<?= base_url('author/manuscript/edit/'.$m->manuscriptId) ?>" class="btn btn-xs btn-warning">
-                                                <i class="fa fa-edit"></i> Revise
-                                            </a>
-                                            <?php endif; ?>
-                                            <?php if($m->status == 'draft' || $m->status == 'submitted'): ?>
-                                            <a href="#" class="btn btn-xs btn-danger" onclick="return confirmWithdraw(<?= $m->manuscriptId ?>)">
-                                                <i class="fa fa-ban"></i> Withdraw
-                                            </a>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -112,12 +94,3 @@
         </div>
     </section>
 </div>
-
-<script>
-function confirmWithdraw(id) {
-    if(confirm('Are you sure you want to withdraw this manuscript? This action cannot be undone.')) {
-        window.location.href = '<?= base_url('author/manuscript/withdraw/') ?>' + id;
-    }
-    return false;
-}
-</script>
