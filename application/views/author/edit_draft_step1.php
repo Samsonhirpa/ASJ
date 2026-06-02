@@ -10,17 +10,7 @@
     </section>
 
     <section class="content">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="box" style="border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); padding: 20px;">
-                    <div class="progress" style="height: 30px; border-radius: 15px;">
-                        <div class="progress-bar progress-bar-success" role="progressbar" style="width: 33%; background: #2c5f2d; border-radius: 15px 0 0 15px; line-height: 30px; font-weight: 600;">Step 1: Details</div>
-                        <div class="progress-bar progress-bar-info" role="progressbar" style="width: 33%; background: #6c757d; line-height: 30px; font-weight: 600;">Step 2: Authors</div>
-                        <div class="progress-bar progress-bar-info" role="progressbar" style="width: 34%; background: #6c757d; border-radius: 0 15px 15px 0; line-height: 30px; font-weight: 600;">Step 3: Files</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php $this->load->view('author/draft_progress'); ?>
 
         <?php if($this->session->flashdata('error')): ?><div class="alert alert-danger" style="border-radius:10px;"><i class="fa fa-exclamation-triangle"></i> <?= $this->session->flashdata('error') ?></div><?php endif; ?>
         <?php if($this->session->flashdata('success')): ?><div class="alert alert-success" style="border-radius:10px;"><i class="fa fa-check-circle"></i> <?= $this->session->flashdata('success') ?></div><?php endif; ?>
