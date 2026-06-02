@@ -205,12 +205,24 @@
                     </div>
 
                     <div class="box-body" style="padding: 20px;">
-                        <form method="post" action="<?= base_url('author/manuscript/submit-draft/' . (int)$manuscript->manuscriptId) ?>" onsubmit="return confirm('Submit this draft manuscript now?');">
+                        <a href="<?= base_url('author/manuscript/draft/' . (int)$manuscript->manuscriptId . '/details') ?>" class="btn btn-primary btn-block" style="border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                            <i class="fa fa-edit"></i> Edit Details
+                        </a>
+                        <a href="<?= base_url('author/manuscript/draft/' . (int)$manuscript->manuscriptId . '/authors') ?>" class="btn btn-info btn-block" style="border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                            <i class="fa fa-users"></i> Add / Edit Co-authors
+                        </a>
+                        <a href="<?= base_url('author/manuscript/draft/' . (int)$manuscript->manuscriptId . '/files') ?>" class="btn btn-warning btn-block" style="border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                            <i class="fa fa-upload"></i> Upload / Delete Files
+                        </a>
+                        <form method="post" action="<?= base_url('author/manuscript/submit-draft/' . (int)$manuscript->manuscriptId) ?>" onsubmit="return confirm('Submit this draft manuscript now?');" style="margin-top: 12px;">
                             <button type="submit" class="btn btn-success btn-block" style="border-radius: 8px; padding: 12px;">
                                 <i class="fa fa-paper-plane"></i> Submit Draft Now
                             </button>
                         </form>
-                        <p class="text-muted" style="margin-top:10px;">Your saved files and manuscript details will remain attached when the draft is submitted.</p>
+                        <a href="<?= base_url('author/manuscript/draft/' . (int)$manuscript->manuscriptId . '/delete') ?>" class="btn btn-danger btn-block" style="border-radius: 8px; padding: 12px; margin-top: 8px;" onclick="return confirm('Delete this draft permanently?');">
+                            <i class="fa fa-trash"></i> Delete Draft
+                        </a>
+                        <p class="text-muted" style="margin-top:10px;">You can update draft details, co-authors, and files at any step before submitting.</p>
                     </div>
                 </div>
                 <?php endif; ?>

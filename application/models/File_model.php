@@ -72,6 +72,31 @@ public function uploadFile($manuscriptId, $fieldName, $fileType = null)
 
    
     
+
+    /**
+     * Delete a file only when it belongs to the supplied manuscript.
+     */
+    public function deleteManuscriptFile($fileId, $manuscriptId)
+    {
+        $file = $this->db->get_where('tbl_manuscript_files', [
+            'fileId' => $fileId,
+            'manuscriptId' => $manuscriptId,
+            'isDeleted' => 0
+        ])->row();
+
+        if (!$file) {
+            return false;
+        }
+
+        if (file_exists('./' . $file->filePath)) {
+            unlink('./' . $file->filePath);
+        }
+
+        $this->db->where('fileId', $fileId);
+        $this->db->where('manuscriptId', $manuscriptId);
+        return $this->db->update('tbl_manuscript_files', ['isDeleted' => 1]);
+    }
+
     /**
      * Delete file
      */

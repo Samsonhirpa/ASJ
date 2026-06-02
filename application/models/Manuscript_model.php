@@ -119,6 +119,109 @@ class Manuscript_model extends CI_Model
         return $query->row();
     }
     
+
+    /**
+     * Get draft manuscript that belongs to an author.
+     */
+    public function getAuthorDraft($manuscriptId, $authorId, $isAdmin = false)
+    {
+        $this->db->where('manuscriptId', $manuscriptId);
+        $this->db->where('status', 'draft');
+        $this->db->where('isDeleted', 0);
+        if (!$isAdmin) {
+            $this->db->where('submittedBy', $authorId);
+        }
+
+        return $this->db->get($this->table)->row();
+    }
+
+    /**
+     * Replace all authors for a draft manuscript.
+     */
+    public function replaceDraftAuthors($manuscriptId, $authors)
+    {
+        $this->db->trans_start();
+
+        $this->db->where('manuscriptId', $manuscriptId)->delete('tbl_manuscript_authors');
+        if ($this->db->table_exists('tbl_manuscript_author_details')) {
+            $this->db->where('manuscriptId', $manuscriptId)->delete('tbl_manuscript_author_details');
+        }
+
+        foreach ($authors as $author) {
+            if (!empty($author['isNew'])) {
+                $this->ensureAuthorDetailsTable();
+                $this->db->insert('tbl_manuscript_author_details', [
+                    'manuscriptId' => $manuscriptId,
+                    'name' => $author['name'],
+                    'email' => $author['email'],
+                    'institution' => $author['institution'],
+                    'country' => $author['country'],
+                    'orcid' => $author['orcid'],
+                    'isCorresponding' => $author['isCorresponding'],
+                    'authorOrder' => $author['authorOrder'],
+                    'createdDtm' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                $this->db->insert('tbl_manuscript_authors', [
+                    'manuscriptId' => $manuscriptId,
+                    'userId' => $author['userId'],
+                    'isCorresponding' => $author['isCorresponding'],
+                    'authorOrder' => $author['authorOrder'],
+                    'createdDtm' => date('Y-m-d H:i:s')
+                ]);
+            }
+        }
+
+        $this->updateManuscript($manuscriptId, []);
+        $this->db->trans_complete();
+        return $this->db->trans_status();
+    }
+
+    /**
+     * Mark a draft and its files as deleted.
+     */
+    public function deleteDraft($manuscriptId, $authorId, $isAdmin = false)
+    {
+        $draft = $this->getAuthorDraft($manuscriptId, $authorId, $isAdmin);
+        if (!$draft) {
+            return false;
+        }
+
+        $this->db->trans_start();
+        $this->db->where('manuscriptId', $manuscriptId)->update($this->table, [
+            'isDeleted' => 1,
+            'updatedBy' => $this->session->userdata('userId'),
+            'updatedDtm' => date('Y-m-d H:i:s')
+        ]);
+        $this->db->where('manuscriptId', $manuscriptId)->update('tbl_manuscript_files', ['isDeleted' => 1]);
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
+    }
+
+    private function ensureAuthorDetailsTable()
+    {
+        if ($this->db->table_exists('tbl_manuscript_author_details')) {
+            return;
+        }
+
+        $sql = "CREATE TABLE IF NOT EXISTS `tbl_manuscript_author_details` (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `manuscriptId` INT(11) NOT NULL,
+            `name` VARCHAR(255) NOT NULL,
+            `email` VARCHAR(128) NOT NULL,
+            `institution` VARCHAR(255) DEFAULT NULL,
+            `country` VARCHAR(100) DEFAULT NULL,
+            `orcid` VARCHAR(50) DEFAULT NULL,
+            `isCorresponding` TINYINT(1) DEFAULT 0,
+            `authorOrder` INT(11) NOT NULL,
+            `createdDtm` DATETIME NOT NULL,
+            PRIMARY KEY (`id`),
+            KEY `manuscriptId` (`manuscriptId`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+        $this->db->query($sql);
+    }
+
     /**
      * Count author's manuscripts
      */

@@ -72,8 +72,11 @@
                                                 <i class="fa fa-eye"></i> View
                                             </a>
                                             <?php if($m->status == 'draft'): ?>
-                                            <a href="<?= base_url('author/manuscript/view/'.$m->manuscriptId) ?>" class="btn btn-xs btn-success">
-                                                <i class="fa fa-paper-plane"></i> Submit Draft
+                                            <a href="<?= base_url('author/manuscript/draft/'.$m->manuscriptId.'/details') ?>" class="btn btn-xs btn-primary">
+                                                <i class="fa fa-edit"></i> Edit Draft
+                                            </a>
+                                            <a href="<?= base_url('author/manuscript/draft/'.$m->manuscriptId.'/delete') ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this draft permanently?');">
+                                                <i class="fa fa-trash"></i> Delete Draft
                                             </a>
                                             <?php endif; ?>
                                             <?php if($m->status == 'revision_required'): ?>
