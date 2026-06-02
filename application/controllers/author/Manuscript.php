@@ -383,6 +383,161 @@ class Manuscript extends BaseController
         redirect('author/manuscript/view/' . (int)$manuscriptId);
     }
     
+
+    public function editDraftDetails($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['articleTypes'] = $this->getArticleTypes();
+        $data['thematicAreas'] = $this->getThematicAreas();
+        $this->global['pageTitle'] = 'Edit Draft Details - OJAS';
+        $this->global['activeMenu'] = 'submissions';
+        $this->loadViews('author/edit_draft_step1', $this->global, $data, NULL);
+    }
+
+    public function updateDraftDetails($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $this->form_validation->set_rules('title', 'Title', 'trim|required|max_length[500]');
+        $this->form_validation->set_rules('abstract', 'Abstract', 'trim|required');
+        $this->form_validation->set_rules('keywords', 'Keywords', 'trim|required');
+        $this->form_validation->set_rules('articleType', 'Article Type', 'required');
+        $this->form_validation->set_rules('thematicArea', 'Thematic Area (Section)', 'required');
+
+        if ($this->form_validation->run() == FALSE) {
+            return $this->editDraftDetails($manuscriptId);
+        }
+
+        $ok = $this->manuscript_model->updateManuscript((int)$manuscriptId, [
+            'title' => $this->input->post('title', true),
+            'abstract' => $this->input->post('abstract', true),
+            'keywords' => $this->input->post('keywords', true),
+            'articleType' => $this->input->post('articleType', true),
+            'thematicArea' => $this->input->post('thematicArea', true),
+            'coverLetter' => $this->input->post('coverLetter', true)
+        ]);
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft details updated successfully.' : 'Unable to update draft details.');
+        redirect('author/manuscript/view/' . (int)$manuscriptId);
+    }
+
+    public function editDraftAuthors($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['authors'] = $this->getManuscriptAuthorsForView((int)$manuscriptId);
+        $data['institutionSuggestions'] = $this->getInstitutionSuggestions();
+        $this->global['pageTitle'] = 'Edit Draft Authors - OJAS';
+        $this->global['activeMenu'] = 'submissions';
+        $this->loadViews('author/edit_draft_step2', $this->global, $data, NULL);
+    }
+
+    public function updateDraftAuthors($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $authorData = $this->buildAuthorDataFromPost();
+        if (empty($authorData)) {
+            $this->session->set_flashdata('error', 'Please keep at least one author on the draft.');
+            redirect('author/manuscript/draft/' . (int)$manuscriptId . '/authors');
+            return;
+        }
+
+        $ok = $this->manuscript_model->replaceDraftAuthors((int)$manuscriptId, $authorData);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft authors updated successfully.' : 'Unable to update draft authors.');
+        redirect('author/manuscript/view/' . (int)$manuscriptId);
+    }
+
+    public function editDraftFiles($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $data['manuscript'] = $manuscript;
+        $data['files'] = $this->manuscript_model->getManuscriptFiles((int)$manuscriptId);
+        $this->global['pageTitle'] = 'Edit Draft Files - OJAS';
+        $this->global['activeMenu'] = 'submissions';
+        $this->loadViews('author/edit_draft_step3', $this->global, $data, NULL);
+    }
+
+    public function updateDraftFiles($manuscriptId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $uploadMessages = [];
+        $success = true;
+
+        if (!empty($_FILES['main_file']['name'])) {
+            $mainUpload = $this->file_model->uploadFile((int)$manuscriptId, 'main_file', 'main');
+            if ($mainUpload !== true && $mainUpload !== null) {
+                $success = false;
+                $uploadMessages[] = 'Main file: ' . $mainUpload;
+            }
+        }
+
+        if (!empty($_FILES['figures_files']['name'][0])) {
+            $figuresUpload = $this->handleMultipleFileUpload((int)$manuscriptId, 'figures_files', 'figure');
+            if ($figuresUpload !== true) {
+                $success = false;
+                $uploadMessages[] = 'Figures: ' . $figuresUpload;
+            }
+        }
+
+        if (!empty($_FILES['supplementary_files']['name'][0])) {
+            $supplementaryUpload = $this->handleMultipleFileUpload((int)$manuscriptId, 'supplementary_files', 'supplementary');
+            if ($supplementaryUpload !== true) {
+                $success = false;
+                $uploadMessages[] = 'Supplementary files: ' . $supplementaryUpload;
+            }
+        }
+
+        if ($success) {
+            $this->manuscript_model->updateManuscript((int)$manuscriptId, []);
+        }
+
+        $this->session->set_flashdata($success ? 'success' : 'error', $success ? 'Draft files updated successfully.' : implode(' ', $uploadMessages));
+        redirect('author/manuscript/draft/' . (int)$manuscriptId . '/files');
+    }
+
+    public function deleteDraftFile($manuscriptId, $fileId)
+    {
+        $manuscript = $this->requireAuthorDraft($manuscriptId);
+        if (!$manuscript) {
+            return;
+        }
+
+        $ok = $this->file_model->deleteManuscriptFile((int)$fileId, (int)$manuscriptId);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft file deleted successfully.' : 'Unable to delete draft file.');
+        redirect('author/manuscript/draft/' . (int)$manuscriptId . '/files');
+    }
+
+    public function deleteDraft($manuscriptId)
+    {
+        $ok = $this->manuscript_model->deleteDraft((int)$manuscriptId, (int)$this->vendorId, $this->isAdmin == 1);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Draft deleted successfully.' : 'Only your draft manuscripts can be deleted.');
+        redirect('author/manuscript');
+    }
+
     /**
      * Process final submission
      */
@@ -597,6 +752,111 @@ class Manuscript extends BaseController
         $defaults['country'] = isset($currentUser->country) ? (string)$currentUser->country : '';
 
         return $defaults;
+    }
+
+
+    private function requireAuthorDraft($manuscriptId)
+    {
+        $manuscript = $this->manuscript_model->getAuthorDraft((int)$manuscriptId, (int)$this->vendorId, $this->isAdmin == 1);
+        if (!$manuscript) {
+            $this->session->set_flashdata('error', 'Draft manuscript not found or not editable.');
+            redirect('author/manuscript');
+            return false;
+        }
+
+        return $manuscript;
+    }
+
+    private function getManuscriptAuthorsForView($manuscriptId)
+    {
+        $this->db->select('u.userId, u.name, u.email, u.institution, u.country, NULL as orcid, ma.isCorresponding, ma.authorOrder, 0 as isNew');
+        $this->db->from('tbl_manuscript_authors ma');
+        $this->db->join('tbl_users u', 'ma.userId = u.userId');
+        $this->db->where('ma.manuscriptId', $manuscriptId);
+        $registered = $this->db->get()->result();
+
+        $nonRegistered = [];
+        if ($this->db->table_exists('tbl_manuscript_author_details')) {
+            $this->db->select('NULL as userId, name, email, institution, country, orcid, isCorresponding, authorOrder, 1 as isNew');
+            $this->db->where('manuscriptId', $manuscriptId);
+            $nonRegistered = $this->db->get('tbl_manuscript_author_details')->result();
+        }
+
+        $authors = array_merge($registered, $nonRegistered);
+        usort($authors, function($a, $b) {
+            return (int)$a->authorOrder - (int)$b->authorOrder;
+        });
+
+        return $authors;
+    }
+
+    private function buildAuthorDataFromPost()
+    {
+        $first_names = (array)$this->input->post('first_name');
+        $middle_names = (array)$this->input->post('middle_name');
+        $last_names = (array)$this->input->post('last_name');
+        $titles = (array)$this->input->post('title');
+        $emails = (array)$this->input->post('email');
+        $institutions = (array)$this->input->post('institution');
+        $orcids = (array)$this->input->post('orcid');
+        $countries = (array)$this->input->post('country');
+        $user_ids = (array)$this->input->post('user_id');
+        $corresponding_index = $this->input->post('corresponding');
+
+        $authorData = array();
+        $hasCorresponding = false;
+        $order = 1;
+
+        foreach ($first_names as $index => $first_name) {
+            $first_name = trim((string)$first_name);
+            $last_name = isset($last_names[$index]) ? trim((string)$last_names[$index]) : '';
+            $email = isset($emails[$index]) ? trim((string)$emails[$index]) : '';
+
+            if ($first_name === '' && $last_name === '' && $email === '') {
+                continue;
+            }
+
+            $isCorresponding = 0;
+            if ($corresponding_index !== null && (string)$corresponding_index === (string)$index) {
+                $isCorresponding = 1;
+                $hasCorresponding = true;
+            }
+
+            if (!$hasCorresponding && empty($authorData)) {
+                $isCorresponding = 1;
+                $hasCorresponding = true;
+            }
+
+            $title = isset($titles[$index]) ? trim((string)$titles[$index]) : '';
+            $middle_name = isset($middle_names[$index]) ? trim((string)$middle_names[$index]) : '';
+            $fullName = trim($title . ' ' . $first_name . ' ' . $middle_name . ' ' . $last_name);
+            $userId = isset($user_ids[$index]) ? $user_ids[$index] : 'new';
+
+            if ($userId === 'new' || $userId === '' || !is_numeric($userId)) {
+                $authorData[] = array(
+                    'name' => $fullName,
+                    'email' => $email,
+                    'institution' => isset($institutions[$index]) ? trim((string)$institutions[$index]) : '',
+                    'country' => isset($countries[$index]) ? trim((string)$countries[$index]) : '',
+                    'orcid' => isset($orcids[$index]) ? trim((string)$orcids[$index]) : '',
+                    'isCorresponding' => $isCorresponding,
+                    'authorOrder' => $order++,
+                    'isNew' => true
+                );
+            } else {
+                $authorData[] = array(
+                    'userId' => (int)$userId,
+                    'name' => $fullName,
+                    'email' => $email,
+                    'institution' => isset($institutions[$index]) ? trim((string)$institutions[$index]) : '',
+                    'country' => isset($countries[$index]) ? trim((string)$countries[$index]) : '',
+                    'isCorresponding' => $isCorresponding,
+                    'authorOrder' => $order++
+                );
+            }
+        }
+
+        return $authorData;
     }
 
     /**
