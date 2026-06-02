@@ -394,6 +394,8 @@ class Manuscript extends BaseController
         $data['manuscript'] = $manuscript;
         $data['articleTypes'] = $this->getArticleTypes();
         $data['thematicAreas'] = $this->getThematicAreas();
+        $data['currentDraftStep'] = 1;
+        $data['draftStepStatus'] = $this->getDraftStepStatus((int)$manuscriptId, $manuscript);
         $this->global['pageTitle'] = 'Edit Draft Details - OJAS';
         $this->global['activeMenu'] = 'submissions';
         $this->loadViews('author/edit_draft_step1', $this->global, $data, NULL);
@@ -439,6 +441,8 @@ class Manuscript extends BaseController
         $data['manuscript'] = $manuscript;
         $data['authors'] = $this->getManuscriptAuthorsForView((int)$manuscriptId);
         $data['institutionSuggestions'] = $this->getInstitutionSuggestions();
+        $data['currentDraftStep'] = 2;
+        $data['draftStepStatus'] = $this->getDraftStepStatus((int)$manuscriptId, $manuscript);
         $this->global['pageTitle'] = 'Edit Draft Authors - OJAS';
         $this->global['activeMenu'] = 'submissions';
         $this->loadViews('author/edit_draft_step2', $this->global, $data, NULL);
@@ -472,6 +476,8 @@ class Manuscript extends BaseController
 
         $data['manuscript'] = $manuscript;
         $data['files'] = $this->manuscript_model->getManuscriptFiles((int)$manuscriptId);
+        $data['currentDraftStep'] = 3;
+        $data['draftStepStatus'] = $this->getDraftStepStatus((int)$manuscriptId, $manuscript);
         $this->global['pageTitle'] = 'Edit Draft Files - OJAS';
         $this->global['activeMenu'] = 'submissions';
         $this->loadViews('author/edit_draft_step3', $this->global, $data, NULL);
@@ -767,9 +773,40 @@ class Manuscript extends BaseController
         return $manuscript;
     }
 
+
+    private function getDraftStepStatus($manuscriptId, $manuscript = null)
+    {
+        if ($manuscript === null) {
+            $manuscript = $this->manuscript_model->getManuscript((int)$manuscriptId);
+        }
+
+        $detailsComplete = !empty($manuscript)
+            && trim((string)$manuscript->title) !== ''
+            && trim((string)$manuscript->abstract) !== ''
+            && trim((string)$manuscript->keywords) !== ''
+            && trim((string)$manuscript->articleType) !== ''
+            && trim((string)$manuscript->thematicArea) !== '';
+
+        $registeredAuthors = $this->db->where('manuscriptId', (int)$manuscriptId)->count_all_results('tbl_manuscript_authors');
+        $nonRegisteredAuthors = 0;
+        if ($this->db->table_exists('tbl_manuscript_author_details')) {
+            $nonRegisteredAuthors = $this->db->where('manuscriptId', (int)$manuscriptId)->count_all_results('tbl_manuscript_author_details');
+        }
+
+        $uploadedFiles = $this->db->where('manuscriptId', (int)$manuscriptId)
+            ->where('isDeleted', 0)
+            ->count_all_results('tbl_manuscript_files');
+
+        return [
+            'detailsComplete' => $detailsComplete,
+            'authorsComplete' => ($registeredAuthors + $nonRegisteredAuthors) > 0,
+            'filesUploaded' => $uploadedFiles > 0
+        ];
+    }
+
     private function getManuscriptAuthorsForView($manuscriptId)
     {
-        $this->db->select('u.userId, u.name, u.email, u.institution, u.country, NULL as orcid, ma.isCorresponding, ma.authorOrder, 0 as isNew');
+        $this->db->select('u.userId, u.name, u.email, u.institution, u.country, NULL as orcid, ma.isCorresponding, ma.authorOrder, 0 as isNew', false);
         $this->db->from('tbl_manuscript_authors ma');
         $this->db->join('tbl_users u', 'ma.userId = u.userId');
         $this->db->where('ma.manuscriptId', $manuscriptId);
@@ -777,7 +814,7 @@ class Manuscript extends BaseController
 
         $nonRegistered = [];
         if ($this->db->table_exists('tbl_manuscript_author_details')) {
-            $this->db->select('NULL as userId, name, email, institution, country, orcid, isCorresponding, authorOrder, 1 as isNew');
+            $this->db->select('NULL as userId, name, email, institution, country, orcid, isCorresponding, authorOrder, 1 as isNew', false);
             $this->db->where('manuscriptId', $manuscriptId);
             $nonRegistered = $this->db->get('tbl_manuscript_author_details')->result();
         }
