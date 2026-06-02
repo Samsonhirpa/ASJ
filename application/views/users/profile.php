@@ -1,6 +1,19 @@
 <?php
 $userId = $userInfo->userId;
 $name = $userInfo->name;
+$title = isset($userInfo->title) ? $userInfo->title : "";
+$first_name = isset($userInfo->first_name) ? $userInfo->first_name : "";
+$middle_name = isset($userInfo->middle_name) ? $userInfo->middle_name : "";
+$last_name = isset($userInfo->last_name) ? $userInfo->last_name : "";
+$display_name = trim(preg_replace('/\s+/', ' ', trim($title).' '.trim($first_name).' '.trim($middle_name).' '.trim($last_name)));
+if($first_name === '' && $middle_name === '' && $last_name === '' && !empty($name)) {
+    $legacyNameParts = preg_split('/\s+/', trim($name));
+    $first_name = isset($legacyNameParts[0]) ? $legacyNameParts[0] : '';
+    $last_name = count($legacyNameParts) > 1 ? array_pop($legacyNameParts) : '';
+    $middle_name = count($legacyNameParts) > 1 ? implode(' ', array_slice($legacyNameParts, 1)) : '';
+    $display_name = trim(preg_replace('/\s+/', ' ', trim($title).' '.trim($first_name).' '.trim($middle_name).' '.trim($last_name)));
+}
+if($display_name === '') { $display_name = $name; }
 $email = $userInfo->email;
 $mobile = $userInfo->mobile;
 $roleId = $userInfo->roleId;
@@ -46,7 +59,7 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                             <?php endif; ?>
                         </div>
                         
-                        <h3 class="profile-username text-center" style="font-weight: 600; margin: 10px 15px;"><?= $name ?></h3>
+                        <h3 class="profile-username text-center" style="font-weight: 600; margin: 10px 15px;"><?= $display_name ?></h3>
                         <p class="text-muted text-center" style="margin-bottom: 20px;"><?= $role ?></p>
                         
                         <ul class="list-group list-group-unbordered" style="border-radius: 10px; overflow: hidden;">
@@ -117,25 +130,48 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                                 <div class="box-body">
                                     <input type="hidden" value="<?php echo $userId; ?>" name="userId" id="userId" />
                                     
-                                    <div class="form-group">
-                                        <label for="fname"><i class="fa fa-user" style="color: #2c5f2d; width: 20px;"></i> Full Name</label>
-                                        <input type="text" class="form-control" id="fname" name="fname" 
-                                               value="<?php echo set_value('fname', $name); ?>" maxlength="128"
-                                               style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
-                                        <?php echo form_error('fname', '<div class="text-danger">', '</div>'); ?>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="title"><i class="fa fa-id-badge" style="color: #2c5f2d; width: 20px;"></i> Title <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="title" name="title" value="<?php echo set_value('title', $title); ?>" maxlength="20" required placeholder="Dr." style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
+                                                <?php echo form_error('title', '<div class="text-danger">', '</div>'); ?>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="first_name">First Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo set_value('first_name', $first_name); ?>" maxlength="64" required placeholder="First name" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
+                                                <?php echo form_error('first_name', '<div class="text-danger">', '</div>'); ?>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="middle_name">Middle Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="middle_name" name="middle_name" value="<?php echo set_value('middle_name', $middle_name); ?>" maxlength="64" required placeholder="Middle name" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
+                                                <?php echo form_error('middle_name', '<div class="text-danger">', '</div>'); ?>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="last_name">Last Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo set_value('last_name', $last_name); ?>" maxlength="64" required placeholder="Last name" style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
+                                                <?php echo form_error('last_name', '<div class="text-danger">', '</div>'); ?>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="mobile"><i class="fa fa-phone" style="color: #2c5f2d; width: 20px;"></i> Mobile Number</label>
-                                        <input type="text" class="form-control" id="mobile" name="mobile" 
+                                        <label for="mobile"><i class="fa fa-phone" style="color: #2c5f2d; width: 20px;"></i> Mobile Number <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="mobile" name="mobile" required
                                                value="<?php echo set_value('mobile', $mobile); ?>" maxlength="10"
                                                style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
                                         <?php echo form_error('mobile', '<div class="text-danger">', '</div>'); ?>
                                     </div>
                                     
                                     <div class="form-group">
-                                        <label for="email"><i class="fa fa-envelope" style="color: #2c5f2d; width: 20px;"></i> Email</label>
-                                        <input type="email" class="form-control" id="email" name="email" 
+                                        <label for="email"><i class="fa fa-envelope" style="color: #2c5f2d; width: 20px;"></i> Email <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="email" name="email" required
                                                value="<?php echo set_value('email', $email); ?>"
                                                style="border-radius: 8px; border: 1px solid #ced4da; padding: 10px 15px;">
                                         <?php echo form_error('email', '<div class="text-danger">', '</div>'); ?>
@@ -148,15 +184,15 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                                         </h4>
                                         
                                         <div class="form-group">
-                                            <label for="institution">Institution/Organization</label>
-                                            <input type="text" class="form-control" id="institution" name="institution" 
+                                            <label for="institution">Institution/Organization <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="institution" name="institution" required
                                                    value="<?php echo set_value('institution', $institution); ?>" placeholder="e.g., IQQO"
                                                    style="border-radius: 8px; border: 1px solid #ced4da;">
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label for="department">Department</label>
-                                            <input type="text" class="form-control" id="department" name="department" 
+                                            <label for="department">Department <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="department" name="department" required
                                                    value="<?php echo set_value('department', $department); ?>" placeholder="e.g., Agricultural Research"
                                                    style="border-radius: 8px; border: 1px solid #ced4da;">
                                         </div>
@@ -164,8 +200,8 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="country">Country</label>
-                                                    <select class="form-control" id="country" name="country" style="border-radius: 8px;">
+                                                    <label for="country">Country <span class="text-danger">*</span></label>
+                                                    <select class="form-control" id="country" name="country" required style="border-radius: 8px;">
                                                         <option value="">Select Country</option>
                                                         <option value="Ethiopia" <?php echo ($country == 'Ethiopia') ? 'selected' : ''; ?>>🇪🇹 Ethiopia</option>
                                                         <option value="Kenya" <?php echo ($country == 'Kenya') ? 'selected' : ''; ?>>🇰🇪 Kenya</option>
@@ -180,8 +216,8 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="city">City</label>
-                                                    <input type="text" class="form-control" id="city" name="city" 
+                                                    <label for="city">City <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="city" name="city" required
                                                            value="<?php echo set_value('city', $city); ?>" placeholder="e.g., Finfinne"
                                                            style="border-radius: 8px;">
                                                 </div>
@@ -189,16 +225,16 @@ $profileImagePath = !empty($profile_image) ? base_url('uploads/profile_images/'.
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label for="orcid_id">ORCID ID</label>
-                                            <input type="text" class="form-control" id="orcid_id" name="orcid_id" 
+                                            <label for="orcid_id">ORCID ID <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="orcid_id" name="orcid_id" required
                                                    value="<?php echo set_value('orcid_id', $orcid_id); ?>" placeholder="0000-0002-1825-0097"
                                                    style="border-radius: 8px;">
                                             <small class="text-muted">Format: 0000-0002-1825-0097</small>
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label for="expertise_area">Areas of Expertise</label>
-                                            <textarea class="form-control" id="expertise_area" name="expertise_area" 
+                                            <label for="expertise_area">Areas of Expertise <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="expertise_area" name="expertise_area" required
                                                       rows="3" placeholder="e.g., Agronomy, Soil Science, Plant Breeding"
                                                       style="border-radius: 8px;"><?php echo set_value('expertise_area', $expertise_area); ?></textarea>
                                         </div>

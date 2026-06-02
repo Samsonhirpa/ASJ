@@ -20,11 +20,11 @@ class User extends BaseController
         parent::__construct();
         $this->load->model('user_model');
         $this->isLoggedIn();
-        
+
         // Create upload directory if not exists
         $this->createUploadDirectory();
     }
-    
+
     /**
      * Create upload directory for profile images
      */
@@ -35,7 +35,7 @@ class User extends BaseController
             mkdir($path, 0777, true);
         }
     }
-    
+
     /**
      * Handle profile image upload
      */
@@ -43,7 +43,7 @@ class User extends BaseController
     {
         // Load upload library
         $this->load->library('upload');
-        
+
         // Configure upload
         $config['upload_path'] = './uploads/profile_images/';
         $config['allowed_types'] = 'jpg|jpeg|png|gif';
@@ -51,9 +51,9 @@ class User extends BaseController
         $config['max_width'] = 1024;
         $config['max_height'] = 1024;
         $config['encrypt_name'] = true; // Encrypt filename for security
-        
+
         $this->upload->initialize($config);
-        
+
         if (!empty($_FILES['profile_image']['name'])) {
             if ($this->upload->do_upload('profile_image')) {
                 $uploadData = $this->upload->data();
@@ -67,10 +67,10 @@ class User extends BaseController
             // Keep existing file
             return $fileName;
         }
-        
+
         return null; // No file uploaded
     }
-    
+
     /**
      * Delete old profile image
      */
@@ -80,17 +80,26 @@ class User extends BaseController
             unlink('./uploads/profile_images/' . $fileName);
         }
     }
-    
+
+
+    /**
+     * Build a display name from split name fields for legacy session/header usage.
+     */
+    private function buildDisplayName($title, $firstName, $middleName, $lastName)
+    {
+        return trim(preg_replace('/\s+/', ' ', trim($title).' '.trim($firstName).' '.trim($middleName).' '.trim($lastName)));
+    }
+
     /**
      * This function used to load the first screen of the user
      */
     public function index()
     {
         $this->global['pageTitle'] = 'CodeInsect : Dashboard';
-        
+
         $this->loadViews("general/dashboard", $this->global, NULL , NULL);
     }
-    
+
     /**
      * This function is used to load the user list
      */
@@ -101,23 +110,23 @@ class User extends BaseController
             $this->loadThis();
         }
         else
-        {        
+        {
             $searchText = '';
             if(!empty($this->input->post('searchText'))) {
                 $searchText = $this->security->xss_clean($this->input->post('searchText'));
             }
             $data['searchText'] = $searchText;
-            
+
             $this->load->library('pagination');
-            
+
             $count = $this->user_model->userListingCount($searchText);
 
             $returns = $this->paginationCompress ( "userListing/", $count, 10 );
-            
+
             $data['userRecords'] = $this->user_model->userListing($searchText, $returns["page"], $returns["segment"]);
-            
+
             $this->global['pageTitle'] = 'CodeInsect : User Listing';
-            
+
             $this->loadViews("users/users", $this->global, $data, NULL);
         }
     }
@@ -135,7 +144,7 @@ class User extends BaseController
         {
             $this->load->model('user_model');
             $data['roles'] = $this->user_model->getUserRoles();
-            
+
             $this->global['pageTitle'] = 'CodeInsect : Add New User';
 
             $this->loadViews("users/addNew", $this->global, $data, NULL);
@@ -159,7 +168,7 @@ class User extends BaseController
         if(empty($result)){ echo("true"); }
         else { echo("false"); }
     }
-    
+
     /**
      * This function is used to add new user to the system
      */
@@ -172,32 +181,42 @@ class User extends BaseController
         else
         {
             $this->load->library('form_validation');
-            
-            $this->form_validation->set_rules('fname','Full Name','trim|required|max_length[128]');
+
+            $this->form_validation->set_rules('title','Title','trim|required|max_length[20]');
+            $this->form_validation->set_rules('first_name','First Name','trim|required|max_length[64]');
+            $this->form_validation->set_rules('middle_name','Middle Name','trim|required|max_length[64]');
+            $this->form_validation->set_rules('last_name','Last Name','trim|required|max_length[64]');
             $this->form_validation->set_rules('email','Email','trim|required|valid_email|max_length[128]');
             $this->form_validation->set_rules('password','Password','required|max_length[20]');
             $this->form_validation->set_rules('cpassword','Confirm Password','trim|required|matches[password]|max_length[20]');
             $this->form_validation->set_rules('role','Role','trim|required|numeric');
             $this->form_validation->set_rules('mobile','Mobile Number','required|min_length[10]');
-            
-            // Journal fields validation (optional)
-            $this->form_validation->set_rules('institution','Institution','trim');
-            $this->form_validation->set_rules('country','Country','trim');
-            $this->form_validation->set_rules('orcid_id','ORCID ID','trim');
-            
+
+            // Journal profile fields are required except bio.
+            $this->form_validation->set_rules('institution','Institution','trim|required');
+            $this->form_validation->set_rules('department','Department','trim|required');
+            $this->form_validation->set_rules('country','Country','trim|required');
+            $this->form_validation->set_rules('city','City','trim|required');
+            $this->form_validation->set_rules('orcid_id','ORCID ID','trim|required');
+            $this->form_validation->set_rules('expertise_area','Areas of Expertise','trim|required');
+
             if($this->form_validation->run() == FALSE)
             {
                 $this->addNew();
             }
             else
             {
-                $name = ucwords(strtolower($this->security->xss_clean($this->input->post('fname'))));
+                $title = $this->security->xss_clean($this->input->post('title'));
+                $firstName = ucwords(strtolower($this->security->xss_clean($this->input->post('first_name'))));
+                $middleName = ucwords(strtolower($this->security->xss_clean($this->input->post('middle_name'))));
+                $lastName = ucwords(strtolower($this->security->xss_clean($this->input->post('last_name'))));
+                $name = $this->buildDisplayName($title, $firstName, $middleName, $lastName);
                 $email = strtolower($this->security->xss_clean($this->input->post('email')));
                 $password = $this->input->post('password');
                 $roleId = $this->input->post('role');
                 $mobile = $this->security->xss_clean($this->input->post('mobile'));
                 $isAdmin = $this->input->post('isAdmin');
-                
+
                 // Journal fields
                 $institution = $this->security->xss_clean($this->input->post('institution'));
                 $department = $this->security->xss_clean($this->input->post('department'));
@@ -206,16 +225,20 @@ class User extends BaseController
                 $orcid_id = $this->security->xss_clean($this->input->post('orcid_id'));
                 $expertise_area = $this->security->xss_clean($this->input->post('expertise_area'));
                 $bio = $this->security->xss_clean($this->input->post('bio'));
-                
+
                 // Handle profile image upload
                 $profile_image = $this->uploadProfileImage();
-                
+
                 $userInfo = array(
-                    'email' => $email, 
-                    'password' => getHashedPassword($password), 
+                    'email' => $email,
+                    'password' => getHashedPassword($password),
                     'roleId' => $roleId,
-                    'name' => $name, 
-                    'mobile' => $mobile, 
+                    'name' => $name,
+                    'title' => $title,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'last_name' => $lastName,
+                    'mobile' => $mobile,
                     'isAdmin' => $isAdmin,
                     'institution' => $institution,
                     'department' => $department,
@@ -225,25 +248,25 @@ class User extends BaseController
                     'expertise_area' => $expertise_area,
                     'bio' => $bio,
                     'profile_image' => $profile_image,
-                    'createdBy' => $this->vendorId, 
+                    'createdBy' => $this->vendorId,
                     'createdDtm' => date('Y-m-d H:i:s')
                 );
-                
+
                 $this->load->model('user_model');
                 $result = $this->user_model->addNewUser($userInfo);
-                
+
                 if($result > 0){
                     $this->session->set_flashdata('success', 'New User created successfully');
                 } else {
                     $this->session->set_flashdata('error', 'User creation failed');
                 }
-                
+
                 redirect('userListing');
             }
         }
     }
 
-    
+
     /**
      * This function is used load user edit information
      * @param number $userId : Optional : This is user id
@@ -260,17 +283,17 @@ class User extends BaseController
             {
                 redirect('userListing');
             }
-            
+
             $data['roles'] = $this->user_model->getUserRoles();
             $data['userInfo'] = $this->user_model->getUserInfo($userId);
 
             $this->global['pageTitle'] = 'CodeInsect : Edit User';
-            
+
             $this->loadViews("users/editOld", $this->global, $data, NULL);
         }
     }
-    
-    
+
+
     /**
      * This function is used to edit the user information
      */
@@ -283,33 +306,44 @@ class User extends BaseController
         else
         {
             $this->load->library('form_validation');
-            
+
             $userId = $this->input->post('userId');
-            
-            $this->form_validation->set_rules('fname','Full Name','trim|required|max_length[128]');
+
+            $this->form_validation->set_rules('title','Title','trim|required|max_length[20]');
+            $this->form_validation->set_rules('first_name','First Name','trim|required|max_length[64]');
+            $this->form_validation->set_rules('middle_name','Middle Name','trim|required|max_length[64]');
+            $this->form_validation->set_rules('last_name','Last Name','trim|required|max_length[64]');
             $this->form_validation->set_rules('email','Email','trim|required|valid_email|max_length[128]');
             $this->form_validation->set_rules('password','Password','matches[cpassword]|max_length[20]');
             $this->form_validation->set_rules('cpassword','Confirm Password','matches[password]|max_length[20]');
             $this->form_validation->set_rules('role','Role','trim|required|numeric');
             $this->form_validation->set_rules('mobile','Mobile Number','required|min_length[10]');
-            
-            // Journal fields validation (optional)
-            $this->form_validation->set_rules('institution','Institution','trim');
-            $this->form_validation->set_rules('country','Country','trim');
-            
+
+            // Journal profile fields are required except bio.
+            $this->form_validation->set_rules('institution','Institution','trim|required');
+            $this->form_validation->set_rules('department','Department','trim|required');
+            $this->form_validation->set_rules('country','Country','trim|required');
+            $this->form_validation->set_rules('city','City','trim|required');
+            $this->form_validation->set_rules('orcid_id','ORCID ID','trim|required');
+            $this->form_validation->set_rules('expertise_area','Areas of Expertise','trim|required');
+
             if($this->form_validation->run() == FALSE)
             {
                 $this->editOld($userId);
             }
             else
             {
-                $name = ucwords(strtolower($this->security->xss_clean($this->input->post('fname'))));
+                $title = $this->security->xss_clean($this->input->post('title'));
+                $firstName = ucwords(strtolower($this->security->xss_clean($this->input->post('first_name'))));
+                $middleName = ucwords(strtolower($this->security->xss_clean($this->input->post('middle_name'))));
+                $lastName = ucwords(strtolower($this->security->xss_clean($this->input->post('last_name'))));
+                $name = $this->buildDisplayName($title, $firstName, $middleName, $lastName);
                 $email = strtolower($this->security->xss_clean($this->input->post('email')));
                 $password = $this->input->post('password');
                 $roleId = $this->input->post('role');
                 $mobile = $this->security->xss_clean($this->input->post('mobile'));
                 $isAdmin = $this->input->post('isAdmin');
-                
+
                 // Journal fields
                 $institution = $this->security->xss_clean($this->input->post('institution'));
                 $department = $this->security->xss_clean($this->input->post('department'));
@@ -318,16 +352,16 @@ class User extends BaseController
                 $orcid_id = $this->security->xss_clean($this->input->post('orcid_id'));
                 $expertise_area = $this->security->xss_clean($this->input->post('expertise_area'));
                 $bio = $this->security->xss_clean($this->input->post('bio'));
-                
+
                 // Check if remove image is checked
                 $remove_image = $this->input->post('remove_image');
-                
+
                 // Get current user info to check existing image
                 $currentUser = $this->user_model->getUserInfo($userId);
-                
+
                 // Handle profile image upload
                 $currentImage = !empty($currentUser) ? $currentUser->profile_image : null;
-                
+
                 // If remove image is checked, set to null
                 if($remove_image == '1') {
                     $profile_image = null;
@@ -338,23 +372,27 @@ class User extends BaseController
                 } else {
                     // Handle new upload
                     $profile_image = $this->uploadProfileImage($currentImage);
-                    
+
                     // If upload failed, keep existing image
                     if ($profile_image === false) {
                         $profile_image = $currentImage;
                     }
-                    
+
                     // If new image uploaded and old exists, delete old image
                     if ($profile_image && $profile_image != $currentImage && $currentImage) {
                         $this->deleteProfileImage($currentImage);
                     }
                 }
-                
+
                 // Build user info array
                 $userInfo = array(
-                    'email' => $email, 
-                    'roleId' => $roleId, 
-                    'name' => $name, 
+                    'email' => $email,
+                    'roleId' => $roleId,
+                    'name' => $name,
+                    'title' => $title,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'last_name' => $lastName,
                     'mobile' => $mobile,
                     'isAdmin' => $isAdmin,
                     'institution' => $institution,
@@ -365,18 +403,18 @@ class User extends BaseController
                     'expertise_area' => $expertise_area,
                     'bio' => $bio,
                     'profile_image' => $profile_image,
-                    'updatedBy' => $this->vendorId, 
+                    'updatedBy' => $this->vendorId,
                     'updatedDtm' => date('Y-m-d H:i:s')
                 );
-                
+
                 // Add password if provided
                 if(!empty($password))
                 {
                     $userInfo['password'] = getHashedPassword($password);
                 }
-                
+
                 $result = $this->user_model->editUser($userInfo, $userId);
-                
+
                 if($result == true)
                 {
                     $this->session->set_flashdata('success', 'User updated successfully');
@@ -385,7 +423,7 @@ class User extends BaseController
                 {
                     $this->session->set_flashdata('error', 'User updation failed');
                 }
-                
+
                 redirect('userListing');
             }
         }
@@ -405,38 +443,38 @@ class User extends BaseController
         else
         {
             $userId = $this->input->post('userId');
-            
+
             // Get user info to delete profile image
             $userInfo = $this->user_model->getUserInfo($userId);
-            
+
             // Delete profile image if exists
             if (!empty($userInfo) && !empty($userInfo->profile_image)) {
                 $this->deleteProfileImage($userInfo->profile_image);
             }
-            
+
             $userData = array(
                 'isDeleted' => 1,
-                'updatedBy' => $this->vendorId, 
+                'updatedBy' => $this->vendorId,
                 'updatedDtm' => date('Y-m-d H:i:s')
             );
-            
+
             $result = $this->user_model->deleteUser($userId, $userData);
-            
-            if ($result > 0) { 
-                echo(json_encode(array('status'=>TRUE))); 
-            } else { 
-                echo(json_encode(array('status'=>FALSE))); 
+
+            if ($result > 0) {
+                echo(json_encode(array('status'=>TRUE)));
+            } else {
+                echo(json_encode(array('status'=>FALSE)));
             }
         }
     }
-    
+
     /**
      * Page not found : error 404
      */
     function pageNotFound()
     {
         $this->global['pageTitle'] = 'CodeInsect : 404 - Page Not Found';
-        
+
         $this->loadViews("general/404", $this->global, NULL, NULL);
     }
 
@@ -463,19 +501,19 @@ class User extends BaseController
             $data['searchText'] = $searchText;
             $data['fromDate'] = $fromDate;
             $data['toDate'] = $toDate;
-            
+
             $this->load->library('pagination');
-            
+
             $count = $this->user_model->loginHistoryCount($userId, $searchText, $fromDate, $toDate);
 
             $returns = $this->paginationCompress ( "login-history/".$userId."/", $count, 10, 3);
 
             $data['userRecords'] = $this->user_model->loginHistory($userId, $searchText, $fromDate, $toDate, $returns["page"], $returns["segment"]);
-            
+
             $this->global['pageTitle'] = 'CodeInsect : User Login History';
-            
+
             $this->loadViews("users/loginHistory", $this->global, $data, NULL);
-        }        
+        }
     }
 
     /**
@@ -485,7 +523,7 @@ class User extends BaseController
     {
         $data["userInfo"] = $this->user_model->getUserInfoWithRole($this->vendorId);
         $data["active"] = $active;
-        
+
         $this->global['pageTitle'] = $active == "details" ? 'CodeInsect : My Profile' : 'CodeInsect : Change Password';
         $this->loadViews("users/profile", $this->global, $data, NULL);
     }
@@ -497,25 +535,36 @@ class User extends BaseController
     function profileUpdate($active = "details")
     {
         $this->load->library('form_validation');
-            
-        $this->form_validation->set_rules('fname','Full Name','trim|required|max_length[128]');
+
+        $this->form_validation->set_rules('title','Title','trim|required|max_length[20]');
+        $this->form_validation->set_rules('first_name','First Name','trim|required|max_length[64]');
+        $this->form_validation->set_rules('middle_name','Middle Name','trim|required|max_length[64]');
+        $this->form_validation->set_rules('last_name','Last Name','trim|required|max_length[64]');
         $this->form_validation->set_rules('mobile','Mobile Number','required|min_length[10]');
-        $this->form_validation->set_rules('email','Email','trim|required|valid_email|max_length[128]|callback_emailExists');        
-        
-        // Journal fields validation
-        $this->form_validation->set_rules('institution','Institution','trim');
-        $this->form_validation->set_rules('country','Country','trim');
-        
+        $this->form_validation->set_rules('email','Email','trim|required|valid_email|max_length[128]|callback_emailExists');
+
+        // Journal profile fields are required except bio.
+        $this->form_validation->set_rules('institution','Institution','trim|required');
+        $this->form_validation->set_rules('department','Department','trim|required');
+        $this->form_validation->set_rules('country','Country','trim|required');
+        $this->form_validation->set_rules('city','City','trim|required');
+        $this->form_validation->set_rules('orcid_id','ORCID ID','trim|required');
+        $this->form_validation->set_rules('expertise_area','Areas of Expertise','trim|required');
+
         if($this->form_validation->run() == FALSE)
         {
             $this->profile($active);
         }
         else
         {
-            $name = ucwords(strtolower($this->security->xss_clean($this->input->post('fname'))));
+            $title = $this->security->xss_clean($this->input->post('title'));
+            $firstName = ucwords(strtolower($this->security->xss_clean($this->input->post('first_name'))));
+            $middleName = ucwords(strtolower($this->security->xss_clean($this->input->post('middle_name'))));
+            $lastName = ucwords(strtolower($this->security->xss_clean($this->input->post('last_name'))));
+            $name = $this->buildDisplayName($title, $firstName, $middleName, $lastName);
             $mobile = $this->security->xss_clean($this->input->post('mobile'));
             $email = strtolower($this->security->xss_clean($this->input->post('email')));
-            
+
             // Journal fields
             $institution = $this->security->xss_clean($this->input->post('institution'));
             $department = $this->security->xss_clean($this->input->post('department'));
@@ -524,16 +573,16 @@ class User extends BaseController
             $orcid_id = $this->security->xss_clean($this->input->post('orcid_id'));
             $expertise_area = $this->security->xss_clean($this->input->post('expertise_area'));
             $bio = $this->security->xss_clean($this->input->post('bio'));
-            
+
             // Check if remove image is checked
             $remove_image = $this->input->post('remove_image');
-            
+
             // Get current user info to check existing image
             $currentUser = $this->user_model->getUserInfo($this->vendorId);
-            
+
             // Handle profile image upload
             $currentImage = !empty($currentUser) ? $currentUser->profile_image : null;
-            
+
             // If remove image is checked, set to null
             if($remove_image == '1') {
                 $profile_image = null;
@@ -544,21 +593,25 @@ class User extends BaseController
             } else {
                 // Handle new upload
                 $profile_image = $this->uploadProfileImage($currentImage);
-                
+
                 // If upload failed, keep existing image
                 if ($profile_image === false) {
                     $profile_image = $currentImage;
                 }
-                
+
                 // If new image uploaded and old exists, delete old image
                 if ($profile_image && $profile_image != $currentImage && $currentImage) {
                     $this->deleteProfileImage($currentImage);
                 }
             }
-            
+
             $userInfo = array(
-                'name' => $name, 
-                'email' => $email, 
+                'name' => $name,
+                'title' => $title,
+                'first_name' => $firstName,
+                'middle_name' => $middleName,
+                'last_name' => $lastName,
+                'email' => $email,
                 'mobile' => $mobile,
                 'institution' => $institution,
                 'department' => $department,
@@ -568,12 +621,12 @@ class User extends BaseController
                 'expertise_area' => $expertise_area,
                 'bio' => $bio,
                 'profile_image' => $profile_image,
-                'updatedBy' => $this->vendorId, 
+                'updatedBy' => $this->vendorId,
                 'updatedDtm' => date('Y-m-d H:i:s')
             );
-            
+
             $result = $this->user_model->editUser($userInfo, $this->vendorId);
-            
+
             if($result == true)
             {
                 $this->session->set_userdata('name', $name);
@@ -595,11 +648,11 @@ class User extends BaseController
     function changePassword($active = "changepass")
     {
         $this->load->library('form_validation');
-        
+
         $this->form_validation->set_rules('oldPassword','Old password','required|max_length[20]');
         $this->form_validation->set_rules('newPassword','New password','required|max_length[20]');
         $this->form_validation->set_rules('cNewPassword','Confirm new password','required|matches[newPassword]|max_length[20]');
-        
+
         if($this->form_validation->run() == FALSE)
         {
             $this->profile($active);
@@ -608,9 +661,9 @@ class User extends BaseController
         {
             $oldPassword = $this->input->post('oldPassword');
             $newPassword = $this->input->post('newPassword');
-            
+
             $resultPas = $this->user_model->matchOldPassword($this->vendorId, $oldPassword);
-            
+
             if(empty($resultPas))
             {
                 $this->session->set_flashdata('nomatch', 'Your old password is not correct');
@@ -619,19 +672,19 @@ class User extends BaseController
             else
             {
                 $usersData = array(
-                    'password' => getHashedPassword($newPassword), 
+                    'password' => getHashedPassword($newPassword),
                     'updatedBy' => $this->vendorId,
                     'updatedDtm' => date('Y-m-d H:i:s')
                 );
-                
+
                 $result = $this->user_model->changePassword($this->vendorId, $usersData);
-                
-                if($result > 0) { 
-                    $this->session->set_flashdata('success', 'Password updation successful'); 
-                } else { 
-                    $this->session->set_flashdata('error', 'Password updation failed'); 
+
+                if($result > 0) {
+                    $this->session->set_flashdata('success', 'Password updation successful');
+                } else {
+                    $this->session->set_flashdata('error', 'Password updation failed');
                 }
-                
+
                 redirect('profile/'.$active);
             }
         }

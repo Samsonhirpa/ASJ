@@ -70,7 +70,10 @@
                             <thead style="background: #f8fafc; border-bottom: 2px solid #2c5f2d;">
                                 <tr>
                                     <th style="padding: 12px;">Photo</th>
-                                    <th style="padding: 12px;">Name</th>
+                                    <th style="padding: 12px;">Title</th>
+                                    <th style="padding: 12px;">First Name</th>
+                                    <th style="padding: 12px;">Middle Name</th>
+                                    <th style="padding: 12px;">Last Name</th>
                                     <th style="padding: 12px;">Email</th>
                                     <th style="padding: 12px;">Mobile</th>
                                     <th style="padding: 12px;">Role</th>
@@ -93,7 +96,10 @@
                                         <img src="<?php echo $profileImage; ?>" alt="Profile" 
                                              style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                                     </td>
-                                    <td style="padding: 15px 12px; font-weight: 500; vertical-align: middle;"><?php echo $record->name ?></td>
+                                    <td style="padding: 15px 12px; font-weight: 500; vertical-align: middle;"><?php echo !empty($record->title) ? $record->title : '-'; ?></td>
+                                    <td style="padding: 15px 12px; font-weight: 500; vertical-align: middle;"><?php echo !empty($record->first_name) ? $record->first_name : '-'; ?></td>
+                                    <td style="padding: 15px 12px; vertical-align: middle;"><?php echo !empty($record->middle_name) ? $record->middle_name : '-'; ?></td>
+                                    <td style="padding: 15px 12px; font-weight: 500; vertical-align: middle;"><?php echo !empty($record->last_name) ? $record->last_name : '-'; ?></td>
                                     <td style="padding: 15px 12px; vertical-align: middle;"><?php echo $record->email ?></td>
                                     <td style="padding: 15px 12px; vertical-align: middle;"><?php echo $record->mobile ?></td>
                                     <td style="padding: 15px 12px; vertical-align: middle;">
@@ -312,7 +318,7 @@
             responsive: true,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             pageLength: 10,
-            order: [[1, 'asc']], // Sort by name column
+            order: [[2, 'asc']], // Sort by first name column
             dom: '<"row"<"col-sm-6"B><"col-sm-6"f>>' +
                  '<"row"<"col-sm-12"tr>>' +
                  '<"row"<"col-sm-5"i><"col-sm-7"p>>',
@@ -322,7 +328,7 @@
                     text: '<i class="fa fa-copy"></i> Copy',
                     className: 'dt-button buttons-copy',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7] // Exclude photo and actions columns
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // Exclude photo and actions columns
                     }
                 },
                 {
@@ -330,7 +336,7 @@
                     text: '<i class="fa fa-file-text-o"></i> CSV',
                     className: 'dt-button buttons-csv',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7]
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     }
                 },
                 {
@@ -338,7 +344,7 @@
                     text: '<i class="fa fa-file-excel-o"></i> Excel',
                     className: 'dt-button buttons-excel',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7]
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     }
                 },
                 {
@@ -346,10 +352,10 @@
                     text: '<i class="fa fa-file-pdf-o"></i> PDF',
                     className: 'dt-button buttons-pdf',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7]
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     },
                     customize: function(doc) {
-                        doc.content[1].table.widths = ['15%', '20%', '15%', '15%', '15%', '20%'];
+                        doc.content[1].table.widths = ['8%', '11%', '11%', '11%', '18%', '10%', '10%', '8%', '13%', '10%'];
                         doc.styles.tableHeader = {
                             fillColor: '#2c5f2d',
                             color: 'white',
@@ -363,7 +369,7 @@
                     text: '<i class="fa fa-print"></i> Print',
                     className: 'dt-button buttons-print',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7]
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     },
                     customize: function(win) {
                         jQuery(win.document.body).find('table').addClass('table').css('width', '100%');
