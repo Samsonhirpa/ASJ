@@ -249,9 +249,11 @@ class Manuscript extends BaseController
         $institution = isset($institutions[$index]) ? trim($institutions[$index]) : '';
         $country = isset($countries[$index]) ? trim($countries[$index]) : '';
 
-        $title = isset($titles[$index]) ? trim($titles[$index]) : '';
-        $middle_name = isset($middle_names[$index]) ? trim($middle_names[$index]) : '';
-        $fullName = trim($title . ' ' . $first_name . ' ' . $middle_name . ' ' . $last_names[$index]);
+        $first_name = trim((string)$first_name);
+        $last_name = isset($last_names[$index]) ? trim((string)$last_names[$index]) : '';
+        $title = isset($titles[$index]) ? trim((string)$titles[$index]) : '';
+        $middle_name = isset($middle_names[$index]) ? trim((string)$middle_names[$index]) : '';
+        $fullName = trim($title . ' ' . $first_name . ' ' . $middle_name . ' ' . $last_name);
 
         if(isset($user_ids[$index]) && $user_ids[$index] == 'new') {
             // For new authors, create a temporary record with provided info
@@ -264,7 +266,7 @@ class Manuscript extends BaseController
                 'title' => $title,
                 'firstName' => $first_name,
                 'middleName' => $middle_name,
-                'lastName' => isset($last_names[$index]) ? $last_names[$index] : '',
+                'lastName' => $last_name,
                 'isCorresponding' => $isCorresponding,
                 'authorOrder' => $index + 1,
                 'isNew' => true
@@ -282,7 +284,7 @@ class Manuscript extends BaseController
                 'title' => $title,
                 'firstName' => $first_name,
                 'middleName' => $middle_name,
-                'lastName' => isset($last_names[$index]) ? $last_names[$index] : '',
+                'lastName' => $last_name,
                 'isCorresponding' => $isCorresponding,
                 'authorOrder' => $index + 1
             );
@@ -648,14 +650,15 @@ class Manuscript extends BaseController
         foreach($authors as $author) {
             if(isset($author['isNew']) && $author['isNew']) {
                 // Check if table exists, if not create it
-                if(!$this->db->table_exists('tbl_manuscript_author_details')) {
-                    $this->createAuthorDetailsTable();
-                }
+                $this->createAuthorDetailsTable();
 
-                // For new authors, store details
+                // For new authors, store each name component separately.
                 $authorData = array(
                     'manuscriptId' => $manuscriptId,
-                    'name' => $author['name'],
+                    'title' => isset($author['title']) ? $author['title'] : '',
+                    'first_name' => isset($author['firstName']) ? $author['firstName'] : '',
+                    'middle_name' => isset($author['middleName']) ? $author['middleName'] : '',
+                    'last_name' => isset($author['lastName']) ? $author['lastName'] : '',
                     'email' => $author['email'],
                     'institution' => $author['institution'],
                     'country' => $author['country'],
@@ -667,6 +670,7 @@ class Manuscript extends BaseController
                 $this->db->insert('tbl_manuscript_author_details', $authorData);
             } else {
                 // Existing user
+                $this->updateRegisteredAuthorNameParts($author);
                 $authorData = array(
                     'manuscriptId' => $manuscriptId,
                     'userId' => $author['userId'],
@@ -677,6 +681,22 @@ class Manuscript extends BaseController
                 $this->db->insert('tbl_manuscript_authors', $authorData);
             }
         }
+    }
+
+    private function updateRegisteredAuthorNameParts($author)
+    {
+        if (empty($author['userId']) || (int)$author['userId'] !== (int)$this->session->userdata('userId')) {
+            return;
+        }
+
+        $userData = array(
+            'title' => isset($author['title']) ? $author['title'] : '',
+            'first_name' => isset($author['firstName']) ? $author['firstName'] : '',
+            'middle_name' => isset($author['middleName']) ? $author['middleName'] : '',
+            'last_name' => isset($author['lastName']) ? $author['lastName'] : ''
+        );
+
+        $this->db->where('userId', (int)$author['userId'])->update('tbl_users', $userData);
     }
 
     private function clearSubmissionSession()
@@ -739,18 +759,31 @@ class Manuscript extends BaseController
             return $defaults;
         }
 
-        $name = trim((string)$currentUser->name);
-        if ($name !== '') {
-            $parts = preg_split('/\s+/', $name);
-            if (count($parts) === 1) {
-                $defaults['firstName'] = $parts[0];
-            } elseif (count($parts) === 2) {
-                $defaults['firstName'] = $parts[0];
-                $defaults['lastName'] = $parts[1];
-            } else {
-                $defaults['firstName'] = array_shift($parts);
-                $defaults['lastName'] = array_pop($parts);
-                $defaults['middleName'] = implode(' ', $parts);
+        if (isset($currentUser->title) && trim((string)$currentUser->title) !== '') {
+            $defaults['title'] = trim((string)$currentUser->title);
+        }
+
+        $defaults['firstName'] = isset($currentUser->first_name) ? trim((string)$currentUser->first_name) : '';
+        $defaults['middleName'] = isset($currentUser->middle_name) ? trim((string)$currentUser->middle_name) : '';
+        $defaults['lastName'] = isset($currentUser->last_name) ? trim((string)$currentUser->last_name) : '';
+
+        if ($defaults['firstName'] === '' && $defaults['middleName'] === '' && $defaults['lastName'] === '') {
+            $name = trim((string)$currentUser->name);
+            if ($name !== '') {
+                $parts = preg_split('/\s+/', $name);
+                if (in_array($parts[0] ?? '', array('Mr','Mrs','Ms','Miss','Dr','Prof'), true)) {
+                    $defaults['title'] = array_shift($parts);
+                }
+                if (count($parts) === 1) {
+                    $defaults['firstName'] = $parts[0];
+                } elseif (count($parts) === 2) {
+                    $defaults['firstName'] = $parts[0];
+                    $defaults['lastName'] = $parts[1];
+                } elseif (count($parts) > 2) {
+                    $defaults['firstName'] = array_shift($parts);
+                    $defaults['lastName'] = array_pop($parts);
+                    $defaults['middleName'] = implode(' ', $parts);
+                }
             }
         }
 
@@ -806,7 +839,7 @@ class Manuscript extends BaseController
 
     private function getManuscriptAuthorsForView($manuscriptId)
     {
-        $this->db->select('u.userId, u.name, u.email, u.institution, u.country, NULL as orcid, ma.isCorresponding, ma.authorOrder, 0 as isNew', false);
+        $this->db->select('u.userId, u.title, u.first_name, u.middle_name, u.last_name, u.email, u.institution, u.country, NULL as orcid, ma.isCorresponding, ma.authorOrder, 0 as isNew', false);
         $this->db->from('tbl_manuscript_authors ma');
         $this->db->join('tbl_users u', 'ma.userId = u.userId');
         $this->db->where('ma.manuscriptId', $manuscriptId);
@@ -814,7 +847,8 @@ class Manuscript extends BaseController
 
         $nonRegistered = [];
         if ($this->db->table_exists('tbl_manuscript_author_details')) {
-            $this->db->select('NULL as userId, name, email, institution, country, orcid, isCorresponding, authorOrder, 1 as isNew', false);
+            $this->createAuthorDetailsTable();
+            $this->db->select('NULL as userId, title, first_name, middle_name, last_name, email, institution, country, orcid, isCorresponding, authorOrder, 1 as isNew', false);
             $this->db->where('manuscriptId', $manuscriptId);
             $nonRegistered = $this->db->get('tbl_manuscript_author_details')->result();
         }
@@ -872,6 +906,10 @@ class Manuscript extends BaseController
             if ($userId === 'new' || $userId === '' || !is_numeric($userId)) {
                 $authorData[] = array(
                     'name' => $fullName,
+                    'title' => $title,
+                    'firstName' => $first_name,
+                    'middleName' => $middle_name,
+                    'lastName' => $last_name,
                     'email' => $email,
                     'institution' => isset($institutions[$index]) ? trim((string)$institutions[$index]) : '',
                     'country' => isset($countries[$index]) ? trim((string)$countries[$index]) : '',
@@ -884,6 +922,10 @@ class Manuscript extends BaseController
                 $authorData[] = array(
                     'userId' => (int)$userId,
                     'name' => $fullName,
+                    'title' => $title,
+                    'firstName' => $first_name,
+                    'middleName' => $middle_name,
+                    'lastName' => $last_name,
                     'email' => $email,
                     'institution' => isset($institutions[$index]) ? trim((string)$institutions[$index]) : '',
                     'country' => isset($countries[$index]) ? trim((string)$countries[$index]) : '',
@@ -904,7 +946,10 @@ class Manuscript extends BaseController
         $sql = "CREATE TABLE IF NOT EXISTS `tbl_manuscript_author_details` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
             `manuscriptId` INT(11) NOT NULL,
-            `name` VARCHAR(255) NOT NULL,
+            `title` VARCHAR(20) NOT NULL DEFAULT '',
+            `first_name` VARCHAR(64) NOT NULL DEFAULT '',
+            `middle_name` VARCHAR(64) NOT NULL DEFAULT '',
+            `last_name` VARCHAR(64) NOT NULL DEFAULT '',
             `email` VARCHAR(128) NOT NULL,
             `institution` VARCHAR(255) DEFAULT NULL,
             `country` VARCHAR(100) DEFAULT NULL,
@@ -916,10 +961,65 @@ class Manuscript extends BaseController
             KEY `manuscriptId` (`manuscriptId`),
             CONSTRAINT `tbl_manuscript_author_details_ibfk_1` FOREIGN KEY (`manuscriptId`) REFERENCES `tbl_manuscripts` (`manuscriptId`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
-        
+
         $this->db->query($sql);
+        $this->migrateAuthorDetailsNameColumns();
     }
-    
+
+    private function migrateAuthorDetailsNameColumns()
+    {
+        if (!$this->db->table_exists('tbl_manuscript_author_details')) {
+            return;
+        }
+
+        $fieldDefinitions = array(
+            'title' => "VARCHAR(20) NOT NULL DEFAULT ''",
+            'first_name' => "VARCHAR(64) NOT NULL DEFAULT ''",
+            'middle_name' => "VARCHAR(64) NOT NULL DEFAULT ''",
+            'last_name' => "VARCHAR(64) NOT NULL DEFAULT ''"
+        );
+
+        $previousField = 'manuscriptId';
+        foreach ($fieldDefinitions as $field => $definition) {
+            if (!$this->db->field_exists($field, 'tbl_manuscript_author_details')) {
+                $this->db->query("ALTER TABLE `tbl_manuscript_author_details` ADD COLUMN `{$field}` {$definition} AFTER `{$previousField}`");
+            }
+            $previousField = $field;
+        }
+
+        if ($this->db->field_exists('name', 'tbl_manuscript_author_details')) {
+            $rows = $this->db->select('id, name')->get('tbl_manuscript_author_details')->result();
+            foreach ($rows as $row) {
+                $parts = $this->splitStoredAuthorName($row->name);
+                $this->db->where('id', (int)$row->id)->update('tbl_manuscript_author_details', $parts);
+            }
+            $this->db->query('ALTER TABLE `tbl_manuscript_author_details` DROP COLUMN `name`');
+        }
+    }
+
+    private function splitStoredAuthorName($name)
+    {
+        $parts = preg_split('/\s+/', trim((string)$name));
+        $titles = array('Mr','Mrs','Ms','Miss','Dr','Prof');
+        $result = array('title' => '', 'first_name' => '', 'middle_name' => '', 'last_name' => '');
+
+        if (in_array($parts[0] ?? '', $titles, true)) {
+            $result['title'] = array_shift($parts);
+        }
+        if (count($parts) === 1) {
+            $result['first_name'] = $parts[0];
+        } elseif (count($parts) === 2) {
+            $result['first_name'] = $parts[0];
+            $result['last_name'] = $parts[1];
+        } elseif (count($parts) > 2) {
+            $result['first_name'] = array_shift($parts);
+            $result['last_name'] = array_pop($parts);
+            $result['middle_name'] = implode(' ', $parts);
+        }
+
+        return $result;
+    }
+
     /**
      * View manuscript details
      */
@@ -956,6 +1056,7 @@ class Manuscript extends BaseController
         
         // Also check for non-registered authors
         if($this->db->table_exists('tbl_manuscript_author_details')) {
+            $this->createAuthorDetailsTable();
             $this->db->where('manuscriptId', $manuscriptId);
             $nonRegistered = $this->db->get('tbl_manuscript_author_details')->result();
             $data['authors'] = array_merge($data['authors'], $nonRegistered);

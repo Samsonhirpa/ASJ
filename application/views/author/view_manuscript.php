@@ -1,3 +1,19 @@
+<?php
+if (!function_exists('manuscript_author_display_name')) {
+function manuscript_author_display_name($author) {
+    $parts = [];
+    foreach (['title', 'first_name', 'middle_name', 'last_name'] as $field) {
+        if (isset($author->{$field}) && trim((string)$author->{$field}) !== '') {
+            $parts[] = trim((string)$author->{$field});
+        }
+    }
+    if (!empty($parts)) {
+        return implode(' ', $parts);
+    }
+    return isset($author->name) ? (string)$author->name : '';
+}
+}
+?>
 <div class="content-wrapper" style="background: #f4f6f9;">
     
     <!-- Content Header -->
@@ -103,7 +119,7 @@
                                 <?php foreach($authors as $index => $author): ?>
                                 <tr>
                                     <td><?= $index + 1 ?></td>
-                                    <td><?= $author->name ?></td>
+                                    <td><?= html_escape(manuscript_author_display_name($author)) ?></td>
                                     <td><?= $author->email ?></td>
                                     <td><?= $author->institution ?? 'Not specified' ?></td>
                                     <td>

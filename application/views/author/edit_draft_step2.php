@@ -1,10 +1,23 @@
 <?php
-function split_author_name_for_draft($name) {
-    $parts = preg_split('/\s+/', trim((string)$name));
-    $title = in_array($parts[0] ?? '', ['Mr','Mrs','Ms','Miss','Dr','Prof']) ? array_shift($parts) : 'Mr';
-    $first = array_shift($parts) ?: '';
-    $last = count($parts) ? array_pop($parts) : '';
-    return ['title' => $title, 'first' => $first, 'middle' => implode(' ', $parts), 'last' => $last];
+if (!function_exists('author_name_parts_for_draft')) {
+function author_name_parts_for_draft($author) {
+    $title = isset($author->title) && trim((string)$author->title) !== '' ? trim((string)$author->title) : 'Mr';
+    $first = isset($author->first_name) ? trim((string)$author->first_name) : '';
+    $middle = isset($author->middle_name) ? trim((string)$author->middle_name) : '';
+    $last = isset($author->last_name) ? trim((string)$author->last_name) : '';
+
+    if ($first === '' && $middle === '' && $last === '' && isset($author->name)) {
+        $parts = preg_split('/\s+/', trim((string)$author->name));
+        if (in_array($parts[0] ?? '', ['Mr','Mrs','Ms','Miss','Dr','Prof'], true)) {
+            $title = array_shift($parts);
+        }
+        $first = array_shift($parts) ?: '';
+        $last = count($parts) ? array_pop($parts) : '';
+        $middle = implode(' ', $parts);
+    }
+
+    return ['title' => $title, 'first' => $first, 'middle' => $middle, 'last' => $last];
+}
 }
 $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof'];
 ?>
@@ -26,7 +39,7 @@ $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof'];
                         <div class="box-header" style="background:#f8fafc; padding:20px; border-bottom:1px solid #e9ecef;"><h3 class="box-title" style="font-weight:600;"><i class="fa fa-user-plus" style="color:#2c5f2d;"></i> Author Information</h3></div>
                         <div class="box-body" id="authorsContainer" style="padding:25px;">
                             <?php if(empty($authors)): ?><p class="text-muted">No authors are saved yet. Add at least one author before continuing.</p><?php endif; ?>
-                            <?php foreach($authors as $index => $author): $name = split_author_name_for_draft($author->name); ?>
+                            <?php foreach($authors as $index => $author): $name = author_name_parts_for_draft($author); ?>
                             <div class="author-item" style="background:#f8fafc; padding:20px; border-radius:10px; margin-bottom:20px; position:relative; border-left:4px solid <?= $index === 0 ? '#2c5f2d' : '#17a2b8' ?>;">
                                 <?php if($index > 0): ?><button type="button" class="btn btn-xs btn-danger remove-author" style="position:absolute; top:10px; right:10px; border-radius:50%;"><i class="fa fa-times"></i></button><?php endif; ?>
                                 <h4 style="margin-top:0;"><i class="fa fa-user-circle" style="color:#2c5f2d;"></i> Author <?= $index + 1 ?> <?php if($author->isCorresponding): ?><small>(Corresponding Author)</small><?php endif; ?></h4>
