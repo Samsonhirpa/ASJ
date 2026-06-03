@@ -559,7 +559,10 @@ INSERT INTO `tbl_manuscript_authors` (`id`, `manuscriptId`, `userId`, `isCorresp
 CREATE TABLE `tbl_manuscript_author_details` (
   `id` int(11) NOT NULL,
   `manuscriptId` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `title` varchar(20) NOT NULL DEFAULT '',
+  `first_name` varchar(64) NOT NULL DEFAULT '',
+  `middle_name` varchar(64) NOT NULL DEFAULT '',
+  `last_name` varchar(64) NOT NULL DEFAULT '',
   `email` varchar(128) NOT NULL,
   `institution` varchar(255) DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
@@ -573,11 +576,11 @@ CREATE TABLE `tbl_manuscript_author_details` (
 -- Dumping data for table `tbl_manuscript_author_details`
 --
 
-INSERT INTO `tbl_manuscript_author_details` (`id`, `manuscriptId`, `name`, `email`, `institution`, `country`, `orcid`, `isCorresponding`, `authorOrder`, `createdDtm`) VALUES
-(11, 9, ' ', '', '', '', '', 0, 2, '2026-05-11 17:29:59'),
-(12, 10, ' ', '', '', '', '', 0, 2, '2026-05-11 17:32:14'),
-(13, 11, ' ', '', '', 'Ethiopia', '', 0, 2, '2026-05-11 17:51:07'),
-(14, 12, ' ', '', '', '', '', 0, 2, '2026-05-18 15:02:40');
+INSERT INTO `tbl_manuscript_author_details` (`id`, `manuscriptId`, `title`, `first_name`, `middle_name`, `last_name`, `email`, `institution`, `country`, `orcid`, `isCorresponding`, `authorOrder`, `createdDtm`) VALUES
+(11, 9, '', '', '', '', '', '', '', '', 0, 2, '2026-05-11 17:29:59'),
+(12, 10, '', '', '', '', '', '', '', '', 0, 2, '2026-05-11 17:32:14'),
+(13, 11, '', '', '', '', '', '', 'Ethiopia', '', 0, 2, '2026-05-11 17:51:07'),
+(14, 12, '', '', '', '', '', '', '', '', 0, 2, '2026-05-18 15:02:40');
 
 -- --------------------------------------------------------
 

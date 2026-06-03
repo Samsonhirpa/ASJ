@@ -152,7 +152,10 @@ class Manuscript_model extends CI_Model
                 $this->ensureAuthorDetailsTable();
                 $this->db->insert('tbl_manuscript_author_details', [
                     'manuscriptId' => $manuscriptId,
-                    'name' => $author['name'],
+                    'title' => isset($author['title']) ? $author['title'] : '',
+                    'first_name' => isset($author['firstName']) ? $author['firstName'] : '',
+                    'middle_name' => isset($author['middleName']) ? $author['middleName'] : '',
+                    'last_name' => isset($author['lastName']) ? $author['lastName'] : '',
                     'email' => $author['email'],
                     'institution' => $author['institution'],
                     'country' => $author['country'],
@@ -162,6 +165,7 @@ class Manuscript_model extends CI_Model
                     'createdDtm' => date('Y-m-d H:i:s')
                 ]);
             } else {
+                $this->updateRegisteredAuthorNameParts($author);
                 $this->db->insert('tbl_manuscript_authors', [
                     'manuscriptId' => $manuscriptId,
                     'userId' => $author['userId'],
@@ -175,6 +179,20 @@ class Manuscript_model extends CI_Model
         $this->updateManuscript($manuscriptId, []);
         $this->db->trans_complete();
         return $this->db->trans_status();
+    }
+
+    private function updateRegisteredAuthorNameParts($author)
+    {
+        if (empty($author['userId']) || (int)$author['userId'] !== (int)$this->session->userdata('userId')) {
+            return;
+        }
+
+        $this->db->where('userId', (int)$author['userId'])->update('tbl_users', [
+            'title' => isset($author['title']) ? $author['title'] : '',
+            'first_name' => isset($author['firstName']) ? $author['firstName'] : '',
+            'middle_name' => isset($author['middleName']) ? $author['middleName'] : '',
+            'last_name' => isset($author['lastName']) ? $author['lastName'] : ''
+        ]);
     }
 
     /**
@@ -201,14 +219,13 @@ class Manuscript_model extends CI_Model
 
     private function ensureAuthorDetailsTable()
     {
-        if ($this->db->table_exists('tbl_manuscript_author_details')) {
-            return;
-        }
-
         $sql = "CREATE TABLE IF NOT EXISTS `tbl_manuscript_author_details` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
             `manuscriptId` INT(11) NOT NULL,
-            `name` VARCHAR(255) NOT NULL,
+            `title` VARCHAR(20) NOT NULL DEFAULT '',
+            `first_name` VARCHAR(64) NOT NULL DEFAULT '',
+            `middle_name` VARCHAR(64) NOT NULL DEFAULT '',
+            `last_name` VARCHAR(64) NOT NULL DEFAULT '',
             `email` VARCHAR(128) NOT NULL,
             `institution` VARCHAR(255) DEFAULT NULL,
             `country` VARCHAR(100) DEFAULT NULL,
@@ -220,6 +237,60 @@ class Manuscript_model extends CI_Model
             KEY `manuscriptId` (`manuscriptId`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
         $this->db->query($sql);
+        $this->migrateAuthorDetailsNameColumns();
+    }
+
+    private function migrateAuthorDetailsNameColumns()
+    {
+        if (!$this->db->table_exists('tbl_manuscript_author_details')) {
+            return;
+        }
+
+        $fieldDefinitions = [
+            'title' => "VARCHAR(20) NOT NULL DEFAULT ''",
+            'first_name' => "VARCHAR(64) NOT NULL DEFAULT ''",
+            'middle_name' => "VARCHAR(64) NOT NULL DEFAULT ''",
+            'last_name' => "VARCHAR(64) NOT NULL DEFAULT ''"
+        ];
+
+        $previousField = 'manuscriptId';
+        foreach ($fieldDefinitions as $field => $definition) {
+            if (!$this->db->field_exists($field, 'tbl_manuscript_author_details')) {
+                $this->db->query("ALTER TABLE `tbl_manuscript_author_details` ADD COLUMN `{$field}` {$definition} AFTER `{$previousField}`");
+            }
+            $previousField = $field;
+        }
+
+        if ($this->db->field_exists('name', 'tbl_manuscript_author_details')) {
+            $rows = $this->db->select('id, name')->get('tbl_manuscript_author_details')->result();
+            foreach ($rows as $row) {
+                $this->db->where('id', (int)$row->id)->update('tbl_manuscript_author_details', $this->splitStoredAuthorName($row->name));
+            }
+            $this->db->query('ALTER TABLE `tbl_manuscript_author_details` DROP COLUMN `name`');
+        }
+    }
+
+    private function splitStoredAuthorName($name)
+    {
+        $parts = preg_split('/\s+/', trim((string)$name));
+        $titles = ['Mr','Mrs','Ms','Miss','Dr','Prof'];
+        $result = ['title' => '', 'first_name' => '', 'middle_name' => '', 'last_name' => ''];
+
+        if (in_array($parts[0] ?? '', $titles, true)) {
+            $result['title'] = array_shift($parts);
+        }
+        if (count($parts) === 1) {
+            $result['first_name'] = $parts[0];
+        } elseif (count($parts) === 2) {
+            $result['first_name'] = $parts[0];
+            $result['last_name'] = $parts[1];
+        } elseif (count($parts) > 2) {
+            $result['first_name'] = array_shift($parts);
+            $result['last_name'] = array_pop($parts);
+            $result['middle_name'] = implode(' ', $parts);
+        }
+
+        return $result;
     }
 
     /**
