@@ -1143,13 +1143,14 @@ Scope Screening:
 
         $status = $decision === 'approved' ? 'accepted' : 'rejected';
         $now = date('Y-m-d H:i:s');
+        $publisherId = $decision === 'approved' ? $this->getFirstPublisherId() : null;
 
         $ok = $this->db->where('manuscriptId', (int)$manuscriptId)
             ->where('isDeleted', 0)
             ->update('tbl_manuscripts', [
                 'status' => $status,
                 'production_status' => (($decision === 'approved') ? 'in_production' : null),
-                'production_assigned_to' => (($decision === 'approved') ? $this->getFirstPublisherId() : null),
+                'production_assigned_to' => $publisherId,
                 'production_started_at' => (($decision === 'approved') ? $now : null),
                 'updatedBy' => (int)$eicId,
                 'updatedDtm' => $now,
