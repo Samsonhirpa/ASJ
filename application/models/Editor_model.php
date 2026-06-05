@@ -5,7 +5,18 @@ class Editor_model extends CI_Model
 {
     private function userDisplayNameSql($alias = 'u')
     {
-        return "TRIM(CONCAT_WS(' ', NULLIF({$alias}.first_name, ''), NULLIF({$alias}.middle_name, ''), NULLIF({$alias}.last_name, '')))";
+        $nameParts = [];
+        foreach (['first_name', 'middle_name', 'last_name'] as $field) {
+            if ($this->db->field_exists($field, 'tbl_users')) {
+                $nameParts[] = "NULLIF({$alias}.{$field}, '')";
+            }
+        }
+
+        if (!empty($nameParts)) {
+            return "COALESCE(NULLIF(TRIM(CONCAT_WS(' ', " . implode(', ', $nameParts) . ")), ''), {$alias}.name)";
+        }
+
+        return "{$alias}.name";
     }
 
     public function __construct()
@@ -687,13 +698,113 @@ Scope Screening:
 
     public function getAeAssignmentDetail($manuscriptId, $associateEditorId)
     {
-        return $this->db->select('m.*, mes.totalScore, mes.comments as meComments, mes.resultStatus as meResultStatus, mes.resultFilePath')
+        $submitterName = $this->userDisplayNameSql('submitter');
+        $correspondingName = $this->userDisplayNameSql('corr');
+
+        return $this->db->select("m.*, mes.totalScore, mes.comments as meComments, mes.resultStatus as meResultStatus, mes.resultFilePath, {$submitterName} as submitterName, submitter.email as submitterEmail, submitter.mobile as submitterMobile, submitter.orcid_id as submitterOrcid, submitter.institution as submitterInstitution, submitter.department as submitterDepartment, submitter.country as submitterCountry, submitter.city as submitterCity, {$correspondingName} as correspondingAuthorName, corr.email as correspondingAuthorEmail, corr.mobile as correspondingAuthorMobile, corr.orcid_id as correspondingAuthorOrcid, corr.institution as correspondingAuthorInstitution, corr.department as correspondingAuthorDepartment, corr.country as correspondingAuthorCountry, corr.city as correspondingAuthorCity", false)
             ->from('tbl_manuscripts m')
             ->join('tbl_managing_editor_screenings mes', 'mes.manuscriptId = m.manuscriptId', 'left')
+            ->join('tbl_users submitter', 'submitter.userId = m.submittedBy', 'left')
+            ->join('tbl_users corr', 'corr.userId = m.correspondingAuthorId', 'left')
             ->where('m.manuscriptId', (int)$manuscriptId)
+            ->where('m.isDeleted', 0)
             ->where('m.assignedEditorId', (int)$associateEditorId)
             ->where('m.aeAssignmentResponse', 'accepted')
             ->where('m.eicMeDecision', 'approved')
+            ->get()->row();
+    }
+
+    public function getAeAssignmentAuthors($manuscriptId, $associateEditorId)
+    {
+        if (!$this->getAeAssignmentDetail($manuscriptId, $associateEditorId)) {
+            return [];
+        }
+
+        $authors = [];
+        $registeredAuthorName = $this->userDisplayNameSql('u');
+        $registeredAuthors = $this->db->select("ma.id, ma.isCorresponding, ma.authorOrder, ma.contributionRoles, {$registeredAuthorName} as name, u.email, u.mobile, u.orcid_id as orcid, u.institution, u.department, u.country, u.city", false)
+            ->from('tbl_manuscript_authors ma')
+            ->join('tbl_users u', 'u.userId = ma.userId', 'left')
+            ->where('ma.manuscriptId', (int)$manuscriptId)
+            ->order_by('ma.authorOrder', 'ASC')
+            ->get()->result();
+
+        foreach ($registeredAuthors as $author) {
+            $author->authorSource = 'Registered author';
+            $authors[] = $author;
+        }
+
+        if ($this->db->table_exists('tbl_manuscript_author_details')) {
+            $select = 'id, isCorresponding, authorOrder, email, institution, country, orcid';
+            $fields = $this->db->list_fields('tbl_manuscript_author_details');
+            foreach (['title', 'first_name', 'middle_name', 'last_name', 'name'] as $field) {
+                if (in_array($field, $fields, true)) {
+                    $select .= ', ' . $field;
+                }
+            }
+
+            $externalAuthors = $this->db->select($select)
+                ->from('tbl_manuscript_author_details')
+                ->where('manuscriptId', (int)$manuscriptId)
+                ->order_by('authorOrder', 'ASC')
+                ->get()->result();
+
+            foreach ($externalAuthors as $author) {
+                $nameParts = [];
+                foreach (['title', 'first_name', 'middle_name', 'last_name'] as $field) {
+                    if (!empty($author->{$field})) {
+                        $nameParts[] = $author->{$field};
+                    }
+                }
+                if (!empty($nameParts)) {
+                    $author->name = trim(implode(' ', $nameParts));
+                } elseif (!empty($author->name)) {
+                    $author->name = trim($author->name);
+                } else {
+                    $author->name = '';
+                }
+                $author->mobile = '';
+                $author->department = '';
+                $author->city = '';
+                $author->contributionRoles = '';
+                $author->authorSource = 'Additional author';
+                $authors[] = $author;
+            }
+        }
+
+        usort($authors, function ($a, $b) {
+            return (int)$a->authorOrder - (int)$b->authorOrder;
+        });
+
+        return $authors;
+    }
+
+    public function getAeAssignmentFiles($manuscriptId, $associateEditorId)
+    {
+        if (!$this->getAeAssignmentDetail($manuscriptId, $associateEditorId)) {
+            return [];
+        }
+
+        return $this->db->select('fileId, manuscriptId, fileType, fileName, filePath, fileSize, mimeType, version, createdDtm')
+            ->from('tbl_manuscript_files')
+            ->where('manuscriptId', (int)$manuscriptId)
+            ->where('isDeleted', 0)
+            ->order_by('fileType', 'ASC')
+            ->order_by('createdDtm', 'DESC')
+            ->get()->result();
+    }
+
+    public function getAeAssignmentFile($manuscriptId, $fileId, $associateEditorId)
+    {
+        if (!$this->getAeAssignmentDetail($manuscriptId, $associateEditorId)) {
+            return null;
+        }
+
+        return $this->db->select('fileId, manuscriptId, fileType, fileName, filePath, mimeType')
+            ->from('tbl_manuscript_files')
+            ->where('manuscriptId', (int)$manuscriptId)
+            ->where('fileId', (int)$fileId)
+            ->where('isDeleted', 0)
             ->get()->row();
     }
 
