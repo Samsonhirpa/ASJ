@@ -562,7 +562,7 @@
           <!-- mini logo for sidebar mini -->
           <span class="logo-mini"><i class="fa fa-leaf"></i></span>
           <!-- logo for regular state and mobile devices -->
-          <span class="logo-lg"><b>OJAS</b> | IQQO</span>
+          <span class="logo-lg"><b>OJ</b>AS</span>
         </a>
         
         <!-- Header Navbar -->
@@ -747,9 +747,17 @@
             <li class="header">REVIEWER ZONE</li>
             
             <li class="<?php echo (uri_string() == 'reviewer/assignments') ? 'active' : ''; ?>">
+          
               <a href="<?php echo base_url(); ?>reviewer/assignments">
                 <i class="fa fa-tasks"></i> 
                 <span>Review Assignments</span>
+              </a>
+            </li>
+
+              <li class="<?php echo (uri_string() == 'reviewer/completed') ? 'active' : ''; ?>">
+                 <a href="<?php echo base_url(); ?>reviewer/completed">
+                <i class="fa fa-tasks"></i> 
+                <span>Completed Review</span>
               </a>
             </li>
             
@@ -803,11 +811,7 @@
                     <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
                 </a>
             </li>
-            <li class="<?= (isset($activeMenu) && $activeMenu == 'finalEditorialDecisions') ? 'active' : '' ?>">
-                <a href="<?= base_url('editor/final-decisions') ?>">
-                    <i class="fa fa-gavel"></i> <span>Final EiC Decision</span>
-                </a>
-            </li>
+          
               <li class="<?php echo (uri_string() == 'editor/assignments') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>editor/assignments">
                 <i class="fa fa-line-chart"></i>
@@ -844,6 +848,11 @@
              <li class="<?= (isset($activeMenu) && $activeMenu == 'firstEditorialDecisions') ? 'active' : '' ?>">
                 <a href="<?= base_url('editor/first-decisions') ?>">
                     <i class="fa fa-hourglass-half"></i> <span>First Decisions</span>
+                </a>
+            </li>
+              <li class="<?= (isset($activeMenu) && $activeMenu == 'finalEditorialDecisions') ? 'active' : '' ?>">
+                <a href="<?= base_url('editor/final-decisions') ?>">
+                    <i class="fa fa-gavel"></i> <span>Final EiC Decision</span>
                 </a>
             </li>
             
