@@ -250,7 +250,8 @@ class Editor_model extends CI_Model
         $this->db->from('tbl_manuscripts');
         $this->db->where('isDeleted', 0);
         $this->db->where_in('status', ['submitted', 'revision_required']);
-        $this->db->order_by('createdDtm', 'ASC');
+        $this->db->order_by('createdDtm', 'DESC');
+        $this->db->order_by('manuscriptId', 'DESC');
         return $this->db->get()->result();
     }
 
@@ -574,6 +575,7 @@ Scope Screening:
             $this->db->where('mes.resultStatus', $status);
         }
         $this->db->order_by('mes.screenedDtm', 'DESC');
+        $this->db->order_by('m.manuscriptId', 'DESC');
         return $this->db->get()->result();
     }
 
