@@ -197,9 +197,31 @@ class Manuscript extends BaseController
             $this->session->set_flashdata('error', 'Assignment not found or not yet accepted.');
             redirect('editor/ae-assignments');
         }
+        $data['authors'] = $this->editor_model->getAeAssignmentAuthors((int)$manuscriptId, (int)$this->vendorId);
+        $data['files'] = $this->editor_model->getAeAssignmentFiles((int)$manuscriptId, (int)$this->vendorId);
         $this->global['pageTitle'] = 'Assigned Manuscript Details - OJAS';
-           $this->global['activeMenu'] = 'aeAssignments';
+        $this->global['activeMenu'] = 'aeAssignments';
         $this->loadViews('editor/ae_assignment_view', $this->global, $data, NULL);
+    }
+
+    public function aeDownloadFile($manuscriptId, $fileId)
+    {
+        if ($this->role != 16 && !$this->isAdmin()) { $this->loadThis(); return; }
+
+        $file = $this->editor_model->getAeAssignmentFile((int)$manuscriptId, (int)$fileId, (int)$this->vendorId);
+        if (!$file) {
+            $this->session->set_flashdata('error', 'File not found or you do not have access.');
+            redirect('editor/ae-assignments/view/' . (int)$manuscriptId);
+        }
+
+        $absolutePath = FCPATH . ltrim($file->filePath, '/');
+        if (!is_file($absolutePath)) {
+            $this->session->set_flashdata('error', 'File could not be found on the server.');
+            redirect('editor/ae-assignments/view/' . (int)$manuscriptId);
+        }
+
+        $this->load->helper('download');
+        force_download($absolutePath, null);
     }
 
     public function aeAssignReviewers()
