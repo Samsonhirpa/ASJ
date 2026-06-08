@@ -24,6 +24,27 @@ class Manuscript_model extends CI_Model
         if (!in_array('thematicArea', $fields)) {
             $this->db->query("ALTER TABLE {$this->table} ADD COLUMN thematicArea VARCHAR(100) DEFAULT NULL AFTER articleType");
         }
+
+
+        $proofColumns = [
+            'production_status' => "ALTER TABLE {$this->table} ADD COLUMN production_status VARCHAR(50) DEFAULT NULL AFTER updatedDtm",
+            'proof_message' => "ALTER TABLE {$this->table} ADD COLUMN proof_message TEXT DEFAULT NULL AFTER production_status",
+            'proof_file_name' => "ALTER TABLE {$this->table} ADD COLUMN proof_file_name VARCHAR(255) DEFAULT NULL AFTER proof_message",
+            'proof_file_path' => "ALTER TABLE {$this->table} ADD COLUMN proof_file_path VARCHAR(500) DEFAULT NULL AFTER proof_file_name",
+            'proof_sent_at' => "ALTER TABLE {$this->table} ADD COLUMN proof_sent_at DATETIME DEFAULT NULL AFTER proof_file_path",
+            'author_proof_comment' => "ALTER TABLE {$this->table} ADD COLUMN author_proof_comment TEXT DEFAULT NULL AFTER proof_sent_at",
+            'author_proof_file_name' => "ALTER TABLE {$this->table} ADD COLUMN author_proof_file_name VARCHAR(255) DEFAULT NULL AFTER author_proof_comment",
+            'author_proof_file_path' => "ALTER TABLE {$this->table} ADD COLUMN author_proof_file_path VARCHAR(500) DEFAULT NULL AFTER author_proof_file_name",
+            'author_proof_decision' => "ALTER TABLE {$this->table} ADD COLUMN author_proof_decision ENUM('pending','accepted','updated','rejected') DEFAULT 'pending' AFTER author_proof_file_path",
+            'author_proof_responded_at' => "ALTER TABLE {$this->table} ADD COLUMN author_proof_responded_at DATETIME DEFAULT NULL AFTER author_proof_decision",
+        ];
+
+        foreach ($proofColumns as $column => $sql) {
+            if (!in_array($column, $fields)) {
+                $this->db->query($sql);
+                $fields[] = $column;
+            }
+        }
     }
 
     private function ensurePaymentSchema()
@@ -414,6 +435,61 @@ class Manuscript_model extends CI_Model
         return $ok;
     }
 
+
+    public function getAuthorProofingQueue($authorId)
+    {
+        $this->db->select('manuscriptId, manuscriptNumber, title, thematicArea, production_status, author_proof_decision, proof_sent_at, updatedDtm');
+        $this->db->from($this->table);
+        $this->db->where('submittedBy', (int)$authorId);
+        $this->db->where('isDeleted', 0);
+        $this->db->where('production_status IS NOT NULL', null, false);
+        $this->db->where_in('production_status', ['proof_sent', 'proof_commented', 'proof_rejected', 'proof_approved']);
+        $this->db->order_by('COALESCE(author_proof_responded_at, proof_sent_at, updatedDtm)', 'DESC', false);
+        return $this->db->get()->result();
+    }
+
+    public function getAuthorProofingManuscript($manuscriptId, $authorId)
+    {
+        $this->db->select('manuscriptId, manuscriptNumber, title, thematicArea, proof_message, proof_file_name, proof_file_path, proof_sent_at, production_status, author_proof_comment, author_proof_file_name, author_proof_file_path, author_proof_decision');
+        $this->db->from($this->table);
+        $this->db->where('manuscriptId', (int)$manuscriptId);
+        $this->db->where('submittedBy', (int)$authorId);
+        $this->db->where('isDeleted', 0);
+        $this->db->where_in('production_status', ['proof_sent', 'proof_commented', 'proof_rejected', 'proof_approved']);
+        return $this->db->get()->row();
+    }
+
+    public function saveAuthorProofResponse($manuscriptId, $authorId, $decision, $comment, $fileData = [])
+    {
+        if (!in_array($decision, ['accepted', 'updated', 'rejected'], true)) {
+            return false;
+        }
+
+        $statusMap = [
+            'accepted' => 'proof_approved',
+            'updated' => 'proof_commented',
+            'rejected' => 'proof_rejected',
+        ];
+
+        $payload = [
+            'author_proof_comment' => $comment,
+            'author_proof_decision' => $decision,
+            'author_proof_responded_at' => date('Y-m-d H:i:s'),
+            'production_status' => $statusMap[$decision],
+            'updatedBy' => (int)$authorId,
+            'updatedDtm' => date('Y-m-d H:i:s'),
+        ];
+
+        if (!empty($fileData['file_name']) && !empty($fileData['file_path'])) {
+            $payload['author_proof_file_name'] = $fileData['file_name'];
+            $payload['author_proof_file_path'] = $fileData['file_path'];
+        }
+
+        $this->db->where('manuscriptId', (int)$manuscriptId);
+        $this->db->where('submittedBy', (int)$authorId);
+        $this->db->where('isDeleted', 0);
+        return $this->db->update($this->table, $payload);
+    }
 
     public function countAuthorRevisionRequired($authorId)
     {

@@ -173,6 +173,45 @@ class Editor_model extends CI_Model
             $this->db->query("ALTER TABLE tbl_manuscripts ADD COLUMN revisionDueDtm DATETIME DEFAULT NULL AFTER firstEditorialDecisionDtm");
         }
 
+        $proofColumns = [
+            'production_status' => "ALTER TABLE tbl_manuscripts ADD COLUMN production_status VARCHAR(50) DEFAULT NULL AFTER firstEditorialDecisionDtm",
+            'production_assigned_to' => "ALTER TABLE tbl_manuscripts ADD COLUMN production_assigned_to INT(11) DEFAULT NULL AFTER production_status",
+            'production_started_at' => "ALTER TABLE tbl_manuscripts ADD COLUMN production_started_at DATETIME DEFAULT NULL AFTER production_assigned_to",
+            'copyediting_notes' => "ALTER TABLE tbl_manuscripts ADD COLUMN copyediting_notes TEXT DEFAULT NULL AFTER production_started_at",
+            'grammar_checked' => "ALTER TABLE tbl_manuscripts ADD COLUMN grammar_checked TINYINT(1) NOT NULL DEFAULT 0 AFTER copyediting_notes",
+            'references_checked' => "ALTER TABLE tbl_manuscripts ADD COLUMN references_checked TINYINT(1) NOT NULL DEFAULT 0 AFTER grammar_checked",
+            'page_numbers' => "ALTER TABLE tbl_manuscripts ADD COLUMN page_numbers VARCHAR(100) DEFAULT NULL AFTER references_checked",
+            'layout_notes' => "ALTER TABLE tbl_manuscripts ADD COLUMN layout_notes TEXT DEFAULT NULL AFTER page_numbers",
+            'final_title' => "ALTER TABLE tbl_manuscripts ADD COLUMN final_title VARCHAR(500) DEFAULT NULL AFTER layout_notes",
+            'final_abstract' => "ALTER TABLE tbl_manuscripts ADD COLUMN final_abstract TEXT DEFAULT NULL AFTER final_title",
+            'final_keywords' => "ALTER TABLE tbl_manuscripts ADD COLUMN final_keywords TEXT DEFAULT NULL AFTER final_abstract",
+            'final_authors' => "ALTER TABLE tbl_manuscripts ADD COLUMN final_authors TEXT DEFAULT NULL AFTER final_keywords",
+            'final_orcid_ids' => "ALTER TABLE tbl_manuscripts ADD COLUMN final_orcid_ids TEXT DEFAULT NULL AFTER final_authors",
+            'corresponding_email' => "ALTER TABLE tbl_manuscripts ADD COLUMN corresponding_email VARCHAR(255) DEFAULT NULL AFTER final_orcid_ids",
+            'proof_message' => "ALTER TABLE tbl_manuscripts ADD COLUMN proof_message TEXT DEFAULT NULL AFTER corresponding_email",
+            'proof_file_name' => "ALTER TABLE tbl_manuscripts ADD COLUMN proof_file_name VARCHAR(255) DEFAULT NULL AFTER proof_message",
+            'proof_file_path' => "ALTER TABLE tbl_manuscripts ADD COLUMN proof_file_path VARCHAR(500) DEFAULT NULL AFTER proof_file_name",
+            'proof_sent_at' => "ALTER TABLE tbl_manuscripts ADD COLUMN proof_sent_at DATETIME DEFAULT NULL AFTER proof_file_path",
+            'author_proof_comment' => "ALTER TABLE tbl_manuscripts ADD COLUMN author_proof_comment TEXT DEFAULT NULL AFTER proof_sent_at",
+            'author_proof_file_name' => "ALTER TABLE tbl_manuscripts ADD COLUMN author_proof_file_name VARCHAR(255) DEFAULT NULL AFTER author_proof_comment",
+            'author_proof_file_path' => "ALTER TABLE tbl_manuscripts ADD COLUMN author_proof_file_path VARCHAR(500) DEFAULT NULL AFTER author_proof_file_name",
+            'author_proof_decision' => "ALTER TABLE tbl_manuscripts ADD COLUMN author_proof_decision ENUM('pending','accepted','updated','rejected') DEFAULT 'pending' AFTER author_proof_file_path",
+            'author_proof_responded_at' => "ALTER TABLE tbl_manuscripts ADD COLUMN author_proof_responded_at DATETIME DEFAULT NULL AFTER author_proof_decision",
+            'doi_prefix' => "ALTER TABLE tbl_manuscripts ADD COLUMN doi_prefix VARCHAR(100) DEFAULT NULL AFTER author_proof_responded_at",
+            'doi_suffix' => "ALTER TABLE tbl_manuscripts ADD COLUMN doi_suffix VARCHAR(255) DEFAULT NULL AFTER doi_prefix",
+            'full_doi' => "ALTER TABLE tbl_manuscripts ADD COLUMN full_doi VARCHAR(500) DEFAULT NULL AFTER doi_suffix",
+            'pub_volume' => "ALTER TABLE tbl_manuscripts ADD COLUMN pub_volume INT(11) DEFAULT NULL AFTER full_doi",
+            'pub_issue' => "ALTER TABLE tbl_manuscripts ADD COLUMN pub_issue INT(11) DEFAULT NULL AFTER pub_volume",
+            'publication_date' => "ALTER TABLE tbl_manuscripts ADD COLUMN publication_date DATE DEFAULT NULL AFTER pub_issue",
+        ];
+
+        foreach ($proofColumns as $column => $sql) {
+            if (!in_array($column, $manuscriptFields)) {
+                $this->db->query($sql);
+                $manuscriptFields[] = $column;
+            }
+        }
+
         if (!$this->db->table_exists('tbl_managing_editor_screenings')) {
             $this->db->query("CREATE TABLE tbl_managing_editor_screenings (
                 screeningId INT(11) NOT NULL AUTO_INCREMENT,
@@ -1191,6 +1230,11 @@ Scope Screening:
         $this->db->join('tbl_users author', 'author.userId = m.submittedBy', 'left');
         $this->db->where('m.isDeleted', 0);
         $this->db->where('m.firstEditorialDecision', 'accept_present');
+        $this->db->where('m.status !=', 'published');
+        $this->db->group_start();
+        $this->db->where('m.production_status IS NULL', null, false);
+        $this->db->or_where_not_in('m.production_status', ['proof_approved', 'published']);
+        $this->db->group_end();
         if (!$isAdmin) {
             $this->db->where('m.production_assigned_to', (int)$publisherId);
         }
@@ -1227,10 +1271,11 @@ Scope Screening:
 
     public function getProductionReadyManuscripts($publisherId, $isAdmin = false)
     {
-        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.production_status, m.production_assigned_to');
+        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.thematicArea, m.production_status, m.production_assigned_to, m.proof_file_name, m.proof_sent_at');
         $this->db->from('tbl_manuscripts m');
         $this->db->where('m.isDeleted', 0);
-        $this->db->where_in('m.production_status', ['metadata_verified', 'doi_prepared']);
+        $this->db->where('m.status !=', 'published');
+        $this->db->where('m.production_status', 'proof_approved');
         if (!$isAdmin) {
             $this->db->where('m.production_assigned_to', (int)$publisherId);
         }

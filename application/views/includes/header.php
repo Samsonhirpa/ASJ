@@ -740,6 +740,12 @@
     <span>Pay Fee</span>
   </a>
 </li>
+            <li class="<?php echo (isset($activeMenu) && $activeMenu == 'authorProofingPending') ? 'active' : ''; ?>">
+              <a href="<?php echo base_url(); ?>author/proofing-pending">
+                <i class="fa fa-check-square-o"></i>
+                <span>Proofing Pending</span>
+              </a>
+            </li>
             <?php endif; ?>
             
             <!-- ========== REVIEWER MENU (role == 19) ========== -->

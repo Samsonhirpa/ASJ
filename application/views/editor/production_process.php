@@ -1,9 +1,9 @@
 <div class="content-wrapper">
   <section class="content-header">
-    <h1>Production Process</h1>
+    <h1>Send Proof to Author</h1>
     <ol class="breadcrumb">
       <li><a href="<?= base_url('editor/production-stage') ?>"><i class="fa fa-arrow-left"></i> Production Stage</a></li>
-      <li class="active">Manuscript #<?= (int)$manuscript->manuscriptId ?></li>
+      <li class="active"><?= html_escape($manuscript->manuscriptNumber) ?></li>
     </ol>
   </section>
 
@@ -13,45 +13,52 @@
         <h3 class="box-title"><?= html_escape($manuscript->manuscriptNumber) ?> - <?= html_escape($manuscript->title) ?></h3>
       </div>
       <div class="box-body">
-        <div class="row">
-          <div class="col-md-4">
-            <h4>Copyediting</h4>
-            <form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$manuscript->manuscriptId) ?>">
-              <input type="hidden" name="step" value="copyediting">
-              <textarea name="copyediting_notes" class="form-control" rows="4" placeholder="Copyediting notes"><?= html_escape($manuscript->copyediting_notes ?? '') ?></textarea><br>
-              <label><input type="checkbox" name="grammar_checked" value="1" <?= !empty($manuscript->grammar_checked) ? 'checked' : '' ?>> Grammar checked</label><br>
-              <label><input type="checkbox" name="references_checked" value="1" <?= !empty($manuscript->references_checked) ? 'checked' : '' ?>> References checked</label><br><br>
-              <button class="btn btn-default btn-sm" name="action" value="save">Save</button>
-              <button class="btn btn-primary btn-sm" name="action" value="send_typesetting">Send to Typesetting</button>
-            </form>
-          </div>
-
-          <div class="col-md-4">
-            <h4>Typesetting</h4>
-            <form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$manuscript->manuscriptId) ?>">
-              <input type="hidden" name="step" value="typesetting">
-              <input class="form-control" name="page_numbers" placeholder="Page numbers" value="<?= html_escape($manuscript->page_numbers ?? '') ?>"><br>
-              <textarea name="layout_notes" class="form-control" rows="4" placeholder="Layout notes"><?= html_escape($manuscript->layout_notes ?? '') ?></textarea><br>
-              <button class="btn btn-default btn-sm" name="action" value="save">Save</button>
-              <button class="btn btn-warning btn-sm" name="action" value="send_proof">Send Proof</button>
-            </form>
-          </div>
-
-          <div class="col-md-4">
-            <h4>Metadata Verification</h4>
-            <form method="post" action="<?= base_url('editor/production-stage/save/' . (int)$manuscript->manuscriptId) ?>">
-              <input type="hidden" name="step" value="metadata">
-              <input class="form-control" name="final_title" placeholder="Final title" value="<?= html_escape($manuscript->final_title ?? '') ?>"><br>
-              <textarea class="form-control" name="final_abstract" rows="4" placeholder="Final abstract"><?= html_escape($manuscript->final_abstract ?? '') ?></textarea><br>
-              <input class="form-control" name="final_keywords" placeholder="Final keywords" value="<?= html_escape($manuscript->final_keywords ?? '') ?>"><br>
-              <input class="form-control" name="final_authors" placeholder="Final authors" value="<?= html_escape($manuscript->final_authors ?? '') ?>"><br>
-              <input class="form-control" name="final_orcid_ids" placeholder="ORCID IDs" value="<?= html_escape($manuscript->final_orcid_ids ?? '') ?>"><br>
-              <input class="form-control" name="corresponding_email" placeholder="Corresponding author email" value="<?= html_escape($manuscript->corresponding_email ?? '') ?>"><br>
-              <button class="btn btn-default btn-sm" name="action" value="save">Save</button>
-              <button class="btn btn-info btn-sm" name="action" value="prepare_doi">Complete Verification</button>
-            </form>
-          </div>
+        <div class="callout callout-info">
+          <p>Complete metadata verification, local copyediting, and typesetting on your computer. Then upload the final proof manuscript and send it to the author for comment or approval.</p>
         </div>
+
+        <?php if (!empty($manuscript->author_proof_comment)): ?>
+          <div class="box box-warning">
+            <div class="box-header with-border"><h3 class="box-title">Author Proof Response</h3></div>
+            <div class="box-body">
+              <p><strong>Decision:</strong> <?= html_escape(ucfirst((string)$manuscript->author_proof_decision)) ?></p>
+              <p><strong>Comment:</strong><br><?= nl2br(html_escape($manuscript->author_proof_comment)) ?></p>
+              <?php if (!empty($manuscript->author_proof_file_path)): ?>
+                <p><strong>Uploaded comments file:</strong> <a href="<?= base_url($manuscript->author_proof_file_path) ?>" target="_blank"><?= html_escape($manuscript->author_proof_file_name ?: 'Download file') ?></a></p>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <form method="post" enctype="multipart/form-data" action="<?= base_url('editor/production-stage/save/' . (int)$manuscript->manuscriptId) ?>">
+          <input type="hidden" name="step" value="send_proof">
+          <h4>Metadata Verification</h4>
+          <div class="form-group">
+            <label>Final Title</label>
+            <input class="form-control" name="final_title" value="<?= html_escape($manuscript->final_title ?: $manuscript->title) ?>" required>
+          </div>
+          <div class="form-group">
+            <label>Abstract</label>
+            <textarea class="form-control" name="final_abstract" rows="6" required><?= html_escape($manuscript->final_abstract ?: $manuscript->abstract) ?></textarea>
+          </div>
+          <div class="form-group">
+            <label>Key Words</label>
+            <input class="form-control" name="final_keywords" value="<?= html_escape($manuscript->final_keywords ?: $manuscript->keywords) ?>" required>
+          </div>
+          <div class="form-group">
+            <label>Message to Author</label>
+            <textarea class="form-control" name="proof_message" rows="4" required><?= html_escape($manuscript->proof_message ?? '') ?></textarea>
+          </div>
+          <div class="form-group">
+            <label>Final Manuscript Proof</label>
+            <?php if (!empty($manuscript->proof_file_path)): ?>
+              <p class="help-block">Current proof: <a href="<?= base_url($manuscript->proof_file_path) ?>" target="_blank"><?= html_escape($manuscript->proof_file_name ?: 'Download proof') ?></a></p>
+            <?php endif; ?>
+            <input type="file" name="final_manuscript" class="form-control" required>
+          </div>
+          <button class="btn btn-success" type="submit"><i class="fa fa-send"></i> Send Proof to Author</button>
+          <a class="btn btn-default" href="<?= base_url('editor/production-stage') ?>">Cancel</a>
+        </form>
       </div>
     </div>
   </section>

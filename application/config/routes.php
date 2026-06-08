@@ -160,6 +160,9 @@ $route['author/manuscript/revision-notifications'] = 'author/manuscript/revision
 $route['author/manuscript/resubmit-revision/(:num)'] = 'author/manuscript/resubmitRevision/$1';
 $route['author/manuscript/payment'] = 'author/manuscript/payment';
 $route['author/manuscript/payment/submit/(:num)'] = 'author/manuscript/submitPayment/$1';
+$route['author/proofing-pending'] = 'author/manuscript/proofingPending';
+$route['author/proofing/view/(:num)'] = 'author/manuscript/authorProofing/$1';
+$route['author/proofing/respond/(:num)'] = 'author/manuscript/submitProofResponse/$1';
 
 // Reviewer Routes (add these later)
 $route['reviewer/dashboard'] = 'reviewer/dashboard/index';
