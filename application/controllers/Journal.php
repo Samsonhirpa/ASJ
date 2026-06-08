@@ -130,10 +130,15 @@ class Journal extends CI_Controller
         // Total submissions (all manuscripts, not deleted)
         $total_submissions = $this->db->where('isDeleted', 0)->count_all_results('tbl_manuscripts');
 
-        // Published articles (status = 'accepted' or 'published')
-        $this->db->where('isDeleted', 0);
-        $this->db->where_in('status', ['accepted', 'published']);
-        $published = $this->db->count_all_results('tbl_manuscripts');
+        // Published articles visible through the new publisher workflow.
+        $this->db->from('tbl_published_articles pa');
+        $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
+        $published = $this->db->count_all_results();
 
         // Active reviewers (roleId = 19)
         $reviewers = $this->db->where('roleId', 19)->where('isDeleted', 0)->count_all_results('tbl_users');

@@ -8,6 +8,12 @@ class Issue_model extends CI_Model {
     public function __construct() {
         parent::__construct();
         $this->load->database();
+        if ($this->db->table_exists('tbl_published_articles')) {
+            $fields = $this->db->list_fields('tbl_published_articles');
+            if (!in_array('isHidden', $fields)) {
+                $this->db->query("ALTER TABLE tbl_published_articles ADD COLUMN isHidden TINYINT(1) NOT NULL DEFAULT 0 AFTER doi");
+            }
+        }
     }
     
     /**
@@ -57,6 +63,10 @@ class Issue_model extends CI_Model {
             $this->db->join('tbl_manuscript_authors ma', 'm.manuscriptId = ma.manuscriptId');
             $this->db->join('tbl_users u', 'ma.userId = u.userId');
             $this->db->where('pa.issueId', $issueId);
+            $this->db->where('pa.isHidden', 0);
+            $this->db->where('m.status', 'published');
+            $this->db->where('m.author_proof_decision', 'accepted');
+            $this->db->where('m.proof_file_path IS NOT NULL', null, false);
             $this->db->group_by('pa.articleId');
             $this->db->order_by('pa.pageStart', 'ASC');
             $issue->articles = $this->db->get()->result();

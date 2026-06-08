@@ -6,6 +6,16 @@ class Journal_model extends CI_Model {
     public function __construct() {
         parent::__construct();
         $this->load->database();
+        $this->ensurePublishedVisibilityColumn();
+    }
+
+    private function ensurePublishedVisibilityColumn() {
+        if ($this->db->table_exists('tbl_published_articles')) {
+            $fields = $this->db->list_fields('tbl_published_articles');
+            if (!in_array('isHidden', $fields)) {
+                $this->db->query("ALTER TABLE tbl_published_articles ADD COLUMN isHidden TINYINT(1) NOT NULL DEFAULT 0 AFTER doi");
+            }
+        }
     }
 
     // -----------------------------------------------------------------
@@ -19,10 +29,15 @@ class Journal_model extends CI_Model {
         // Total submissions (all manuscripts, not deleted)
         $total_submissions = $this->db->where('isDeleted', 0)->count_all_results('tbl_manuscripts');
 
-        // Published or accepted articles (publicly visible)
-        $this->db->where('isDeleted', 0);
-        $this->db->where_in('status', ['accepted', 'published']);
-        $published = $this->db->count_all_results('tbl_manuscripts');
+        // Published articles visible through the new publisher workflow.
+        $this->db->from('tbl_published_articles pa');
+        $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
+        $published = $this->db->count_all_results();
 
         // Active reviewers (roleId = 19)
         $reviewers = $this->db->where('roleId', 19)->where('isDeleted', 0)->count_all_results('tbl_users');
@@ -46,45 +61,7 @@ class Journal_model extends CI_Model {
      * @return array
      */
     public function get_featured_articles($limit = 6) {
-        $this->db->select('
-            m.manuscriptId,
-            m.manuscriptNumber,
-            m.title,
-            m.abstract,
-            m.articleType,
-            m.createdDtm,
-            (SELECT GROUP_CONCAT(u.name SEPARATOR ", ")
-             FROM tbl_manuscript_authors ma
-             JOIN tbl_users u ON ma.userId = u.userId
-             WHERE ma.manuscriptId = m.manuscriptId
-             GROUP BY ma.manuscriptId) as author_names
-        ');
-        $this->db->from('tbl_manuscripts m');
-        $this->db->where('m.isDeleted', 0);
-        $this->db->where_in('m.status', ['accepted', 'published']);
-        $this->db->order_by('m.createdDtm', 'DESC');
-        $this->db->limit($limit);
-
-        $query = $this->db->get();
-        $articles = $query->result();
-
-        // Attach volume/issue info (use latest issue as fallback)
-        $latest_issue = $this->get_latest_issue();
-        $default_volume = $latest_issue->volume ?? 10;
-        $default_issueNumber = $latest_issue->issueNumber ?? 1;
-        $default_year = $latest_issue->year ?? date('Y');
-
-        foreach ($articles as $art) {
-            $art->volume = $default_volume;
-            $art->issueNumber = $default_issueNumber;
-            $art->year = date('Y', strtotime($art->createdDtm));
-            // If author_names is null, set placeholder
-            if (empty($art->author_names)) {
-                $art->author_names = 'OJAS Editorial';
-            }
-        }
-
-        return $articles;
+        return $this->get_published_articles($limit);
     }
 
     // -----------------------------------------------------------------
@@ -100,35 +77,44 @@ class Journal_model extends CI_Model {
      * @return array
      */
     public function get_published_articles($limit = 10, $offset = 0) {
-        // First try the original method (if there are records in tbl_published_articles)
         $this->db->select('
-            pa.*, 
-            m.title, 
-            m.abstract, 
+            pa.articleId,
+            pa.issueId,
+            pa.doi,
+            pa.publishedDate,
+            m.manuscriptId,
+            m.title,
+            m.abstract,
+            m.abstract as abstract_text,
             m.keywords,
             m.manuscriptNumber,
             m.articleType,
+            m.thematicArea,
             ji.volume,
             ji.issueNumber,
-            ji.year as issue_year,
+            ji.year,
             GROUP_CONCAT(u.name SEPARATOR ", ") as author_names
         ');
         $this->db->from('tbl_published_articles pa');
         $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
-        $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId');
-        $this->db->join('tbl_manuscript_authors ma', 'm.manuscriptId = ma.manuscriptId');
-        $this->db->join('tbl_users u', 'ma.userId = u.userId');
+        $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId', 'left');
+        $this->db->join('tbl_manuscript_authors ma', 'm.manuscriptId = ma.manuscriptId', 'left');
+        $this->db->join('tbl_users u', 'ma.userId = u.userId', 'left');
+        $this->db->where('m.isDeleted', 0);
         $this->db->where('m.status', 'published');
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
         $this->db->group_by('pa.articleId');
         $this->db->order_by('pa.publishedDate', 'DESC');
         $this->db->limit($limit, $offset);
 
-        $query = $this->db->get();
-        $results = $query->result();
-
-        // If no results from the joined table, fall back to manuscripts with status 'accepted'/'published'
-        if (empty($results)) {
-            return $this->get_featured_articles($limit);
+        $results = $this->db->get()->result();
+        foreach ($results as $article) {
+            if (empty($article->author_names)) {
+                $article->author_names = 'OJAS Editorial';
+            }
+            $article->year = $article->year ?? date('Y', strtotime($article->publishedDate));
         }
 
         return $results;
@@ -144,76 +130,64 @@ class Journal_model extends CI_Model {
      */
     public function search_articles($keyword, $filters = array()) {
         $this->db->select('
-            m.manuscriptId as articleId,
+            pa.articleId,
+            pa.issueId,
+            pa.doi,
+            pa.publishedDate,
+            m.manuscriptId,
             m.title,
             m.abstract,
+            m.abstract as abstract_text,
             m.keywords,
             m.articleType,
+            m.thematicArea,
             m.manuscriptNumber,
-            m.createdDtm,
-            (SELECT GROUP_CONCAT(u.name SEPARATOR ", ")
-             FROM tbl_manuscript_authors ma
-             JOIN tbl_users u ON ma.userId = u.userId
-             WHERE ma.manuscriptId = m.manuscriptId
-             GROUP BY ma.manuscriptId) as author_names
+            ji.volume,
+            ji.issueNumber,
+            ji.year,
+            GROUP_CONCAT(u.name SEPARATOR ", ") as author_names
         ');
-        $this->db->from('tbl_manuscripts m');
+        $this->db->from('tbl_published_articles pa');
+        $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
+        $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId', 'left');
+        $this->db->join('tbl_manuscript_authors ma', 'm.manuscriptId = ma.manuscriptId', 'left');
+        $this->db->join('tbl_users u', 'ma.userId = u.userId', 'left');
         $this->db->where('m.isDeleted', 0);
-        $this->db->where_in('m.status', ['accepted', 'published']);
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
 
-        // Keyword search across title, abstract, keywords, author names (via subquery)
         if (!empty($keyword)) {
             $this->db->group_start();
             $this->db->like('m.title', $keyword);
             $this->db->or_like('m.abstract', $keyword);
             $this->db->or_like('m.keywords', $keyword);
-            // Search author names using EXISTS subquery
-            $this->db->or_where("EXISTS (
-                SELECT 1 FROM tbl_manuscript_authors ma2
-                JOIN tbl_users u2 ON ma2.userId = u2.userId
-                WHERE ma2.manuscriptId = m.manuscriptId AND u2.name LIKE '%" . $this->db->escape_like_str($keyword) . "%'
-            )");
+            $this->db->or_like('m.manuscriptNumber', $keyword);
+            $this->db->or_like('u.name', $keyword);
             $this->db->group_end();
         }
 
-        // Apply filters
         if (!empty($filters['articleType'])) {
             $this->db->where('m.articleType', $filters['articleType']);
         }
-
-        // Year filter: we need to get year from issue or created date. Use createdDtm as fallback.
         if (!empty($filters['year'])) {
-            $this->db->where('YEAR(m.createdDtm)', $filters['year']);
+            $this->db->where('ji.year', (int)$filters['year']);
         }
-
-        // IssueId filter: if there is a relation via tbl_published_articles, join it.
         if (!empty($filters['issueId'])) {
-            $this->db->join('tbl_published_articles pa', 'pa.manuscriptId = m.manuscriptId', 'left');
-            $this->db->where('pa.issueId', $filters['issueId']);
+            $this->db->where('pa.issueId', (int)$filters['issueId']);
         }
 
-        $this->db->order_by('m.createdDtm', 'DESC');
-        $this->db->limit(50); // safety limit
+        $this->db->group_by('pa.articleId');
+        $this->db->order_by('pa.publishedDate', 'DESC');
+        $this->db->limit(50);
 
-        $query = $this->db->get();
-        $results = $query->result();
-
-        // Attach volume/issue info (use latest issue as default, or try to fetch from tbl_published_articles if available)
-        $latest_issue = $this->get_latest_issue();
-        $default_volume = $latest_issue->volume ?? 10;
-        $default_issueNumber = $latest_issue->issueNumber ?? 1;
-
-        foreach ($results as $r) {
-            // If we joined tbl_published_articles, we might have volume/issue there
-            if (isset($r->volume) && isset($r->issueNumber)) {
-                continue;
+        $results = $this->db->get()->result();
+        foreach ($results as $article) {
+            if (empty($article->author_names)) {
+                $article->author_names = 'OJAS Editorial';
             }
-            $r->volume = $default_volume;
-            $r->issueNumber = $default_issueNumber;
-            $r->year = date('Y', strtotime($r->createdDtm));
-            if (empty($r->author_names)) {
-                $r->author_names = 'OJAS Editorial';
-            }
+            $article->year = $article->year ?? date('Y', strtotime($article->publishedDate));
         }
 
         return $results;
@@ -239,6 +213,11 @@ class Journal_model extends CI_Model {
         $this->db->from('tbl_published_articles pa');
         $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
         $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId');
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
         
         if(is_numeric($identifier)) {
             $this->db->where('pa.articleId', $identifier);
@@ -266,11 +245,15 @@ class Journal_model extends CI_Model {
      * Get published manuscript detail by manuscript id
      */
     public function get_published_manuscript($manuscriptId) {
-        $this->db->select('pa.articleId, pa.doi, pa.publishedDate, m.manuscriptId, m.title, m.abstract, m.keywords, m.articleType, m.manuscriptNumber, ji.volume, ji.issueNumber, ji.year as issue_year, ji.month as issue_month');
+        $this->db->select('pa.articleId, pa.issueId, pa.doi, pa.publishedDate, m.manuscriptId, m.title, m.abstract, m.keywords, m.articleType, m.manuscriptNumber, m.proof_file_name, m.proof_file_path, m.author_proof_decision, ji.volume, ji.issueNumber, ji.year as issue_year, ji.month as issue_month');
         $this->db->from('tbl_published_articles pa');
         $this->db->join('tbl_manuscripts m', 'pa.manuscriptId = m.manuscriptId');
         $this->db->join('tbl_journal_issues ji', 'pa.issueId = ji.issueId', 'left');
         $this->db->where('m.status', 'published');
+        $this->db->where('m.isDeleted', 0);
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
+        $this->db->where('pa.isHidden', 0);
         $this->db->where('m.manuscriptId', (int)$manuscriptId);
         $article = $this->db->get()->row();
 
@@ -323,6 +306,10 @@ class Journal_model extends CI_Model {
         $this->db->join('tbl_manuscript_authors ma', 'm.manuscriptId = ma.manuscriptId');
         $this->db->join('tbl_users u', 'ma.userId = u.userId');
         $this->db->where('pa.issueId', $issue->issueId);
+        $this->db->where('pa.isHidden', 0);
+        $this->db->where('m.status', 'published');
+        $this->db->where('m.author_proof_decision', 'accepted');
+        $this->db->where('m.proof_file_path IS NOT NULL', null, false);
         $this->db->group_by('pa.articleId');
         $this->db->order_by('pa.publishedDate', 'ASC');
         $issue->articles = $this->db->get()->result();

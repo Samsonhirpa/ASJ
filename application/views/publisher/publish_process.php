@@ -8,6 +8,19 @@
                 <h3 class="box-title">Finalize Publishing: <?= html_escape($manuscript->manuscriptNumber) ?> - <?= html_escape($manuscript->title) ?></h3>
             </div>
             <div class="box-body">
+                <div class="alert alert-info">
+                    <strong>OJAS publication is free.</strong> Select the public issue and DOI details, then publish after the author-approved proof is ready.
+                </div>
+
+                <?php if (!empty($manuscript->proof_file_path)): ?>
+                    <p>
+                        <strong>Author-approved proof:</strong>
+                        <a href="<?= base_url($manuscript->proof_file_path) ?>" target="_blank" rel="noopener">
+                            <?= html_escape($manuscript->proof_file_name ?: 'View proof file') ?>
+                        </a>
+                    </p>
+                <?php endif; ?>
+
                 <form method="post" action="<?= base_url('publisher/publish/submit/' . (int)$manuscript->manuscriptId) ?>">
                     <h4>DOI Assignment</h4>
                     <div class="row">
@@ -19,48 +32,21 @@
                         <select class="form-control" name="issueId" required>
                             <option value="">Select Issue</option>
                             <?php foreach(($issues??[]) as $issue): ?>
-                                <option value="<?= (int)$issue->issueId ?>">Vol <?= (int)$issue->volume ?>, Issue <?= (int)$issue->issueNumber ?><?= !empty($issue->title) ? ' - ' . html_escape($issue->title) : '' ?></option>
+                                <?php $selected = !empty($manuscript->pub_issue_id) && (int)$manuscript->pub_issue_id === (int)$issue->issueId; ?>
+                                <option value="<?= (int)$issue->issueId ?>" <?= $selected ? 'selected' : '' ?>>Vol <?= (int)$issue->volume ?>, Issue <?= (int)$issue->issueNumber ?><?= !empty($issue->title) ? ' - ' . html_escape($issue->title) : '' ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Fee Status</label>
-                        <select class="form-control" id="feeStatus" name="feeStatus" required>
-                            <option value="free">Free</option>
-                            <option value="need_fee">Need Fee</option>
-                        </select>
-                    </div>
-
-                    <div id="paymentFields" style="display:none; border:1px solid #ddd; padding:10px; margin-bottom:10px;">
-                        <h4>Payment Setup (from EiC workflow)</h4>
-                        <div class="form-group"><label>Payment Method</label><input class="form-control" name="paymentMethod" placeholder="Bank transfer / gateway / etc"></div>
-                        <div class="form-group"><label>Payment Amount</label><input type="number" step="0.01" min="0" class="form-control" name="paymentAmount"></div>
-                        <div class="form-group"><label>Payment Details</label><textarea class="form-control" name="paymentOther" rows="3"></textarea></div>
                     </div>
 
                     <button class="btn btn-primary" type="submit">Submit Publishing Process</button>
                 </form>
                 <hr>
                 <form method="post" action="<?= base_url('publisher/publish/do-publish/' . (int)$manuscript->manuscriptId) ?>">
-                    <?php $canPublish = !empty($payment) && in_array((string)$payment->paymentStatus, ['free', 'paid'], true); ?>
+                    <?php $canPublish = ($manuscript->production_status === 'doi_prepared' || $manuscript->production_status === 'proof_approved') && $manuscript->author_proof_decision === 'accepted'; ?>
                     <button class="btn btn-success" type="submit" <?= $canPublish ? '' : 'disabled' ?>>Publish</button>
-                    <p class="help-block">If fee is required, Publish button is enabled after author payment is marked as paid.</p>
+                    <p class="help-block">Publish is enabled after the author accepts the publisher proof. No payment action is required.</p>
                 </form>
             </div>
         </div>
     </section>
 </div>
-
-<script>
-(function(){
-    var feeStatus = document.getElementById('feeStatus');
-    var paymentFields = document.getElementById('paymentFields');
-    if (!feeStatus || !paymentFields) return;
-    function toggleFields() {
-        paymentFields.style.display = feeStatus.value === 'need_fee' ? 'block' : 'none';
-    }
-    feeStatus.addEventListener('change', toggleFields);
-    toggleFields();
-})();
-</script>
