@@ -381,6 +381,39 @@ class Manuscript extends BaseController
         $this->loadViews('editor/published', $this->global, $data, NULL);
     }
 
+
+    private function uploadProductionFile($fieldName)
+    {
+        if (empty($_FILES[$fieldName]['name'])) {
+            return null;
+        }
+
+        $uploadPath = './uploads/production/';
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $config = [
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'pdf|doc|docx|tex|txt|jpg|jpeg|png|gif|tiff|csv|xlsx|zip',
+            'max_size' => 102400,
+            'encrypt_name' => true,
+        ];
+
+        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload($fieldName)) {
+            return ['error' => $this->upload->display_errors('', '')];
+        }
+
+        $data = $this->upload->data();
+        return [
+            'file_name' => $data['orig_name'],
+            'file_path' => 'uploads/production/' . $data['file_name'],
+        ];
+    }
+
     public function productionStage()
     {
         if ((int)$this->role !== 17 && !$this->isAdmin()) {
@@ -392,7 +425,7 @@ class Manuscript extends BaseController
         $data['manuscripts'] = $this->editor_model->getProductionQueue((int)$this->vendorId, $this->isAdmin());
         $data['issues'] = $this->issue_model->get_issues(false);
         $this->global['pageTitle'] = 'Production Stage - OJAS';
-        $this->global['activeMenu'] = 'productionStage';
+        $this->global['activeMenu'] = 'publisherPendingProduction';
         $this->loadViews('editor/production_stage', $this->global, $data, NULL);
     }
 
@@ -412,7 +445,7 @@ class Manuscript extends BaseController
 
         $data['manuscript'] = $manuscript;
         $this->global['pageTitle'] = 'Production Process - OJAS';
-        $this->global['activeMenu'] = 'productionStage';
+        $this->global['activeMenu'] = 'publisherPendingProduction';
         $this->loadViews('editor/production_process', $this->global, $data, NULL);
     }
 
@@ -422,51 +455,47 @@ class Manuscript extends BaseController
         $step = $this->input->post('step', true);
         $payload = ['updatedBy' => (int)$this->vendorId, 'updatedDtm' => date('Y-m-d H:i:s')];
 
-        if ($step === 'copyediting') {
-            $payload['copyediting_notes'] = $this->input->post('copyediting_notes', true);
-            $payload['grammar_checked'] = $this->input->post('grammar_checked') ? 1 : 0;
-            $payload['references_checked'] = $this->input->post('references_checked') ? 1 : 0;
-            if ($this->input->post('action', true) === 'send_typesetting') $payload['production_status'] = 'copyediting_completed';
-        } elseif ($step === 'typesetting') {
-            $payload['page_numbers'] = $this->input->post('page_numbers', true);
-            $payload['layout_notes'] = $this->input->post('layout_notes', true);
-            if ($this->input->post('action', true) === 'send_proof') $payload['production_status'] = 'proof_sent';
-        } elseif ($step === 'proof') {
-            if ($this->input->post('action', true) === 'finalize') $payload['production_status'] = 'proof_approved';
-        } elseif ($step === 'metadata') {
+        if ($step === 'send_proof') {
+            $this->form_validation->set_rules('final_title', 'Final Title', 'trim|required|max_length[500]');
+            $this->form_validation->set_rules('final_abstract', 'Final Abstract', 'trim|required');
+            $this->form_validation->set_rules('final_keywords', 'Key Words', 'trim|required');
+            $this->form_validation->set_rules('proof_message', 'Message to Author', 'trim|required|min_length[5]');
+
+            if ($this->form_validation->run() === false) {
+                $this->session->set_flashdata('error', validation_errors('', ''));
+                redirect('editor/production-stage/process/' . (int)$manuscriptId);
+                return;
+            }
+
+            $upload = $this->uploadProductionFile('final_manuscript');
+            if (empty($upload)) {
+                $this->session->set_flashdata('error', 'Please upload the final manuscript proof document.');
+                redirect('editor/production-stage/process/' . (int)$manuscriptId);
+                return;
+            }
+            if (!empty($upload['error'])) {
+                $this->session->set_flashdata('error', 'Final manuscript upload failed: ' . $upload['error']);
+                redirect('editor/production-stage/process/' . (int)$manuscriptId);
+                return;
+            }
+
             $payload['final_title'] = $this->input->post('final_title', true);
             $payload['final_abstract'] = $this->input->post('final_abstract', true);
             $payload['final_keywords'] = $this->input->post('final_keywords', true);
-            $payload['final_authors'] = $this->input->post('final_authors', true);
-            $payload['final_orcid_ids'] = $this->input->post('final_orcid_ids', true);
-            $payload['corresponding_email'] = $this->input->post('corresponding_email', true);
-            if ($this->input->post('action', true) === 'prepare_doi') $payload['production_status'] = 'metadata_verified';
-        } elseif ($step === 'doi') {
-            $prefix = trim((string)$this->input->post('doi_prefix', true));
-            $suffix = trim((string)$this->input->post('doi_suffix', true));
-            $payload['doi_prefix'] = $prefix;
-            $payload['doi_suffix'] = $suffix;
-            $payload['full_doi'] = ($prefix && $suffix) ? ($prefix . '/' . $suffix) : null;
-            if ($this->input->post('action', true) === 'save_doi') $payload['production_status'] = 'doi_prepared';
-        } elseif ($step === 'publish') {
-            $issueId = (int)$this->input->post('issueId');
-            if ($issueId > 0) {
-                $this->load->model('Issue_model', 'issue_model');
-                $issue = $this->issue_model->get_issue($issueId);
-                if (!empty($issue)) {
-                    $payload['pub_volume'] = (int)$issue->volume;
-                    $payload['pub_issue'] = (int)$issue->issueNumber;
-                }
-            }
-            $payload['publication_date'] = $this->input->post('publication_date', true);
-            if ($this->input->post('action', true) === 'publish') {
-                $payload['production_status'] = 'published';
-                $payload['status'] = 'published';
-            }
+            $payload['proof_message'] = $this->input->post('proof_message', true);
+            $payload['proof_file_name'] = $upload['file_name'];
+            $payload['proof_file_path'] = $upload['file_path'];
+            $payload['proof_sent_at'] = date('Y-m-d H:i:s');
+            $payload['author_proof_decision'] = 'pending';
+            $payload['production_status'] = 'proof_sent';
+        } else {
+            $this->session->set_flashdata('error', 'Invalid production action.');
+            redirect('editor/production-stage');
+            return;
         }
 
         $ok = $this->editor_model->updateProductionStage((int)$manuscriptId, $payload);
-        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Production step saved.' : 'Failed to save production step.');
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Proof sent to author successfully.' : 'Failed to send proof to author.');
         redirect('editor/production-stage');
     }
 

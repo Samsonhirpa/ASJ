@@ -37,6 +37,39 @@ class Manuscript extends BaseController
         }
     }
 
+
+    private function uploadAuthorProofComments($fieldName)
+    {
+        if (empty($_FILES[$fieldName]['name'])) {
+            return null;
+        }
+
+        $uploadPath = './uploads/proof_comments/';
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $config = [
+            'upload_path' => $uploadPath,
+            'allowed_types' => 'pdf|doc|docx|txt|jpg|jpeg|png|zip',
+            'max_size' => 102400,
+            'encrypt_name' => true,
+        ];
+
+        $this->load->library('upload', $config);
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload($fieldName)) {
+            return ['error' => $this->upload->display_errors('', '')];
+        }
+
+        $data = $this->upload->data();
+        return [
+            'file_name' => $data['orig_name'],
+            'file_path' => 'uploads/proof_comments/' . $data['file_name'],
+        ];
+    }
+
     /**
      * Article types available during manuscript submission.
      */
@@ -120,6 +153,77 @@ class Manuscript extends BaseController
         redirect('author/manuscript/payment');
     }
     
+
+    public function proofingPending()
+    {
+        $data['manuscripts'] = $this->manuscript_model->getAuthorProofingQueue((int)$this->vendorId);
+        $this->global['pageTitle'] = 'Proofing Pending - OJAS';
+        $this->global['activeMenu'] = 'authorProofingPending';
+        $this->loadViews('author/proofing_pending', $this->global, $data, NULL);
+    }
+
+    public function authorProofing($manuscriptId)
+    {
+        $data['manuscript'] = $this->manuscript_model->getAuthorProofingManuscript((int)$manuscriptId, (int)$this->vendorId);
+        if (empty($data['manuscript'])) {
+            $this->session->set_flashdata('error', 'Proofing manuscript not found.');
+            redirect('author/proofing-pending');
+            return;
+        }
+
+        $this->global['pageTitle'] = 'Author Proofing - OJAS';
+        $this->global['activeMenu'] = 'authorProofingPending';
+        $this->loadViews('author/authorproofing', $this->global, $data, NULL);
+    }
+
+    public function submitProofResponse($manuscriptId)
+    {
+        $action = $this->input->post('action', true);
+        $decisionMap = [
+            'accept' => 'accepted',
+            'update' => 'updated',
+            'reject' => 'rejected',
+        ];
+
+        if (!isset($decisionMap[$action])) {
+            $this->session->set_flashdata('error', 'Invalid proofing action.');
+            redirect('author/proofing/view/' . (int)$manuscriptId);
+            return;
+        }
+
+        $this->form_validation->set_rules('author_proof_comment', 'Comment', 'trim');
+        if ($action !== 'accept') {
+            $this->form_validation->set_rules('author_proof_comment', 'Comment', 'trim|required|min_length[3]');
+        }
+
+        if ($this->form_validation->run() === false) {
+            $this->session->set_flashdata('error', validation_errors('', ''));
+            redirect('author/proofing/view/' . (int)$manuscriptId);
+            return;
+        }
+
+        $upload = $this->uploadAuthorProofComments('proof_comments_file');
+        if (!empty($upload['error'])) {
+            $this->session->set_flashdata('error', 'Comments upload failed: ' . $upload['error']);
+            redirect('author/proofing/view/' . (int)$manuscriptId);
+            return;
+        }
+
+        $ok = $this->manuscript_model->saveAuthorProofResponse(
+            (int)$manuscriptId,
+            (int)$this->vendorId,
+            $decisionMap[$action],
+            $this->input->post('author_proof_comment', true),
+            is_array($upload) ? $upload : []
+        );
+
+        $message = $action === 'accept'
+            ? 'Proof accepted. The manuscript is ready for publishing.'
+            : ($action === 'update' ? 'Proof comments sent to the publisher.' : 'Proof rejected and sent back to the publisher.');
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? $message : 'Unable to save proof response.');
+        redirect('author/proofing-pending');
+    }
+
     /**
      * Submit new manuscript (Step 1)
      */
