@@ -202,13 +202,21 @@ class Editor_model extends CI_Model
             'full_doi' => "ALTER TABLE tbl_manuscripts ADD COLUMN full_doi VARCHAR(500) DEFAULT NULL AFTER doi_suffix",
             'pub_volume' => "ALTER TABLE tbl_manuscripts ADD COLUMN pub_volume INT(11) DEFAULT NULL AFTER full_doi",
             'pub_issue' => "ALTER TABLE tbl_manuscripts ADD COLUMN pub_issue INT(11) DEFAULT NULL AFTER pub_volume",
-            'publication_date' => "ALTER TABLE tbl_manuscripts ADD COLUMN publication_date DATE DEFAULT NULL AFTER pub_issue",
+            'pub_issue_id' => "ALTER TABLE tbl_manuscripts ADD COLUMN pub_issue_id INT(11) DEFAULT NULL AFTER pub_issue",
+            'publication_date' => "ALTER TABLE tbl_manuscripts ADD COLUMN publication_date DATE DEFAULT NULL AFTER pub_issue_id",
         ];
 
         foreach ($proofColumns as $column => $sql) {
             if (!in_array($column, $manuscriptFields)) {
                 $this->db->query($sql);
                 $manuscriptFields[] = $column;
+            }
+        }
+
+        if ($this->db->table_exists('tbl_published_articles')) {
+            $publishedFields = $this->db->list_fields('tbl_published_articles');
+            if (!in_array('isHidden', $publishedFields)) {
+                $this->db->query("ALTER TABLE tbl_published_articles ADD COLUMN isHidden TINYINT(1) NOT NULL DEFAULT 0 AFTER doi");
             }
         }
 
@@ -1298,7 +1306,7 @@ Scope Screening:
 
     public function getPublishedManuscripts()
     {
-        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.updatedDtm, p.articleId, p.doi, p.publishedDate, ji.volume, ji.issueNumber, ji.year');
+        $this->db->select('m.manuscriptId, m.manuscriptNumber, m.title, m.thematicArea, m.updatedDtm, p.articleId, p.doi, p.publishedDate, p.isHidden, ji.volume, ji.issueNumber, ji.year');
         $this->db->from('tbl_manuscripts m');
         $this->db->join('tbl_published_articles p', 'p.manuscriptId = m.manuscriptId', 'inner');
         $this->db->join('tbl_journal_issues ji', 'ji.issueId = p.issueId', 'left');
@@ -1375,18 +1383,7 @@ Scope Screening:
 
     public function publishFromPayment($manuscriptId, $editorId)
     {
-        $payment = $this->db->select('*')
-            ->from('tbl_manuscript_payments')
-            ->where('manuscriptId', $manuscriptId)
-            ->order_by('paymentId', 'DESC')
-            ->limit(1)
-            ->get()->row();
-
-        if (!$payment || !in_array($payment->paymentStatus, ['free', 'paid'], true)) {
-            return false;
-        }
-
-        $manuscript = $this->db->select('manuscriptId, status, isDeleted')
+        $manuscript = $this->db->select('manuscriptId, status, isDeleted, production_status, author_proof_decision, pub_issue_id, full_doi')
             ->from('tbl_manuscripts')
             ->where('manuscriptId', $manuscriptId)
             ->limit(1)
@@ -1396,10 +1393,20 @@ Scope Screening:
             return false;
         }
 
-        $issue = $this->db->select('issueId')
+        if (!in_array($manuscript->production_status, ['proof_approved', 'doi_prepared', 'published'], true) || $manuscript->author_proof_decision !== 'accepted') {
+            return false;
+        }
+
+        $issueQuery = $this->db->select('issueId')
             ->from('tbl_journal_issues')
             ->where('status', 'published')
-            ->where('isDeleted', 0)
+            ->where('isDeleted', 0);
+
+        if (!empty($manuscript->pub_issue_id)) {
+            $issueQuery->where('issueId', (int)$manuscript->pub_issue_id);
+        }
+
+        $issue = $issueQuery
             ->order_by('year', 'DESC')
             ->order_by('volume', 'DESC')
             ->order_by('issueNumber', 'DESC')
@@ -1421,6 +1428,7 @@ Scope Screening:
 
         $this->db->where('manuscriptId', $manuscriptId)->update('tbl_manuscripts', [
             'status' => 'published',
+            'production_status' => 'published',
             'updatedBy' => $editorId,
             'updatedDtm' => $publishedDate
         ]);
@@ -1431,7 +1439,7 @@ Scope Screening:
                 'publishedDate' => $publishedDate
             ]);
         } else {
-            $doi = '10.1234/ojas.' . date('Y') . '.' . $issue->issueId . '.' . $manuscriptId;
+            $doi = !empty($manuscript->full_doi) ? $manuscript->full_doi : '10.1234/ojas.' . date('Y') . '.' . $issue->issueId . '.' . $manuscriptId;
             $this->db->insert('tbl_published_articles', [
                 'manuscriptId' => $manuscriptId,
                 'issueId' => $issue->issueId,
@@ -1443,6 +1451,24 @@ Scope Screening:
 
         $this->db->trans_complete();
         return $this->db->trans_status();
+    }
+
+
+    public function togglePublishedVisibility($manuscriptId, $editorId)
+    {
+        $article = $this->db->select('articleId, isHidden')
+            ->from('tbl_published_articles')
+            ->where('manuscriptId', (int)$manuscriptId)
+            ->limit(1)
+            ->get()->row();
+
+        if (!$article) {
+            return false;
+        }
+
+        return $this->db->where('articleId', (int)$article->articleId)->update('tbl_published_articles', [
+            'isHidden' => ((int)$article->isHidden === 1) ? 0 : 1
+        ]);
     }
 
     public function makeDecision($manuscriptId, $editorId, $decision, $letter)

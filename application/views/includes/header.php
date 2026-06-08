@@ -734,12 +734,6 @@
                 <span>New Submission</span>
               </a>
             </li>
-            <li class="<?php echo (uri_string() == 'author/manuscript/payment') ? 'active' : ''; ?>">
-  <a href="<?php echo base_url(); ?>author/manuscript/payment">
-    <i class="fa fa-credit-card"></i> 
-    <span>Pay Fee</span>
-  </a>
-</li>
             <li class="<?php echo (isset($activeMenu) && $activeMenu == 'authorProofingPending') ? 'active' : ''; ?>">
               <a href="<?php echo base_url(); ?>author/proofing-pending">
                 <i class="fa fa-check-square-o"></i>
@@ -912,6 +906,9 @@
             </li>
             <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPublish') ? 'active' : '' ?>">
                 <a href="<?= base_url('publisher/publish') ?>"><i class="fa fa-upload"></i> <span>Publish</span></a>
+            </li>
+            <li class="<?= (isset($activeMenu) && $activeMenu == 'publisherPublishedManuscripts') ? 'active' : '' ?>">
+                <a href="<?= base_url('publisher/published-manuscripts') ?>"><i class="fa fa-list-alt"></i> <span>Published Manuscripts</span></a>
             </li>
             <?php endif; ?>
             
